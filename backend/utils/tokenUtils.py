@@ -19,3 +19,10 @@ def verify_token(token: str):
         return None  # Token süresi dolmuş
     except jwt.InvalidTokenError:
         return None  # Geçersiz token
+
+def get_user_id_from_token(token: str):
+    """Token'den user_id'yi çıkar."""
+    payload = verify_token(token)
+    if not payload or "user_id" not in payload:
+        return None
+    return payload["user_id"]
