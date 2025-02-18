@@ -1,17 +1,37 @@
+import random
 from database import db
-from models.userModel import User
+from models.userModel import User, LoginUser
 from passlib.hash import bcrypt
 
 async def save_user(user: User):
     # Kullanıcının mevcut olup olmadığını kontrol et
     existing_user = await db.users.find_one({"email": user.email})
     if existing_user:
-        return True
+        return None
 
     # Şifreyi bcrypt ile şifrele
     hashed_password = bcrypt.hash(user.password)
     user.password = hashed_password
 
+    # Rastgele 5 rakamlı bir user_id oluştur
+    user_id = random.randint(10000, 99999)
+
     # Kullanıcıyı veritabanına ekle
-    await db.users.insert_one(user.dict())
-    return False
+    user_dict = user.dict()
+    user_dict["user_id"] = user_id
+    await db.users.insert_one(user_dict)
+    return user_id
+
+async def authenticate_user(user: LoginUser):
+    # Kullanıcıyı email'e göre kontrol et
+    existing_user = await db.users.find_one({"email": user.email})
+    if not existing_user:
+        return False, None
+
+    # Şifrenin doğru olup olmadığını kontrol et
+    is_valid_password = bcrypt.verify(user.password, existing_user["password"])
+    if not is_valid_password:
+        return False, None
+
+    # Kullanıcı doğrulandı, bilgileri döndür
+    return True, existing_user
