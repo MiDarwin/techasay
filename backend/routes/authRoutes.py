@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from models.userModel import User, LoginUser
 from controllers.authController import register_user, login_user
 
