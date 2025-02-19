@@ -1,18 +1,23 @@
+// app/dashboard/page.tsx
 "use client";
-import { useAuth } from "@/context/AuthContext";
+import { useContext } from "react";
+import { AuthContext } from "../context/AuthContext";
+import { useRouter } from "next/navigation";
 
 const Dashboard = () => {
-    const { user, logout } = useAuth();
+    const { token, permissions } = useContext(AuthContext)!;
+    const router = useRouter();
 
-    if (!user) return <p>Yetkisiz giriş, lütfen giriş yapın.</p>;
+    if (!token) {
+        router.push("/auth/login");
+        return null;
+    }
 
     return (
         <div>
             <h1>Dashboard</h1>
-            <p>Hoş geldin!</p>
-            <button onClick={logout}>Çıkış Yap</button>
+            <p>Permissions: {permissions.join(", ")}</p>
         </div>
     );
 };
-
 export default Dashboard;

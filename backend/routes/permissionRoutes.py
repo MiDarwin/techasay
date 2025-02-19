@@ -1,22 +1,63 @@
+from pydantic import BaseModel
 from fastapi import APIRouter, HTTPException, Depends
 from fastapi.security import OAuth2PasswordBearer
 from utils.tokenUtils import get_user_id_from_token
-from services.permissionService import get_permissions_by_user_id
+from services.permissionService import get_permissions_by_user_id, get_all_users_with_permissions, \
+    update_permissions_by_user_id
 
 router = APIRouter(prefix="/permissions", tags=["Permissions"])
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 
 
-@router.get("/")
-async def get_permissions(token: str = Depends(oauth2_scheme)):
-    """Token'den kullanıcı izinlerini al."""
+# Body için Pydantic model tanımı
+class UpdatePermissionsRequest(BaseModel):
+    target_user_id: int
+    new_permissions: list
+
+
+@router.post("/update/")
+async def update_user_permissions(
+        request: UpdatePermissionsRequest,  # Body'den alınacak parametreler
+        token: str = Depends(oauth2_scheme)
+):
+    """
+    Başka bir kullanıcının izinlerini güncelle.
+    """
+    # JWT'den giriş yapan kullanıcının user_id'sini al
     user_id = get_user_id_from_token(token)
     if not user_id:
         raise HTTPException(status_code=401, detail="Invalid or expired token")
 
-    permissions = await get_permissions_by_user_id(user_id)
-    if permissions is None:
-        raise HTTPException(status_code=404, detail="User not found")
+    # Giriş yapan kullanıcının kendi izinlerini kontrol et
+    user_permissions = await get_permissions_by_user_id(user_id)
+    if not user_permissions or "permissions_control" not in user_permissions:
+        raise HTTPException(status_code=403, detail="Permission denied: You do not have permissions_control.")
 
-    return {"user_id": user_id, "permissions": permissions}
+    # Hedef kullanıcının izinlerini güncelle
+    result = await update_permissions_by_user_id(request.target_user_id, request.new_permissions)
+    if not result:
+        raise HTTPException(status_code=404, detail="Target user not found.")
+
+    return {"message": f"Permissions updated successfully for user_id: {request.target_user_id}"}
+
+
+@router.get("/users/")
+async def get_all_users(token: str = Depends(oauth2_scheme)):
+    """
+    Kayıtlı kullanıcıları ve izinlerini getir.
+    Bu işlem yalnızca permissions_control iznine sahip kullanıcılar tarafından yapılabilir.
+    """
+    # JWT'den giriş yapan kullanıcının user_id'sini al
+    user_id = get_user_id_from_token(token)
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
+
+    # Giriş yapan kullanıcının kendi izinlerini kontrol et
+    user_permissions = await get_permissions_by_user_id(user_id)
+    if not user_permissions or "permissions_control" not in user_permissions:
+        raise HTTPException(status_code=403, detail="Permission denied: You do not have permissions_control.")
+
+    # Tüm kullanıcıları ve izinlerini al
+    users = await get_all_users_with_permissions()
+    return {"users": users}
