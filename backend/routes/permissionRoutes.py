@@ -45,7 +45,7 @@ async def update_user_permissions(
 @router.get("/users/")
 async def get_all_users(token: str = Depends(oauth2_scheme)):
     """
-    Kayıtlı kullanıcıları ve izinlerini getir.
+    Kayıtlı kullanıcıları, email ve izinlerini getir.
     Bu işlem yalnızca permissions_control iznine sahip kullanıcılar tarafından yapılabilir.
     """
     # JWT'den giriş yapan kullanıcının user_id'sini al
