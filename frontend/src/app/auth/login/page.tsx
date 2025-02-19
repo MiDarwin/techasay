@@ -1,24 +1,26 @@
 "use client";
 import { useState } from "react";
-import { useRouter } from "next/navigation"; // Next.js Router
+import { useRouter } from "next/navigation";
 import { apiRequest } from "../../utils/api";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const router = useRouter(); // Router'ı tanımla
+  const [errorMessage, setErrorMessage] = useState(""); // Hata mesajı için state
+  const router = useRouter();
 
   const handleLogin = async () => {
     try {
       const data = await apiRequest("/auth/login", "POST", { email, password });
       localStorage.setItem("access_token", data.access_token); // Token'ı kaydet
       alert("Giriş başarılı!");
-      router.push("/permissions/users"); // Giriş sonrası kullanıcılar sayfasına yönlendir
-    } catch (error) {
-      if (error instanceof Error) {
-        alert(error.message);
+      router.push("/permissions/users");
+    } catch (error: any) {
+      // Hata mesajını yakala ve state'e ata
+      if (error.detail) {
+        setErrorMessage(error.detail);
       } else {
-        alert("Bilinmeyen bir hata oluştu.");
+        setErrorMessage("Bilinmeyen bir hata oluştu.");
       }
     }
   };
@@ -26,6 +28,7 @@ export default function LoginPage() {
   return (
     <div>
       <h2>Giriş Yap</h2>
+      {errorMessage && <p style={{ color: "red" }}>{errorMessage}</p>} {/* Hata mesajını göster */}
       <input
         type="email"
         placeholder="Email"

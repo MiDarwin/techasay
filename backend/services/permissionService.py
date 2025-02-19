@@ -18,6 +18,7 @@ async def update_permissions_by_user_id(user_id: int, new_permissions: list):
     if result.matched_count == 0:  # Kullanıcı bulunamadıysa
         return False
     return True
+
 async def get_all_users_with_permissions():
     """
     Veritabanından tüm kullanıcıları ve izinlerini getir.

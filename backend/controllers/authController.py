@@ -4,17 +4,19 @@ from utils.tokenUtils import create_access_token
 from fastapi import HTTPException
 
 async def register_user(user: User):
+    # Kullanıcıyı kaydetmeye çalış
     user_id = await save_user(user)
     if not user_id:
-        raise HTTPException(status_code=400, detail="User already exists")
-    return {"message": f"User registered successfully. ID: {user_id}"}
+        raise HTTPException(status_code=400, detail="Bu e-posta adresi ile bir kullanıcı zaten kayıtlı.")
+    return {"message": f"Kullanıcı başarıyla kaydedildi. Kullanıcı ID: {user_id}"}
 
 async def login_user(user: LoginUser):
-    is_authenticated, user_data = await authenticate_user(user)
+    # Kullanıcıyı doğrula
+    is_authenticated, user_data_or_error = await authenticate_user(user)
     if not is_authenticated:
-        raise HTTPException(status_code=401, detail="Invalid email or password")
+        raise HTTPException(status_code=401, detail=user_data_or_error)
 
     # Kullanıcı doğrulandı, Bearer Token oluştur
-    token_data = {"user_id": user_data["user_id"]}
+    token_data = {"user_id": user_data_or_error["user_id"]}
     access_token = create_access_token(data=token_data)
     return {"access_token": access_token, "token_type": "Bearer"}

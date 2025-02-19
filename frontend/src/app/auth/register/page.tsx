@@ -6,18 +6,20 @@ import { apiRequest } from "../../utils/api";
 export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const router = useRouter(); // Router'ı tanımla
+  const [errorMessage, setErrorMessage] = useState(""); // Hata mesajı için state
+  const router = useRouter();
 
   const handleRegister = async () => {
     try {
       const data = await apiRequest("/auth/register", "POST", { email, password });
       alert(data.message);
-      router.push("/auth/login"); // Başarılı kayıt sonrası login sayfasına yönlendirme
-    } catch (error) {
-      if (error instanceof Error) {
-        alert(error.message);
+      router.push("/auth/login");
+    } catch (error: any) {
+      // Hata mesajını yakala ve state'e ata
+      if (error.detail) {
+        setErrorMessage(error.detail); // Backend'den dönen hata mesajını göster
       } else {
-        alert("Bilinmeyen bir hata oluştu.");
+        setErrorMessage("Bilinmeyen bir hata oluştu.");
       }
     }
   };
@@ -25,6 +27,7 @@ export default function RegisterPage() {
   return (
     <div>
       <h2>Kayıt Ol</h2>
+      {errorMessage && <p style={{ color: "red" }}>{errorMessage}</p>} {/* Hata mesajını göster */}
       <input
         type="email"
         placeholder="Email"

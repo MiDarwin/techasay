@@ -10,7 +10,6 @@ export async function apiRequest(
     "Content-Type": "application/json",
   };
 
-  // Token varsa Authorization başlığına ekle
   const accessToken = token || localStorage.getItem("access_token");
   if (accessToken) {
     headers["Authorization"] = `Bearer ${accessToken}`;
@@ -23,8 +22,8 @@ export async function apiRequest(
   });
 
   if (!res.ok) {
-    const error = await res.json();
-    throw error;
+    const error = await res.json(); // Hata mesajını JSON olarak al
+    throw error; // Hata mesajını fırlat
   }
 
   return await res.json();
