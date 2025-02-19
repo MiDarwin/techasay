@@ -32,7 +32,7 @@ async def authenticate_user(user: LoginUser):
     # Kullanıcıyı email'e göre kontrol et
     existing_user = await db.users.find_one({"email": user.email})
     if not existing_user:
-        return False, "E-posta adresi sistemde bulunamadı."
+        return False, "Bu e-posta adresi ile bir hesap bulunmamaktadır."
 
     # Şifrenin doğru olup olmadığını kontrol et
     is_valid_password = bcrypt.verify(user.password, existing_user["password"])

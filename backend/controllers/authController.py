@@ -11,9 +11,13 @@ async def register_user(user: User):
     return {"message": f"Kullanıcı başarıyla kaydedildi. Kullanıcı ID: {user_id}"}
 
 async def login_user(user: LoginUser):
+    """
+    Kullanıcı giriş işlemini gerçekleştirir.
+    """
     # Kullanıcıyı doğrula
     is_authenticated, user_data_or_error = await authenticate_user(user)
     if not is_authenticated:
+        # Hata mesajını doğrudan HTTPException ile döndür
         raise HTTPException(status_code=401, detail=user_data_or_error)
 
     # Kullanıcı doğrulandı, Bearer Token oluştur

@@ -12,27 +12,39 @@ export default function RegisterPage() {
 
   const handleRegister = async () => {
     try {
+      // API isteği ile kullanıcı kayıt işlemi
       const data = await apiRequest("/auth/register", "POST", { email, password });
       alert(data.message);
-      router.push("/auth/login");
+      router.push("/auth/login"); // Başarılı ise giriş ekranına yönlendirme
     } catch (error: any) {
-      if (error.detail) {
-        setErrorMessage(error.detail); // Backend'den dönen hata mesajını göster
+      if (error?.detail) {
+        if (Array.isArray(error.detail)) {
+          const firstError = error.detail[0];
+          if (firstError?.msg) {
+            setErrorMessage(firstError.msg);
+          } else if (firstError?.ctx?.reason) {
+            setErrorMessage(firstError.ctx.reason);
+          } else {
+            setErrorMessage("Geçersiz bilgi girdiniz.");
+          }
+        } else {
+          setErrorMessage(error.detail);
+        }
       } else {
         setErrorMessage("Bilinmeyen bir hata oluştu.");
       }
     }
   };
 
+  const handleInputFocus = () => {
+    // Kullanıcı giriş alanına tıkladığında hata mesajını gizler
+    setErrorMessage("");
+  };
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-100">
-      {/* Ortalanmış, yuvarlatılmış bir kutu */}
       <div className="w-full max-w-md bg-gray-200 rounded-lg shadow-lg p-8">
         <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">Kayıt Ol</h2>
-
-        {errorMessage && (
-          <p className="text-red-500 text-center mb-4">{errorMessage}</p>
-        )}
 
         <div className="mb-4">
           <label
@@ -47,6 +59,7 @@ export default function RegisterPage() {
             placeholder="Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            onFocus={handleInputFocus} // Alan odaklandığında hata mesajını gizle
           />
         </div>
 
@@ -63,6 +76,7 @@ export default function RegisterPage() {
             placeholder="Şifre"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            onFocus={handleInputFocus} // Alan odaklandığında hata mesajını gizle
           />
         </div>
 
@@ -72,6 +86,13 @@ export default function RegisterPage() {
         >
           Kayıt Ol
         </button>
+
+        {/* Hata Mesajı - Kayıt Ol Butonunun Altında */}
+        {errorMessage && (
+          <div className="mt-4 bg-red-500 text-white text-sm rounded-lg px-4 py-2 text-center shadow-md">
+            {errorMessage}
+          </div>
+        )}
 
         <p className="mt-4 text-sm text-center text-gray-600">
           Zaten bir hesabınız var mı?{" "}
