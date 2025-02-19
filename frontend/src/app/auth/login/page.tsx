@@ -1,48 +1,44 @@
 "use client";
-
 import { useState } from "react";
-import { login } from "@/lib/api";
-import { useRouter } from "next/navigation";
+import { useRouter } from "next/navigation"; // Next.js Router
+import { apiRequest } from "../../utils/api";
 
-const Login = () => {
+export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const router = useRouter();
+  const router = useRouter(); // Router'ı tanımla
 
   const handleLogin = async () => {
     try {
-      const response = await login(email, password);
-      localStorage.setItem("token", response.access_token);
-      router.push("/dashboard"); // Başarıyla giriş yapınca dashboard'a yönlendir
-    } catch (err) {
-      setError("Giriş başarısız!");
+      const data = await apiRequest("/auth/login", "POST", { email, password });
+      localStorage.setItem("access_token", data.access_token); // Token'ı kaydet
+      alert("Giriş başarılı!");
+      router.push("/permissions/users"); // Giriş sonrası kullanıcılar sayfasına yönlendir
+    } catch (error) {
+      if (error instanceof Error) {
+        alert(error.message);
+      } else {
+        alert("Bilinmeyen bir hata oluştu.");
+      }
     }
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen">
-      <h2 className="text-2xl font-bold">Giriş Yap</h2>
+    <div>
+      <h2>Giriş Yap</h2>
       <input
         type="email"
-        placeholder="E-posta"
+        placeholder="Email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
-        className="border p-2 my-2"
       />
       <input
         type="password"
         placeholder="Şifre"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
-        className="border p-2 my-2"
       />
-      <button onClick={handleLogin} className="bg-green-500 text-white p-2">
-        Giriş Yap
-      </button>
-      {error && <p className="text-red-500">{error}</p>}
+      <button className="button" onClick={handleLogin}>Giriş Yap</button>
     </div>
   );
-};
-
-export default Login;
+}

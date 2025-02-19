@@ -1,6 +1,7 @@
 from models.userModel import User, LoginUser
 from services.authService import save_user, authenticate_user
 from utils.tokenUtils import create_access_token
+from fastapi import HTTPException
 
 async def register_user(user: User):
     user_id = await save_user(user)

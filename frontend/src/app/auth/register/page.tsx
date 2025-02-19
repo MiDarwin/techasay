@@ -1,47 +1,43 @@
 "use client";
-
 import { useState } from "react";
-import { register } from "@/lib/api";
-import { useRouter } from "next/navigation";
+import { useRouter } from "next/navigation"; // Next.js Router
+import { apiRequest } from "../../utils/api";
 
-const Register = () => {
+export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const router = useRouter();
+  const router = useRouter(); // Router'ı tanımla
 
   const handleRegister = async () => {
     try {
-      await register(email, password);
-      router.push("/auth/login"); // Başarıyla kayıt olunca giriş sayfasına yönlendir
-    } catch (err) {
-      setError("Kayıt başarısız!");
+      const data = await apiRequest("/auth/register", "POST", { email, password });
+      alert(data.message);
+      router.push("/auth/login"); // Başarılı kayıt sonrası login sayfasına yönlendirme
+    } catch (error) {
+      if (error instanceof Error) {
+        alert(error.message);
+      } else {
+        alert("Bilinmeyen bir hata oluştu.");
+      }
     }
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen">
-      <h2 className="text-2xl font-bold">Kayıt Ol</h2>
+    <div>
+      <h2>Kayıt Ol</h2>
       <input
         type="email"
-        placeholder="E-posta"
+        placeholder="Email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
-        className="border p-2 my-2"
       />
       <input
         type="password"
         placeholder="Şifre"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
-        className="border p-2 my-2"
       />
-      <button onClick={handleRegister} className="bg-blue-500 text-white p-2">
-        Kayıt Ol
-      </button>
-      {error && <p className="text-red-500">{error}</p>}
+      <button className="button" onClick={handleRegister}>Kayıt Ol</button>
     </div>
   );
-};
-
-export default Register;
+}

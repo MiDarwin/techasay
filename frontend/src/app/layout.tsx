@@ -1,7 +1,20 @@
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+import { ReactNode } from "react";
+
+interface LayoutProps {
+  children: ReactNode;
+}
+
+export default function RootLayout({ children }: LayoutProps) {
   return (
-    <html lang="tr">
-      <body>{children}</body>
+    <html lang="en">
+      <body>
+        <div className="container">
+          <header className="header">
+            <h1>Kullanıcı Yönetimi</h1>
+          </header>
+          {children}
+        </div>
+      </body>
     </html>
   );
 }
