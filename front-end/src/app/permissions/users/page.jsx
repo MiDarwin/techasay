@@ -1,30 +1,33 @@
 "use client";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation"; // Yönlendirme için
 import { apiRequest } from "../../utils/api";
 
 export default function UsersPage() {
-  const [users, setUsers] = useState([]);
+  const [users, setUsers] = useState([]); // Kullanıcı listesi
+  const router = useRouter(); // Next.js yönlendirme özelliği
 
   useEffect(() => {
     const fetchUsers = async () => {
       try {
         const data = await apiRequest("/permissions/users/", "GET");
-        // Kullanıcıları izin sayısına göre çoktan aza sıralıyoruz
         const sortedUsers = data.users.sort(
           (a, b) => b.permissions.length - a.permissions.length
         );
         setUsers(sortedUsers);
       } catch (error) {
-        if (error instanceof Error) {
-          alert(error.message);
-        } else {
-          alert("Bilinmeyen bir hata oluştu.");
-        }
+        console.error("API isteği sırasında bir hata oluştu:", error);
+        alert("Kullanıcı verileri alınırken bir hata oluştu.");
       }
     };
 
     fetchUsers();
   }, []);
+
+  const handleUserClick = (userId) => {
+    // Kullanıcı detay sayfasına yönlendirme
+    router.push(`/permissions/manage?user_id=${userId}`);
+  };
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-8">
@@ -38,8 +41,8 @@ export default function UsersPage() {
             <tr className="bg-blue-500 text-white">
               <th className="py-3 px-4 text-left">Kullanıcı ID</th>
               <th className="py-3 px-4 text-left">Email</th>
-              <th className="py-3 px-4 text-left">İzinler</th>
               <th className="py-3 px-4 text-left">İzin Sayısı</th>
+              <th className="py-3 px-4 text-left">Aksiyon</th>
             </tr>
           </thead>
           <tbody>
@@ -50,8 +53,15 @@ export default function UsersPage() {
               >
                 <td className="py-3 px-4">{user.user_id}</td>
                 <td className="py-3 px-4">{user.email}</td>
-                <td className="py-3 px-4">{user.permissions.join(", ")}</td>
                 <td className="py-3 px-4">{user.permissions.length}</td>
+                <td className="py-3 px-4">
+                  <button
+                    onClick={() => handleUserClick(user.user_id)}
+                    className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition"
+                  >
+                    Detay Gör
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>

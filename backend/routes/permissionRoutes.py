@@ -4,11 +4,32 @@ from fastapi.security import OAuth2PasswordBearer
 from utils.tokenUtils import get_user_id_from_token
 from services.permissionService import get_permissions_by_user_id, get_all_users_with_permissions, \
     update_permissions_by_user_id
+from services.permissionService import get_user_by_id  # Yeni yardımcı fonksiyon
 
 router = APIRouter(prefix="/permissions", tags=["Permissions"])
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
+@router.get("/user/{user_id}")
+async def get_user_details(user_id: int, token: str = Depends(oauth2_scheme)):
+    """
+    Belirtilen kullanıcı ID'sine göre kullanıcı detaylarını döner.
+    """
+    # Token doğrulama
+    current_user_id = get_user_id_from_token(token)
+    if not current_user_id:
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
 
+    # Kullanıcıyı veritabanından al
+    user = await get_user_by_id(user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="Kullanıcı bulunamadı.")
+
+    # Kullanıcı bilgilerini döndür
+    return {
+        "user_id": user["user_id"],
+        "email": user["email"],
+        "permissions": user.get("permissions", [])  # İzinler varsa, yoksa boş liste
+    }
 
 # Body için Pydantic model tanımı
 class UpdatePermissionsRequest(BaseModel):
