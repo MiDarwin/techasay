@@ -15,7 +15,7 @@ export default function LoginPage() {
       const data = await apiRequest("/auth/login", "POST", { email, password });
       localStorage.setItem("access_token", data.access_token); // Token'ı kaydet
       alert("Giriş başarılı!");
-      router.push("/permissions/users");
+      router.push("/homepage");
     } catch (error: any) {
       if (error?.detail) {
         if (Array.isArray(error.detail)) {
