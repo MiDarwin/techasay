@@ -1,55 +1,75 @@
 "use client";
+
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 export default function HomePage() {
   const router = useRouter();
 
   const goToUsersPage = () => {
-    router.push("/permissions/users"); // Kullanıcıları ve izinleri görüntüleme sayfasına yönlendirme
+    router.push("/permissions/users");
   };
 
-  const goToExcelPage = () => {
-    router.push("/tasks/excel"); // Gelecekte Excel dosyalarını okuma sayfası
-  };
-
-  const goToPingPage = () => {
-    router.push("/tasks/ping"); // Gelecekte ping atma sayfası
+  const goToBpetPage = () => {
+    router.push("/bpet");
   };
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-8">
-      <div className="w-full max-w-4xl bg-white rounded-lg shadow-lg p-6">
+      {/* Sol Üst Logo */}
+      <div className="absolute top-6 left-6">
+        <Image
+          src="/images/techasay-logo.png"
+          alt="TechAsay Logo"
+          width={150}
+          height={150}
+          style={{ objectFit: "contain" }}
+        />
+      </div>
+
+      {/* İçerik Kartı */}
+      <div className="w-full max-w-4xl bg-gray-200 rounded-lg shadow-lg p-6 relative">
         <h1 className="text-3xl font-bold text-gray-800 mb-6 text-center">
           Hoş Geldiniz!
         </h1>
         <p className="text-lg text-gray-600 mb-6 text-center">
-          Buradan kullanıcı izinlerini ve site görevlerini yönetebilirsiniz.
+        Gerçekleştirilecek işlemlere aşağıda yer alan butonlar aracılığıyla erişebilirsiniz.
         </p>
 
-        {/* Yönlendirme Butonları */}
+        {/* Profesyonel Butonlar */}
         <div className="flex flex-col gap-4">
+          {/* Bpet İşlemleri */}
+          <button
+            onClick={goToBpetPage}
+            className="flex items-center justify-center gap-3 w-full bg-blue-400 text-white py-2 px-4 text-base font-medium rounded-lg shadow hover:bg-blue-500 transition focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <div className="flex items-center justify-center w-12 h-12 bg-white rounded-lg">
+              <Image
+                src="/images/bpet-logo.png"
+                alt="Bpet Logo"
+                width={32}
+                height={32}
+                className="object-contain"
+              />
+            </div>
+            <span>Bpet İşlemleri</span>
+          </button>
+
           {/* Kullanıcı Sayfasına Git */}
           <button
             onClick={goToUsersPage}
-            className="w-full bg-blue-500 text-white py-3 rounded-lg hover:bg-blue-600 transition focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="flex items-center justify-center gap-3 w-full bg-blue-400 text-white py-2 px-4 text-base font-medium rounded-lg shadow hover:bg-blue-500 transition focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            Kullanıcıları ve İzinleri Yönet
-          </button>
-
-          {/* Excel Dosyalarını Oku */}
-          <button
-            onClick={goToExcelPage}
-            className="w-full bg-green-500 text-white py-3 rounded-lg hover:bg-green-600 transition focus:outline-none focus:ring-2 focus:ring-green-500"
-          >
-            Excel Verilerini Oku
-          </button>
-
-          {/* Ping At */}
-          <button
-            onClick={goToPingPage}
-            className="w-full bg-yellow-500 text-white py-3 rounded-lg hover:bg-yellow-600 transition focus:outline-none focus:ring-2 focus:ring-yellow-500"
-          >
-            Ping Gönder
+            <div className="flex items-center justify-center w-12 h-12 bg-white rounded-lg">
+              <Image
+                src="/images/users-logo.png"
+                alt="Users Logo"
+                width={32}
+                height={32}
+                className="object-contain"
+              />
+            </div>
+            <span>Kullanıcıları ve İzinleri Yönet</span>
           </button>
         </div>
       </div>

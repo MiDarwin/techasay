@@ -6,9 +6,7 @@ import { apiRequest } from "../../utils/api";
 export default function ManagePermissionsPage() {
   const [user, setUser] = useState(null); // Seçilen kullanıcı bilgisi
   const [allPermissions, setAllPermissions] = useState([
-    "read",
-    "write",
-    "delete",
+    "Bpet",
     "permissions_control",
   ]);
   const [selectedPermissions, setSelectedPermissions] = useState([]);
