@@ -1,7 +1,6 @@
 "use client";
 import React from "react";
 import { useState, useEffect } from "react";
-import Image from "next/image";
 import { apiRequest } from "../utils/api";
 
 // API'den gelen veriler için tip tanımlaması
@@ -10,37 +9,56 @@ type BpetData = {
   [key: string]: any; // Dinamik alanlar için
 };
 
+// Türkiye'deki iller listesi
+const iller = [
+  "Adana", "Adıyaman", "Afyonkarahisar", "Ağrı", "Aksaray", "Amasya", "Ankara",
+  "Antalya", "Ardahan", "Artvin", "Aydın", "Balıkesir", "Bartın", "Batman",
+  "Bayburt", "Bilecik", "Bingöl", "Bitlis", "Bolu", "Burdur", "Bursa", "Çanakkale",
+  "Çankırı", "Çorum", "Denizli", "Diyarbakır", "Düzce", "Edirne", "Elazığ", "Erzincan",
+  "Erzurum", "Eskişehir", "Gaziantep", "Giresun", "Gümüşhane", "Hakkari", "Hatay",
+  "Iğdır", "Isparta", "İstanbul", "İzmir", "Kahramanmaraş", "Karabük", "Karaman",
+  "Kars", "Kastamonu", "Kayseri", "Kırıkkale", "Kırklareli", "Kırşehir", "Kilis",
+  "Kocaeli", "Konya", "Kütahya", "Malatya", "Manisa", "Mardin", "Mersin", "Muğla",
+  "Muş", "Nevşehir", "Niğde", "Ordu", "Osmaniye", "Rize", "Sakarya", "Samsun",
+  "Şanlıurfa", "Siirt", "Sinop", "Şırnak", "Sivas", "Tekirdağ", "Tokat", "Trabzon",
+  "Tunceli", "Uşak", "Van", "Yalova", "Yozgat", "Zonguldak"
+];
+
 export default function BpetPage() {
   const [data, setData] = useState<BpetData[]>([]); // API'den gelen veri
   const [filteredData, setFilteredData] = useState<BpetData[]>([]); // Filtrelenmiş veri
   const [loading, setLoading] = useState(true);
-  const [errorMessage, setErrorMessage] = useState("");
   const [searchQuery, setSearchQuery] = useState(""); // Arama sorgusu
-  const [searchField, setSearchField] = useState("Tüm Alanlar"); // Arama yapılacak alan
   const [expandedRow, setExpandedRow] = useState<string | null>(null); // Detaylı gösterilen satır
-  const [columns, setColumns] = useState<string[]>([]); // Excel verisindeki sütun adları
+  const [selectedIl, setSelectedIl] = useState(""); // İl filtresi
+  const [selectedDurum, setSelectedDurum] = useState(""); // Durum filtresi
+
+  // Ana sütunlar
+  const mainColumns = [
+    "Wan IP",
+    "Gsm No",
+    "RT Lokal IP /24",
+    "IPSec Blok",
+    "IPSec Merkez ve Client",
+    "Durum",
+    "ÜNVANI",
+    "İL",
+    "Yetkili Gsm"
+  ];
 
   // Veri çekme işlemi
   useEffect(() => {
     const fetchData = async () => {
       try {
         const response = await apiRequest("/excel/existing-data/", "GET");
-        console.log("API Response:", response); // API'den dönen veriyi kontrol edin
         if (response && Array.isArray(response.data)) {
           setData(response.data);
           setFilteredData(response.data); // Başlangıçta tüm veriyi göster
-
-          // Sütun adlarını JSON anahtarlarından çıkar
-          const sampleRow = response.data[0];
-          if (sampleRow) {
-            setColumns(Object.keys(sampleRow));
-          }
         } else {
           throw new Error("Beklenmeyen veri formatı");
         }
       } catch (error) {
-        console.error("Veri çekme hatası:", error);
-        setErrorMessage("Veriler alınırken bir hata oluştu.");
+        console.error(error);
       } finally {
         setLoading(false);
       }
@@ -48,39 +66,33 @@ export default function BpetPage() {
 
     fetchData();
   }, []);
-// Excel dosyası yükleme işlemi
-const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files || e.target.files.length === 0) return;
 
-    const file = e.target.files[0];
-    const formData = new FormData();
-    formData.append("file", file);
+  // Filtreleme işlemi
+  useEffect(() => {
+    let filtered = data;
 
-    try {
-      await apiRequest("/excel/upload/", "POST", formData);
-      alert("Excel dosyası başarıyla yüklendi!");
-      window.location.reload(); // Excel yüklendiğinde sayfayı yeniler
-    } catch (error) {
-      console.error("Dosya yükleme hatası:", error);
-      alert("Dosya yüklenirken bir hata oluştu.");
+    // İl filtresi
+    if (selectedIl) {
+      filtered = filtered.filter((item) => item["İL"] === selectedIl);
     }
-  };
-  // Arama işlemi
-  const handleSearch = () => {
-    const query = searchQuery.toLowerCase();
-    const filtered = data.filter((item) => {
-      if (searchField === "Tüm Alanlar") {
-        return Object.values(item).some((value) =>
+
+    // Durum filtresi
+    if (selectedDurum) {
+      filtered = filtered.filter((item) => item["Durum"] === selectedDurum);
+    }
+
+    // Genel arama
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter((item) =>
+        Object.values(item).some((value) =>
           String(value).toLowerCase().includes(query)
-        );
-      }
-      return (
-        item[searchField] &&
-        String(item[searchField]).toLowerCase().includes(query)
+        )
       );
-    });
+    }
+
     setFilteredData(filtered);
-  };
+  }, [data, selectedIl, selectedDurum, searchQuery]);
 
   // Detaylı gösterme işlemi
   const toggleRowDetails = (id: string) => {
@@ -89,149 +101,95 @@ const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-8">
-      {/* Sol üst köşeye Bpet logosu */}
-      <div className="absolute top-6 left-6">
-      <Image
-          src="/images/techasay-logo.png" // Logo konumu
-          alt="Bpet Logo"
-          width={170} // Logo genişliği
-          height={170} // Logo yüksekliği
-          style={{
-            objectFit: "contain", // Görselin orantılı görünmesini sağlar
-          }}
-        />
-        <Image
-          src="/images/bpet-logo.png" // Logo konumu
-          alt="Bpet Logo"
-          width={160} // Logo genişliği
-          height={150} // Logo yüksekliği
-          style={{
-            objectFit: "contain", // Görselin orantılı görünmesini sağlar
-          }}
-        />
-      </div>
-
-      <div className="w-full max-w-6xl bg-white rounded-lg shadow-lg p-6 relative">
+      <div className="w-full max-w-7xl bg-white rounded-lg shadow-lg p-6">
         <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
           Bpet İşlemleri
         </h2>
 
-        {/* Excel Dosyası Yükleme Butonu */}
-        <div className="absolute top-6 right-6">
-          <label className="flex items-center gap-2 bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition cursor-pointer">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth="1.5"
-              stroke="currentColor"
-              className="w-5 h-5"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M3 16.5V19.5A2.25 2.25 0 005.25 21H18.75A2.25 2.25 0 0021 19.5V16.5M3 16.5L12 3L21 16.5M3 16.5H21"
-              />
-            </svg>
-            <span>Excel Yükle</span>
-            <input
-              type="file"
-              className="hidden"
-              onChange={handleFileUpload}
-              accept=".xlsx, .xls"
-            />
-          </label>
+        {/* İl ve Durum Filtreleme */}
+        <div className="flex gap-4 mb-6">
+          {/* İl Filtresi */}
+          <select
+            value={selectedIl}
+            onChange={(e) => setSelectedIl(e.target.value)}
+            className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="">Tüm İller</option>
+            {iller.map((il) => (
+              <option key={il} value={il}>
+                {il}
+              </option>
+            ))}
+          </select>
+
+          {/* Durum Filtresi */}
+          <select
+            value={selectedDurum}
+            onChange={(e) => setSelectedDurum(e.target.value)}
+            className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="">Tüm Durumlar</option>
+            <option value="Tamamlandı">Tamamlandı</option>
+            <option value="Tamamlanmadı">Tamamlanmadı</option>
+          </select>
         </div>
 
-        {/* Arama ve Filtreleme */}
+        {/* Genel Arama */}
         <div className="flex items-center gap-4 mb-6">
           <input
             type="text"
             placeholder="Ara..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-1/2 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
-          <select
-            value={searchField}
-            onChange={(e) => setSearchField(e.target.value)}
-            className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="Tüm Alanlar">Tüm Alanlar</option>
-            {columns.map((col) => (
-              <option key={col} value={col}>
-                {col}
-              </option>
-            ))}
-          </select>
-          <button
-            onClick={handleSearch}
-            className="p-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            Ara
-          </button>
         </div>
 
         {/* Tablo */}
-        {loading ? (
-          <p className="text-center text-lg text-gray-600">Yükleniyor...</p>
-        ) : errorMessage ? (
-          <p className="text-center text-red-500">{errorMessage}</p>
-        ) : filteredData.length === 0 ? (
-          <p className="text-center text-gray-600">Eşleşen veri bulunamadı.</p>
-        ) : (
-          <table className="w-full border-collapse table-auto">
-            <thead>
-              <tr className="bg-purple-500 text-white">
-                <th className="py-3 px-4 text-left">Sıra</th>
-                <th className="py-3 px-4 text-left">Wan IP</th>
-                <th className="py-3 px-4 text-left">Durum</th>
-                <th className="py-3 px-4 text-left">Ünvanı</th>
-                <th className="py-3 px-4 text-left">İl</th>
-                <th className="py-3 px-4 text-left">Detaylar</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredData.map((item) => (
-                <React.Fragment key={item._id}>
-                  {/* Ana Satır */}
-                  <tr className="odd:bg-gray-100 even:bg-purple-100">
-                    <td className="py-3 px-4">{item["Sıra"]}</td>
-                    <td className="py-3 px-4">{item["Wan IP"]}</td>
-                    <td className="py-3 px-4">{item["Durum"]}</td>
-                    <td className="py-3 px-4">{item["ÜNVANI"]}</td>
-                    <td className="py-3 px-4">{item["İL"]}</td>
+        <div className="overflow-x-auto">
+          {loading ? (
+            <p className="text-center text-lg text-gray-600">Yükleniyor...</p>
+          ) : filteredData.length === 0 ? (
+            <p className="text-center text-gray-600">Eşleşen veri bulunamadı.</p>
+          ) : (
+            <table className="w-full border-collapse table-auto">
+              <thead>
+                <tr className="bg-purple-500 text-white">
+                  {mainColumns.map((col) => (
+                    <th key={col} className="py-3 px-4 text-left">
+                      {col}
+                    </th>
+                  ))}
+                  <th className="py-3 px-4 text-left">Detaylar</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredData.map((item) => (
+                  <tr
+                    key={item._id}
+                    className="odd:bg-gray-100 even:bg-purple-100"
+                  >
+                    {mainColumns.map((col) => (
+                      <td key={col} className="py-3 px-4">
+                        {item[col]}
+                      </td>
+                    ))}
                     <td className="py-3 px-4">
                       <button
                         onClick={() => toggleRowDetails(item._id)}
                         className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition"
                       >
                         {expandedRow === item._id
-                          ? "Detayı Gizle"
+                          ? "Detayları Gizle"
                           : "Detaylı Göster"}
                       </button>
                     </td>
                   </tr>
-
-                  {/* Detay Satırı */}
-                  {expandedRow === item._id && (
-                    <tr className="bg-gray-200" key={`${item._id}-details`}>
-                      <td colSpan={6} className="py-4 px-6">
-                        <div className="text-sm text-gray-700">
-                          {columns.map((col) => (
-                            <p key={col}>
-                              <strong>{col}:</strong> {item[col]}
-                            </p>
-                          ))}
-                        </div>
-                      </td>
-                    </tr>
-                  )}
-                </React.Fragment>
-              ))}
-            </tbody>
-          </table>
-        )}
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
       </div>
     </div>
   );
