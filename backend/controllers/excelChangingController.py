@@ -1,94 +1,31 @@
-import pandas as pd
-from datetime import datetime
-import os
-import shutil
-import pandas as pd
-import numpy as np
-EXCEL_FILE = "uploaded_excels/WoW.xlsx"
-BACKUP_FOLDER = "backups"
-LOG_FILE = "change_log.txt"
+from fastapi import APIRouter, File, UploadFile, HTTPException, Depends
+from utils.tokenUtils import get_user_id_from_token
+from services.permissionService import get_permissions_by_user_id
+from services.excelService import process_excel_file
+from fastapi.security import OAuth2PasswordBearer
 
-os.makedirs(BACKUP_FOLDER, exist_ok=True)
+router = APIRouter(prefix="/excel", tags=["Excel"])
 
-def backup_excel():
-    """Excel dosyasını yedekle."""
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    backup_path = os.path.join(BACKUP_FOLDER, f"backup_{timestamp}.xlsx")
-    shutil.copy(EXCEL_FILE, backup_path)
-    return backup_path
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 
-def log_change(action, details, user_id):
-    """Değişiklikleri logla."""
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    with open(LOG_FILE, "a") as log_file:
-        log_file.write(f"{timestamp} | User ID: {user_id} | Action: {action} | Details: {details}\n")
+@router.post("/upload/")
+async def upload_excel_file(file: UploadFile = File(...), token: str = Depends(oauth2_scheme)):
+    """
+    Kullanıcı bir Excel dosyası yükler ve veriler MongoDB'ye kaydedilir.
+    """
+    # Kullanıcı token'ini doğrula
+    user_id = get_user_id_from_token(token)
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
 
+    # Kullanıcının Bpet iznini kontrol et
+    permissions = await get_permissions_by_user_id(user_id)
+    if not permissions or "Bpet" not in permissions:
+        raise HTTPException(status_code=403, detail="Permission denied: You do not have Bpet permission.")
 
-async def add_row_to_excel(data, user_id):
-    """Excel dosyasına yeni bir satır ekle."""
-    # Yedek al
-    backup_excel()
-
-    # Excel'i yükle ve yeni satırı ekle
-    df = pd.read_excel(EXCEL_FILE)
-    df = pd.concat([df, pd.DataFrame([data])], ignore_index=True)
-    df.to_excel(EXCEL_FILE, index=False)
-
-    # Log kaydı oluştur
-    log_change("Add", f"New row added: {data}", user_id)
-
-    return {"message": "Row added successfully", "new_row": data}
-
-
-async def update_excel_row(data, user_id):
-    """Excel dosyasındaki bir satırı güncelle."""
-    # Yedek al
-    backup_excel()
-
-    # Gerekli verileri al
-    row_index = data.get("row_index")
-    column_name = data.get("column_name")
-    new_value = data.get("new_value")
-
-    if not row_index or not column_name or new_value is None:
-        raise ValueError("row_index, column_name, and new_value are required.")
-
-    # Excel'i yükle ve güncelleme yap
-    df = pd.read_excel(EXCEL_FILE)
-    old_value = df.at[row_index, column_name]
-    df.at[row_index, column_name] = new_value
-    df.to_excel(EXCEL_FILE, index=False)
-
-    # Log kaydı oluştur
-    log_change(
-        "Update",
-        f"Row {row_index}, Column '{column_name}': '{old_value}' -> '{new_value}'",
-        user_id
-    )
-
-    return {"message": "Row updated successfully", "updated_row": row_index}
-
-
-async def delete_excel_row(row_index, user_id):
-    """Excel dosyasındaki bir satırı sil ve yeniden sıralama yap."""
-    backup_excel()
-
-    df = pd.read_excel(EXCEL_FILE)
-
-    if row_index >= len(df):
-        raise ValueError(f"Row index {row_index} is out of bounds. Max index: {len(df) - 1}")
-
-    deleted_row = df.iloc[row_index].to_dict()
-
-    # Satırı sil
-    df = df.drop(index=row_index).reset_index(drop=True)
-
-    # NaN olan satırları None olarak değiştirelim
-    df = df.applymap(lambda x: None if isinstance(x, float) and np.isnan(x) else x)
-
-    # Excel'e geri yaz
-    df.to_excel(EXCEL_FILE, index=False)
-
-    log_change("Delete", f"Row {row_index} deleted: {deleted_row}", user_id)
-
-    return {"message": "Row deleted successfully", "deleted_row": deleted_row}
+    # Excel dosyasını işle
+    try:
+        result = await process_excel_file(file.file)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
