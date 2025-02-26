@@ -45,7 +45,34 @@ export default function BpetPage() {
     "İL",
     "Yetkili Gsm"
   ];
+// Excel dosyası yükleme işlemi
+const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  if (!e.target.files || e.target.files.length === 0) return;
 
+  const file = e.target.files[0];
+  const formData = new FormData();
+  formData.append("file", file);
+
+  try {
+    const response = await apiRequest("/excel/upload/", "POST", formData);
+
+    // Backend'den gelen mesajı kullanıcıya göster
+    const { mesaj, yeni_kayit_sayisi, tekrar_edilen_kayit_sayisi } = response;
+
+    alert(`
+      ${mesaj}
+      Yeni Kayıt Sayısı: ${yeni_kayit_sayisi}
+      Tekrar Edilen Kayıt Sayısı: ${tekrar_edilen_kayit_sayisi}
+    `);
+
+    window.location.reload(); // Excel yüklendiğinde sayfayı yeniler
+  } catch (error) {
+    console.error("Dosya yükleme hatası:", error);
+
+    // Hata mesajını kullanıcıya göster
+    alert("Dosya yüklenirken bir hata oluştu. Lütfen tekrar deneyin.");
+  }
+};
   // Veri çekme işlemi
   useEffect(() => {
     const fetchData = async () => {
@@ -101,7 +128,9 @@ export default function BpetPage() {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-8">
+      
       <div className="w-full max-w-7xl bg-white rounded-lg shadow-lg p-6">
+        
         <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
           Bpet İşlemleri
         </h2>
@@ -144,7 +173,32 @@ export default function BpetPage() {
             className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
-
+ {/* Excel Dosyası Yükleme Butonu */}
+ <div className="absolute top-6 right-6">
+          <label className="flex items-center gap-2 bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition cursor-pointer">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth="1.5"
+              stroke="currentColor"
+              className="w-5 h-5"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M3 16.5V19.5A2.25 2.25 0 005.25 21H18.75A2.25 2.25 0 0021 19.5V16.5M3 16.5L12 3L21 16.5M3 16.5H21"
+              />
+            </svg>
+            <span>Excel Yükle</span>
+            <input
+              type="file"
+              className="hidden"
+              onChange={handleFileUpload}
+              accept=".xlsx, .xls"
+            />
+          </label>
+        </div>
         {/* Tablo */}
         <div className="overflow-x-auto">
           {loading ? (
@@ -154,7 +208,7 @@ export default function BpetPage() {
           ) : (
             <table className="w-full border-collapse table-auto">
               <thead>
-                <tr className="bg-purple-500 text-white">
+                <tr className="bg-blue-500 text-white">
                   {mainColumns.map((col) => (
                     <th key={col} className="py-3 px-4 text-left">
                       {col}
@@ -167,7 +221,7 @@ export default function BpetPage() {
                 {filteredData.map((item) => (
                   <tr
                     key={item._id}
-                    className="odd:bg-gray-100 even:bg-purple-100"
+                    className="odd:bg-gray-100 even:bg-blue-100"
                   >
                     {mainColumns.map((col) => (
                       <td key={col} className="py-3 px-4">
