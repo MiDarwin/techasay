@@ -1,21 +1,25 @@
 "use client";
+
 import { useState } from "react";
-import { useRouter } from "next/navigation"; // Next.js Router
+import { useRouter } from "next/navigation";
 import { apiRequest } from "../../utils/api";
-import TextInput from "../../components/TextInput"; // Reusable bileşeni içe aktar
+import TextInput from "../../components/TextInput";
+import { Moon, Sun } from "lucide-react";
+import Head from "next/head"; // Google Fonts entegrasyonu için Head
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState(""); // Hata mesajı için state
+  const [darkMode, setDarkMode] = useState(true); // Tema durumu
   const router = useRouter();
 
   const handleLogin = async () => {
     try {
-      const data = await apiRequest("/auth/login", "POST", { email, password });
+      const data = await apiRequest("/user/login", "POST", { email, password });
       localStorage.setItem("access_token", data.access_token); // Token'ı kaydet
       alert("Giriş başarılı!");
-      router.push("/homepage");
+      router.push("/homepage"); // Giriş başarılıysa anasayfaya yönlendir
     } catch (error: any) {
       if (error?.detail) {
         if (Array.isArray(error.detail)) {
@@ -42,65 +46,95 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-100">
-      <div className="w-full max-w-md bg-gray-200 rounded-lg shadow-lg p-8">
-        <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">Giriş Yap</h2>
+    <>
+      {/* Google Fonts'u bağlamak için Head öğesi */}
+      <Head>
+        <link
+          href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap"
+          rel="stylesheet"
+        />
+      </Head>
 
-        <div className="mb-4">
-          <label
-            htmlFor="email"
-            className="block text-sm font-medium text-gray-700 mb-2"
-          >
-            Email
-          </label>
-          <TextInput
-            id="email"
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            onFocus={handleInputFocus} // Alan odaklandığında hata mesajını gizle
-          />
-        </div>
-
-        <div className="mb-6">
-          <label
-            htmlFor="password"
-            className="block text-sm font-medium text-gray-700 mb-2"
-          >
-            Şifre
-          </label>
-          <TextInput
-            id="password"
-            type="password"
-            placeholder="Şifre"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            onFocus={handleInputFocus} // Alan odaklandığında hata mesajını gizle
-          />
-        </div>
-
-        <button
-          onClick={handleLogin}
-          className="w-full bg-blue-500 text-white py-3 rounded-lg hover:bg-blue-600 transition focus:outline-none focus:ring-2 focus:ring-blue-500"
+      <div
+        className={`flex min-h-screen items-center justify-center ${
+          darkMode ? "bg-gray-900" : "bg-white"
+        }`}
+        style={{ fontFamily: "'Open Sans', sans-serif" }} // Font'u tüm sayfaya uyguluyoruz
+      >
+        <div
+          className={`relative w-full max-w-md ${
+            darkMode ? "bg-gray-800 text-white" : "bg-white text-black"
+          } rounded-lg shadow-lg p-8`}
         >
-          Giriş Yap
-        </button>
+          {/* Arkadaki gradient efekti */}
+          <div className="absolute inset-0 rounded-lg bg-gradient-to-br from-purple-500 via-pink-500 to-yellow-500 opacity-20 blur-xl pointer-events-none" />
 
-        {/* Hata Mesajı - Giriş Yap Butonunun Altında */}
-        {errorMessage && (
-          <div className="mt-4 bg-red-500 text-white text-sm rounded-lg px-4 py-2 text-center shadow-md">
-            {errorMessage}
+          {/* Başlık */}
+          <h2 className="text-3xl font-bold text-center mb-6 text-indigo-600">
+            Giriş Yap
+          </h2>
+
+          {/* Form */}
+          <div className="space-y-4">
+            {/* Email Input */}
+            <TextInput
+              id="email"
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              
+            />
+            {/* Password Input */}
+            <TextInput
+              id="password"
+              type="password"
+              placeholder="Şifre"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
           </div>
-        )}
 
-        <p className="mt-4 text-sm text-center text-gray-600">
-          Henüz bir hesabınız yok mu?{" "}
-          <a href="/auth/register" className="text-blue-500 hover:underline">
-            Kayıt Ol
-          </a>
-        </p>
+          {/* Giriş Yap Butonu */}
+          <button
+            onClick={handleLogin}
+            className="w-full mt-4 bg-indigo-600 text-white py-3 rounded-lg hover:bg-indigo-700 transition focus:outline-none"
+          >
+            Giriş Yap
+          </button>
+
+          {/* Hata Mesajı */}
+          {errorMessage && (
+            <div className="mt-4 bg-red-500 text-white text-sm rounded-lg px-4 py-2 text-center shadow-md">
+              {errorMessage}
+            </div>
+          )}
+
+          {/* Kayıt Ol Linki */}
+          <p className="mt-4 text-sm text-center">
+            Henüz bir hesabınız yok mu?{" "}
+            <a
+              href="/auth/register"
+              className="text-indigo-600 hover:underline"
+            >
+              Kayıt Ol
+            </a>
+          </p>
+        </div>
+
+        {/* Tema Değiştirme Butonu */}
+        <button
+          onClick={() => setDarkMode(!darkMode)}
+          title={darkMode ? "Açık Moda Geç" : "Karanlık Moda Geç"}
+          className="fixed bottom-6 left-6 p-3 rounded-full shadow-lg bg-gray-700 hover:bg-gray-600 transition"
+        >
+          {darkMode ? (
+            <Sun className="text-yellow-500" />
+          ) : (
+            <Moon className="text-gray-300" />
+          )}
+        </button>
       </div>
-    </div>
+    </>
   );
 }

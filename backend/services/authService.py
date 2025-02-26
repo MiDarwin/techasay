@@ -21,23 +21,29 @@ async def save_user(user: User):
 
     # Kullanıcıyı veritabanına ekle
     user_dict = user.dict()
-    user_dict["user_id"] = user_id
+    user_dict["_id"] = user_id
     await db.users.insert_one(user_dict)
     return user_id
 
 async def authenticate_user(user: LoginUser):
     """
-    Kullanıcıyı doğrular. E-posta bulunamazsa veya şifre yanlışsa uygun hata mesajı döner.
+    Kullanıcıyı e-posta ve şifre ile doğrular.
     """
-    # Kullanıcıyı email'e göre kontrol et
+    # Veritabanında e-posta adresine göre kullanıcıyı bul
     existing_user = await db.users.find_one({"email": user.email})
     if not existing_user:
         return False, "Bu e-posta adresi ile bir hesap bulunmamaktadır."
 
-    # Şifrenin doğru olup olmadığını kontrol et
+    # Girilen şifre ile kayıtlı şifreyi karşılaştır
     is_valid_password = bcrypt.verify(user.password, existing_user["password"])
     if not is_valid_password:
         return False, "Girilen şifre hatalı."
 
     # Kullanıcı doğrulandı, bilgileri döndür
     return True, existing_user
+
+async def get_user_by_id(user_id: int):
+    """
+    Kullanıcı ID'sine göre kullanıcı bilgilerini döndürür.
+    """
+    return await db.users.find_one({"_id": user_id}, {"_id": 0, "password": 0})  # Şifreyi döndürme

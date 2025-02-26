@@ -5,12 +5,13 @@ from routes.excelChangingRoutes import router as excel_router  # Tek bir isim ye
 from database import init_db
 from fastapi.middleware.cors import CORSMiddleware
 from routes.pingRoutes import router as ping_router
+from routes.bpetHataTakipRoutes import router as bpetHataTakip_router
 
 app = FastAPI()
 
 # Veritabanını başlat
 init_db()
-
+app.include_router(bpetHataTakip_router)
 # Route'ları dahil et
 app.include_router(ping_router)
 app.include_router(auth_router)

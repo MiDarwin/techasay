@@ -25,7 +25,7 @@ export default function TextInput({
       value={value}
       onChange={onChange}
       onFocus={onFocus} // onFocus özelliği eklendi
-      className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+      className="w-full text-black p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:indigo-600"
     />
   );
 }
