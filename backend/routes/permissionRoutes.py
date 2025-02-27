@@ -9,8 +9,9 @@ from services.permissionService import get_user_by_id  # Yeni yardımcı fonksiy
 router = APIRouter(prefix="/permissions", tags=["Permissions"])
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
-@router.get("/user/{user_id}")
-async def get_user_details(user_id: int, token: str = Depends(oauth2_scheme)):
+
+@router.get("/user/{_id}")
+async def get_user_details(_id: int, token: str = Depends(oauth2_scheme)):
     """
     Belirtilen kullanıcı ID'sine göre kullanıcı detaylarını döner.
     """
@@ -20,13 +21,13 @@ async def get_user_details(user_id: int, token: str = Depends(oauth2_scheme)):
         raise HTTPException(status_code=401, detail="Invalid or expired token")
 
     # Kullanıcıyı veritabanından al
-    user = await get_user_by_id(user_id)
+    user = await get_user_by_id(_id)
     if not user:
         raise HTTPException(status_code=404, detail="Kullanıcı bulunamadı.")
 
     # Kullanıcı bilgilerini döndür
     return {
-        "user_id": user["user_id"],
+        "_id": user["_id"],
         "email": user["email"],
         "permissions": user.get("permissions", [])  # İzinler varsa, yoksa boş liste
     }
@@ -36,7 +37,6 @@ class UpdatePermissionsRequest(BaseModel):
     target_user_id: int
     new_permissions: list
 
-
 @router.post("/update/")
 async def update_user_permissions(
         request: UpdatePermissionsRequest,  # Body'den alınacak parametreler
@@ -45,7 +45,7 @@ async def update_user_permissions(
     """
     Başka bir kullanıcının izinlerini güncelle.
     """
-    # JWT'den giriş yapan kullanıcının user_id'sini al
+    # JWT'den giriş yapan kullanıcının _id'sini al
     user_id = get_user_id_from_token(token)
     if not user_id:
         raise HTTPException(status_code=401, detail="Invalid or expired token")
@@ -60,8 +60,7 @@ async def update_user_permissions(
     if not result:
         raise HTTPException(status_code=404, detail="Target user not found.")
 
-    return {"message": f"Permissions updated successfully for user_id: {request.target_user_id}"}
-
+    return {"message": f"Permissions updated successfully for _id: {request.target_user_id}"}
 
 @router.get("/users/")
 async def get_all_users(token: str = Depends(oauth2_scheme)):
@@ -69,7 +68,7 @@ async def get_all_users(token: str = Depends(oauth2_scheme)):
     Kayıtlı kullanıcıları, email ve izinlerini getir.
     Bu işlem yalnızca permissions_control iznine sahip kullanıcılar tarafından yapılabilir.
     """
-    # JWT'den giriş yapan kullanıcının user_id'sini al
+    # JWT'den giriş yapan kullanıcının _id'sini al
     user_id = get_user_id_from_token(token)
     if not user_id:
         raise HTTPException(status_code=401, detail="Invalid or expired token")

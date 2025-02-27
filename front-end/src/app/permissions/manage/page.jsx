@@ -18,15 +18,15 @@ export default function ManagePermissionsPage() {
   const router = useRouter();
 
   useEffect(() => {
-    const userId = searchParams.get("user_id"); // URL'den user_id alınıyor
+    const userId = searchParams.get("_id"); // `_id` parametresi alınıyor
     if (!userId) {
-      router.push("/permissions/users"); // Eğer user_id yoksa geri yönlendir
+      router.push("/permissions/users"); // Eğer `_id` yoksa kullanıcılar sayfasına geri yönlendir
       return;
     }
 
     const fetchUser = async () => {
       try {
-        const data = await apiRequest(`/permissions/user/${userId}`, "GET");
+        const data = await apiRequest(`/permissions/user/${userId}`, "GET"); // Backend'e `_id` ile API isteği
         setUser(data);
         setSelectedPermissions(data.permissions);
       } catch (error) {
@@ -57,12 +57,10 @@ export default function ManagePermissionsPage() {
 
     try {
       await apiRequest("/permissions/update/", "POST", {
-        target_user_id: user.user_id,
+        target_user_id: user._id, // Backend'e `_id` ile izin güncelleme
         new_permissions: selectedPermissions,
       });
-      setSuccessMessage(
-        `İzinler başarıyla güncellendi: ${user.user_id}`
-      );
+      setSuccessMessage(`İzinler başarıyla güncellendi: ${user._id}`);
     } catch (error) {
       console.error("İzinler güncellenirken hata oluştu:", error);
       setErrorMessage(
@@ -84,7 +82,7 @@ export default function ManagePermissionsPage() {
 
         <div className="mb-6">
           <p className="text-lg">
-            <strong>Kullanıcı ID:</strong> {user.user_id}
+            <strong>Kullanıcı ID:</strong> {user._id}
           </p>
           <p className="text-lg">
             <strong>Email:</strong> {user.email}
