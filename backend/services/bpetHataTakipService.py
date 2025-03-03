@@ -35,14 +35,14 @@ async def process_hata_log(file):
 
         # Eğer başarısız sayısı başarılı sayısından fazla ise kritik hata kabul edelim
         if basarisiz > basarili:
-            yeni_kayitlar += 1
             _id = unvani.upper()
             now = datetime.now()
 
-            # Dokümanı kontrol et veya oluştur
+            # Veritabanından mevcut dokümanı kontrol et
             doc = await db.bpet_ping_log.find_one({"_id": _id})
             if not doc:
                 # Eğer doküman yoksa, yeni bir tane oluştur
+                yeni_kayitlar += 1
                 doc = {
                     "_id": _id,
                     "ip_adresleri": [
@@ -61,21 +61,22 @@ async def process_hata_log(file):
             # Eğer doküman varsa, IP adresini kontrol et
             ip_adresleri = doc.get("ip_adresleri", [])
             ip_bulundu = False
+
             for ip_entry in ip_adresleri:
                 if ip_entry["ip"] == ip_adresi:
                     ip_bulundu = True
                     # Mevcut IP için kritik hata tarihini ekle
-                    kritik_listesi = ip_entry.get("kritik_hata_sayisi", [])
-                    kritik_listesi.append(datetime_kayit.strftime("%d.%m.%Y"))
-
-                    # 14 günden eski kayıtları temizle
-                    two_weeks_ago = (now - timedelta(days=14)).date()
-                    kritik_listesi = [
-                        t_str for t_str in kritik_listesi
-                        if datetime.strptime(t_str, "%d.%m.%Y").date() >= two_weeks_ago
-                    ]
-                    ip_entry["kritik_hata_sayisi"] = kritik_listesi
-                    ip_entry["son_kontrol_tarihi"] = now
+                    if datetime_kayit.strftime("%d.%m.%Y") not in ip_entry.get("kritik_hata_sayisi", []):
+                        ip_entry["kritik_hata_sayisi"].append(datetime_kayit.strftime("%d.%m.%Y"))
+                        # 14 günden eski kayıtları temizle
+                        two_weeks_ago = (now - timedelta(days=14)).date()
+                        ip_entry["kritik_hata_sayisi"] = [
+                            t_str for t_str in ip_entry["kritik_hata_sayisi"]
+                            if datetime.strptime(t_str, "%d.%m.%Y").date() >= two_weeks_ago
+                        ]
+                        ip_entry["son_kontrol_tarihi"] = now
+                    else:
+                        tekrar_edilen_kayitlar += 1
                     break
 
             if not ip_bulundu:
@@ -85,6 +86,7 @@ async def process_hata_log(file):
                     "kritik_hata_sayisi": [datetime_kayit.strftime("%d.%m.%Y")],
                     "son_kontrol_tarihi": now
                 })
+                yeni_kayitlar += 1
 
             # Dokümanı güncelle
             doc["ip_adresleri"] = ip_adresleri
@@ -132,9 +134,12 @@ async def get_top_critical_logs_service(limit: int):
     try:
         # MongoDB'den en yüksek kritik hata sayısına göre sıralanmış kayıtları al
         logs_cursor = db.bpet_ping_log.aggregate([
-            {"$addFields": {"kritik_hata_sayisi_uzunluk": {"$size": "$kritik_hata_sayisi"}}},  # Kritik hata uzunluğunu hesapla
-            {"$sort": {"kritik_hata_sayisi_uzunluk": -1}},  # Kritik hata uzunluğuna göre sırala
-            {"$limit": limit}  # İlk `limit` kadar kaydı al
+            # Eğer "kritik_hata_sayisi" alanı bir dizi değilse, varsayılan boş bir dizi ekle
+            {
+                "$addFields": {
+
+                }
+            },
         ])
         # Sıralanmış kayıtları listeye dönüştür
         top_logs = await logs_cursor.to_list(length=limit)

@@ -74,9 +74,22 @@ def clean_mongo_record(record):
 
 
 async def get_existing_excel_data():
-    """MongoDB'deki mevcut Excel verilerini döndür."""
+    """MongoDB'deki mevcut Excel verilerinden sadece ÜNVANI ve İL bilgilerini döndür."""
     # Tüm verileri çek
     data = await db.excel_data.find({}).to_list(length=None)
 
-    # Verileri temizle (NaN veya None değerlerini JSON uyumlu hale getir)
-    return [clean_mongo_record(record) for record in data]
+    # Sadece ÜNVANI ve İL bilgilerini döndür
+    filtered_data = [{"ÜNVANI": record.get("ÜNVANI"), "İL": record.get("İL")} for record in data]
+    return filtered_data
+
+
+async def get_company_details_by_name(company_name: str):
+    """Belirli bir şirketin detaylarını döndür."""
+    # Şirketi veritabanında bul
+    try:
+        company_details = await db.excel_data.find_one({"ÜNVANI": company_name})
+        if company_details:
+            company_details = clean_mongo_record(company_details)  # MongoDB kaydını temizle
+        return company_details
+    except Exception as e:
+        raise Exception(f"Şirket detaylarını getirirken hata oluştu: {str(e)}")
