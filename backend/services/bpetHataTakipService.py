@@ -33,60 +33,76 @@ async def process_hata_log(file):
             print(f"Geçersiz tarih formatı: {tarih} {saat}. Hata: {e}")
             continue
 
-        # (UNVANI, datetime_kayit) kontrolü yap
-        existing_entry = await db.bpet_ping_log.find_one(
-            {"_id": unvani.upper(), "kritik_hata_sayisi": {"$elemMatch": {"$eq": datetime_kayit.strftime("%d.%m.%Y")}}}
-        )
-        if existing_entry:
-            tekrar_edilen_kayitlar += 1
-            continue
-
         # Eğer başarısız sayısı başarılı sayısından fazla ise kritik hata kabul edelim
         if basarisiz > basarili:
             yeni_kayitlar += 1
             _id = unvani.upper()
             now = datetime.now()
 
+            # Dokümanı kontrol et veya oluştur
             doc = await db.bpet_ping_log.find_one({"_id": _id})
             if not doc:
+                # Eğer doküman yoksa, yeni bir tane oluştur
                 doc = {
                     "_id": _id,
-                    "ip_adresi": ip_adresi,
-                    "kritik_hata_sayisi": [],
+                    "ip_adresleri": [
+                        {
+                            "ip": ip_adresi,
+                            "kritik_hata_sayisi": [datetime_kayit.strftime("%d.%m.%Y")],
+                            "son_kontrol_tarihi": now
+                        }
+                    ],
                     "kontrol_durumu": "kontrol_edilmedi",
-                    "son_kontrol_tarihi": None,
                     "son_guncelleme": now
                 }
                 await db.bpet_ping_log.insert_one(doc)
+                continue
 
-            kritik_listesi = doc.get("kritik_hata_sayisi", [])
-            yeni_tarih_str = datetime_kayit.strftime("%d.%m.%Y")
-            kritik_listesi.append(yeni_tarih_str)
+            # Eğer doküman varsa, IP adresini kontrol et
+            ip_adresleri = doc.get("ip_adresleri", [])
+            ip_bulundu = False
+            for ip_entry in ip_adresleri:
+                if ip_entry["ip"] == ip_adresi:
+                    ip_bulundu = True
+                    # Mevcut IP için kritik hata tarihini ekle
+                    kritik_listesi = ip_entry.get("kritik_hata_sayisi", [])
+                    kritik_listesi.append(datetime_kayit.strftime("%d.%m.%Y"))
 
-            # 14 günden eski kayıtları temizle
-            two_weeks_ago = (now - timedelta(days=14)).date()
-            kritik_listesi = [
-                t_str for t_str in kritik_listesi
-                if datetime.strptime(t_str, "%d.%m.%Y").date() >= two_weeks_ago
-            ]
+                    # 14 günden eski kayıtları temizle
+                    two_weeks_ago = (now - timedelta(days=14)).date()
+                    kritik_listesi = [
+                        t_str for t_str in kritik_listesi
+                        if datetime.strptime(t_str, "%d.%m.%Y").date() >= two_weeks_ago
+                    ]
+                    ip_entry["kritik_hata_sayisi"] = kritik_listesi
+                    ip_entry["son_kontrol_tarihi"] = now
+                    break
 
-            doc["kritik_hata_sayisi"] = kritik_listesi
+            if not ip_bulundu:
+                # Eğer IP adresi yoksa, yeni bir IP adresi ekle
+                ip_adresleri.append({
+                    "ip": ip_adresi,
+                    "kritik_hata_sayisi": [datetime_kayit.strftime("%d.%m.%Y")],
+                    "son_kontrol_tarihi": now
+                })
+
+            # Dokümanı güncelle
+            doc["ip_adresleri"] = ip_adresleri
             doc["son_guncelleme"] = now
+            await db.bpet_ping_log.update_one({"_id": _id}, {"$set": doc})
 
-            await db.bpet_ping_log.update_one(
-                {"_id": _id},
-                {"$set": doc}
-            )
-
-            if len(kritik_listesi) >= 5:
+            # Kritik hata kontrolü (2 hafta içindeki hataların sayısı)
+            toplam_kritik_hata = sum(len(ip["kritik_hata_sayisi"]) for ip in ip_adresleri)
+            if toplam_kritik_hata > 5:
                 kritik_hatalar.append(f"Son 2 haftada 5'i aşan kritik hata: {unvani}")
+
+                # Geçmiş loglara taşıma
                 mevcut_gecmis = await db.gecmis_log.find_one({"_id": _id})
                 if not mevcut_gecmis:
                     gecmis_data = {
                         "_id": _id,
-                        "ip_adresi": doc["ip_adresi"],
-                        "kritik_hata_sayisi": kritik_listesi,
-                        "toplam_hata_sayisi": len(kritik_listesi),
+                        "ip_adresleri": ip_adresleri,
+                        "toplam_hata_sayisi": toplam_kritik_hata,
                         "transfer_tarihi": now,
                         "kontrol_notu": ""
                     }
@@ -95,9 +111,8 @@ async def process_hata_log(file):
                     await db.gecmis_log.update_one(
                         {"_id": _id},
                         {"$set": {
-                            "ip_adresi": doc["ip_adresi"],
-                            "kritik_hata_sayisi": kritik_listesi,
-                            "toplam_hata_sayisi": len(kritik_listesi),
+                            "ip_adresleri": ip_adresleri,
+                            "toplam_hata_sayisi": toplam_kritik_hata,
                             "transfer_tarihi": now
                         }}
                     )

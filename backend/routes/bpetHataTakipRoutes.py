@@ -102,3 +102,39 @@ async def get_top_critical_logs(token: str = Depends(oauth2_scheme), limit: int 
     except Exception as e:
         # Genel bir hata oluşursa
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/get-company-errors/{company_id}")
+async def get_company_errors(company_id: str, token: str = Depends(oauth2_scheme)):
+    """
+    Belirli bir şirketin (_id) hata detaylarını getirir.
+    :param company_id: Şirketin eşleşen _id değeri (örn: "HASAN ATEŞ")
+    """
+    try:
+        # Kullanıcı token'ini doğrula
+        user_id = get_user_id_from_token(token)
+        if not user_id:
+            raise HTTPException(status_code=401, detail="Invalid or expired token")
+
+            # Kullanıcının izinlerini kontrol et
+            permissions = await get_permissions_by_user_id(user_id)
+            if not permissions or "Bpet" not in permissions:
+                raise HTTPException(status_code=403, detail="Permission denied: You do not have Bpet permission.")
+
+        # MongoDB'den şirketin hata detaylarını çek
+        company_data = await db.bpet_ping_log.find_one({"_id": company_id.upper()})
+        if not company_data:
+            raise HTTPException(status_code=404, detail="Şirket bulunamadı.")
+
+        # İlgili verileri döndür
+        ip_adresleri = company_data.get("ip_adresleri", [])
+        toplam_hata_sayisi = sum(len(ip.get("kritik_hata_sayisi", [])) for ip in ip_adresleri)
+
+        return {
+            "mesaj": "Şirket hata detayları başarıyla alındı.",
+            "şirket_ismi": company_id,
+            "ip_adresleri": ip_adresleri,
+            "toplam_hata_sayisi": toplam_hata_sayisi
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
