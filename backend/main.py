@@ -6,7 +6,7 @@ from database import init_db
 from fastapi.middleware.cors import CORSMiddleware
 from routes.pingRoutes import router as ping_router
 from routes.bpetHataTakipRoutes import router as bpetHataTakip_router
-
+from routes.company import router as company_router
 app = FastAPI()
 
 # Veritabanını başlat
@@ -17,7 +17,7 @@ app.include_router(ping_router)
 app.include_router(auth_router)
 app.include_router(permission_router)
 app.include_router(excel_router)
-
+app.include_router(company_router)
 # CORS Middleware
 app.add_middleware(
     CORSMiddleware,
