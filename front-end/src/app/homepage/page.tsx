@@ -26,10 +26,10 @@ export default function HomePage() {
     router.push("/permissions/users");
   };
 
-  // BPET sayfasına yönlendirme
-  const goToBpetPage = () => {
-    router.push("/bpet");
-  };
+ // Şirket sayfasına yönlendirme
+ const gotoCompanyPage = () => {
+  router.push("/companies");
+};
 
   // ÜNVANI ve İL filtrelerini uygula
   useEffect(() => {
@@ -152,7 +152,15 @@ export default function HomePage() {
             {darkMode ? "Açık Mod" : "Karanlık Mod"}
           </button>
         </div>
-
+{/* Şirket Ekle Butonu */}
+<div className="mb-8">
+        <button
+          onClick={gotoCompanyPage}
+          className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded"
+        >
+          Şirket Ekle
+        </button>
+      </div>
         {/* Sağ üstte kırmızı ünlem ve scroll kontrolü */}
         {criticalAlertCount > 0 && (
           <div className="absolute top-20 right-20">

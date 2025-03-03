@@ -1,39 +1,48 @@
-import React from "react";
+// src/components/CompanyTable.jsx
 
-const CompanyTable = ({ companies, onDetailsClick, onErrorLogsClick }) => {
+import React from 'react';
+
+const CompanyTable = ({ companies, onEdit, onDelete, darkMode }) => {
   return (
-    <div className="overflow-x-auto w-full max-w-5xl bg-gray-800 rounded-lg shadow-lg">
-      <table className="table-auto w-full text-sm text-gray-400">
-        <thead className="text-xs bg-gray-700 text-gray-400 uppercase">
+    <div className="overflow-x-auto">
+      <table className={`${darkMode ? 'bg-gray-800 text-white' : 'bg-white text-black'} w-full rounded`}>
+        <thead>
           <tr>
-            <th className="px-6 py-3">ÜNVANI</th>
-            <th className="px-6 py-3">İL</th>
-            <th className="px-6 py-3">Durum</th>
-            <th className="px-6 py-3">Aksiyonlar</th>
+            <th className="text-left p-4">ID</th>
+            <th className="text-left p-4">Şirket ID</th>
+            <th className="text-left p-4">Şirket Adı</th>
+            <th className="text-left p-4">İşlemler</th>
           </tr>
         </thead>
         <tbody>
           {companies.map((company) => (
-            <tr key={company._id} className="bg-gray-800 border-b border-gray-700">
-              <td className="px-6 py-4">{company.ÜNVANI}</td>
-              <td className="px-6 py-4">{company.İL}</td>
-              <td className="px-6 py-4">{company.Durum}</td>
-              <td className="px-6 py-4 flex space-x-4">
+            <tr key={company.id} className="border-t border-gray-700">
+              <td className="p-4">{company._id}</td>
+              <td className="p-4">{company.company_id}</td>
+              <td className="p-4">{company.name}</td>
+              <td className="p-4 space-x-2">
                 <button
-                  onClick={() => onDetailsClick(company)}
-                  className="bg-blue-600 px-4 py-2 rounded-lg text-white hover:bg-blue-700"
+                  onClick={() => onEdit(company)}
+                  className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded"
                 >
-                  Şirket Detayları
+                  Güncelle
                 </button>
                 <button
-                  onClick={() => onErrorLogsClick(company)}
-                  className="bg-red-600 px-4 py-2 rounded-lg text-white hover:bg-red-700"
+                  onClick={() => onDelete(company._id)}
+                  className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
                 >
-                  Kritik Hatalar
+                  Sil
                 </button>
               </td>
             </tr>
           ))}
+          {companies.length === 0 && (
+            <tr>
+              <td colSpan="4" className="p-4 text-center">
+                Hiç Şirket Bulunmuyor.
+              </td>
+            </tr>
+          )}
         </tbody>
       </table>
     </div>
