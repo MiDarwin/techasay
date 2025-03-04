@@ -30,7 +30,9 @@ export default function HomePage() {
  const gotoCompanyPage = () => {
   router.push("/companies");
 };
-
+const gotoBranchPage =() =>{
+  router.push("/branches")
+};
   // ÜNVANI ve İL filtrelerini uygula
   useEffect(() => {
     const filtered = companies.filter((company) => {
@@ -159,6 +161,12 @@ export default function HomePage() {
           className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded"
         >
           Şirket Ekle
+        </button>
+        <button
+          onClick={gotoBranchPage}
+          className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded"
+        >
+          Şube Ekle
         </button>
       </div>
         {/* Sağ üstte kırmızı ünlem ve scroll kontrolü */}

@@ -1,6 +1,8 @@
 // src/components/CompanyForm.jsx
 
 import React, { useState, useEffect } from 'react';
+import ReactDOM from 'react-dom';
+import "../styles/styles.css"
 
 const CompanyForm = ({ onSubmit, initialData, isEditMode, onCancel, darkMode }) => {
   const [form, setForm] = useState({
@@ -16,8 +18,8 @@ const CompanyForm = ({ onSubmit, initialData, isEditMode, onCancel, darkMode }) 
   useEffect(() => {
     if (initialData) {
       setForm({
-        name: initialData.name,
-        company_id: initialData.company_id.toString(),
+        name: initialData.name || '',
+        company_id: initialData.company_id?.toString() || '',
       });
     } else {
       setForm({
@@ -70,7 +72,11 @@ const CompanyForm = ({ onSubmit, initialData, isEditMode, onCancel, darkMode }) 
         name: form.name.trim(),
         company_id: parseInt(form.company_id, 10),
       };
-      onSubmit(submissionData);
+      if (isEditMode && initialData && initialData._id) {
+        onSubmit(initialData._id, submissionData); // _id ve updateData birlikte gönderiliyor
+      } else {
+        onSubmit(submissionData); // Yeni ekleme durumunda sadece updateData
+      }
     }
   };
 

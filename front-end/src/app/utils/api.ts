@@ -1,5 +1,3 @@
-// src/utils/api.js
-
 const BASE_URL = "http://127.0.0.1:8000";
 
 export async function apiRequest(
@@ -7,7 +5,7 @@ export async function apiRequest(
   method = "GET",
   body = null,
   token = null
-): Promise<any> {
+) {
   const headers = {};
 
   const accessToken = token || localStorage.getItem("access_token");
@@ -55,3 +53,21 @@ export const updateCompany = (_id, updateData) =>
 
 export const deleteCompany = (_id) =>
   apiRequest(`/companies/${_id}`, "DELETE");
+
+// Şube CRUD İstekleri
+export const createBranch = (branchData) =>
+  apiRequest("/branches/", "POST", branchData);
+
+export const getAllBranches = () => apiRequest("/branches/", "GET");
+
+export const getBranchById = (branch_id) =>
+  apiRequest(`/branches/${branch_id}`, "GET");
+
+export const getBranchesByCompanyId = (company_id) =>
+  apiRequest(`/branches/company/${company_id}`, "GET");
+
+export const updateBranch = (branch_id, updateData) =>
+  apiRequest(`/branches/${branch_id}`, "PUT", updateData);
+
+export const deleteBranch = (branch_id) =>
+  apiRequest(`/branches/${branch_id}`, "DELETE");

@@ -1,8 +1,9 @@
-// src/components/CompanyTable.jsx
-
 import React from 'react';
 
 const CompanyTable = ({ companies, onEdit, onDelete, darkMode }) => {
+  // Debugging: Log companies to inspect their structure
+  console.log("Companies Data:", companies);
+
   return (
     <div className="overflow-x-auto">
       <table className={`${darkMode ? 'bg-gray-800 text-white' : 'bg-white text-black'} w-full rounded`}>
@@ -16,10 +17,17 @@ const CompanyTable = ({ companies, onEdit, onDelete, darkMode }) => {
         </thead>
         <tbody>
           {companies.map((company) => (
-            <tr key={company.id} className="border-t border-gray-700">
+            <tr key={company._id} className="border-t border-gray-700">
               <td className="p-4">{company._id}</td>
-              <td className="p-4">{company.company_id}</td>
-              <td className="p-4">{company.name}</td>
+              <td className="p-4">{typeof company.company_id === 'object' ? JSON.stringify(company.company_id) : company.company_id}</td>
+              <td className="p-4">
+                {typeof company.name === 'object' ? (
+                  // Customize based on the actual structure
+                  `${company.name.first} ${company.name.last}`
+                ) : (
+                  company.name
+                )}
+              </td>
               <td className="p-4 space-x-2">
                 <button
                   onClick={() => onEdit(company)}

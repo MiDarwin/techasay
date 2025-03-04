@@ -1,27 +1,28 @@
-# schemas/branch.py
-
 from pydantic import BaseModel, Field
 from typing import Optional
 from datetime import datetime
 
 class BranchBase(BaseModel):
-    company_id: str = Field(..., example="60d5f484f8d2e30dfc8b4567")
-    address: str = Field(..., example="İstanbul, Kadıköy")
-    city: str = Field(..., example="İstanbul")
-    phone_number: str = Field(..., example="0212 345 67 89")
+    company_id: int
+    branch_name: str  # Şube ismi eklendi
+    address: str
+    city: str
+    phone_number: str
 
 class BranchCreate(BranchBase):
     pass
 
 class BranchUpdate(BaseModel):
-    address: Optional[str] = Field(None, example="Ankara, Çankaya")
-    city: Optional[str] = Field(None, example="Ankara")
-    phone_number: Optional[str] = Field(None, example="0312 345 67 89")
+    branch_name: Optional[str] = None  # Güncellemelerde opsiyonel
+    address: Optional[str] = None
+    city: Optional[str] = None
+    phone_number: Optional[str] = None
 
 class Branch(BranchBase):
-    id: str
+    id: str = Field(alias="_id")
     created_at: datetime
     updated_at: datetime
 
     class Config:
+        allow_population_by_field_name = True
         orm_mode = True
