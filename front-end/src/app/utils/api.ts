@@ -66,8 +66,8 @@ export const getBranchById = (branch_id) =>
 export const getBranchesByCompanyId = (company_id) =>
   apiRequest(`/branches/company/${company_id}`, "GET");
 
-export const updateBranch = (branch_id, updateData) =>
-  apiRequest(`/branches/${branch_id}`, "PUT", updateData);
+export const updateBranch = (_id, updateData) =>
+  apiRequest(`/branches/${_id}`, "PUT", updateData);
 
-export const deleteBranch = (branch_id) =>
-  apiRequest(`/branches/${branch_id}`, "DELETE");
+export const deleteBranch = (_id) =>
+  apiRequest(`/branches/${_id}`, "DELETE");
