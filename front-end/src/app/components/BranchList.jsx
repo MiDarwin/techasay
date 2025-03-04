@@ -1,3 +1,4 @@
+// src/components/BranchList.jsx
 import React, { useState, useEffect } from "react";
 import { getAllBranches, deleteBranch, getAllCompanies } from "../utils/api";
 
@@ -23,7 +24,7 @@ const BranchList = () => {
         // Şirketleri ID'ye göre haritalama
         const companyMap = {};
         data.forEach((company) => {
-          companyMap[company.company_id] = company.company;
+          companyMap[company.company_id] = company.name; // Burada 'name' kullanılıyor
         });
         setCompanies(companyMap);
       } catch (err) {

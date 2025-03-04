@@ -8,6 +8,7 @@ from routes.pingRoutes import router as ping_router
 from routes.bpetHataTakipRoutes import router as bpetHataTakip_router
 from routes.company import router as company_router
 from routes.branch import router as branch_router
+from routes.inventory import router as inventory_router
 app = FastAPI()
 
 # Veritabanını başlat
@@ -20,6 +21,7 @@ app.include_router(permission_router)
 app.include_router(excel_router)
 app.include_router(company_router)
 # CORS Middleware
+app.include_router(inventory_router)
 app.include_router(branch_router)
 app.add_middleware(
     CORSMiddleware,
