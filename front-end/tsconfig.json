@@ -22,6 +22,6 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/app/components/UpdateInventoryModal.jsx", "src/app/components/AddInventoryModal.jsx", "src/app/components/InventoryList.jsx"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/app/components/UpdateInventoryModal.jsx", "src/app/components/AddInventoryModal.jsx", "src/app/components/inventory/InventoryList.jsx"],
   "exclude": ["node_modules"]
 }

@@ -1,34 +1,33 @@
-// AddInventoryModal.jsx
-import React, { useState } from 'react';
-import { createInventory } from '../utils/api';
+// UpdateInventoryModal.jsx
+import React, { useState } from "react";
+import { updateInventory } from "../../utils/api";
 
-const AddInventoryModal = ({ branchId, onClose, onInventoryAdded }) => {
-  const [deviceType, setDeviceType] = useState('');
-  const [deviceModel, setDeviceModel] = useState('');
-  const [quantity, setQuantity] = useState('');
+const UpdateInventoryModal = ({ inventory, onClose, onInventoryUpdated }) => {
+  const [deviceType, setDeviceType] = useState(inventory.device_type);
+  const [deviceModel, setDeviceModel] = useState(inventory.device_model);
+  const [quantity, setQuantity] = useState(inventory.quantity);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const inventoryData = {
-      branch_id: branchId,
+    const updateData = {
       device_type: deviceType,
       device_model: deviceModel,
       quantity: parseInt(quantity, 10),
     };
 
     try {
-      await createInventory(inventoryData);
-      onInventoryAdded();
+      await updateInventory(inventory.id, updateData);
+      onInventoryUpdated();
       onClose();
     } catch (error) {
-      console.error("Envanter eklenirken hata oluştu:", error);
+      console.error("Envanter güncellenirken hata oluştu:", error);
     }
   };
 
   return (
     <div className="modal">
       <div className="modal-content">
-        <h2 className="text-xl font-semibold mb-4">Envanter Ekle</h2>
+        <h2 className="text-xl font-semibold mb-4">Envanteri Güncelle</h2>
         <form onSubmit={handleSubmit}>
           <label className="block mb-2">Ürün Türü:</label>
           <input
@@ -60,9 +59,9 @@ const AddInventoryModal = ({ branchId, onClose, onInventoryAdded }) => {
           <div className="flex justify-end">
             <button
               type="submit"
-              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded mr-2"
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded mr-2"
             >
-              Ekle
+              Güncelle
             </button>
             <button
               type="button"
@@ -78,4 +77,4 @@ const AddInventoryModal = ({ branchId, onClose, onInventoryAdded }) => {
   );
 };
 
-export default AddInventoryModal;
+export default UpdateInventoryModal;
