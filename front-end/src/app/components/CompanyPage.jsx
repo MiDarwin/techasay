@@ -7,6 +7,9 @@ import CompanyForm from './CompanyForm';
 import CompanyTable from './CompanyTable';
 import BranchForm from './BranchForm';
 import BranchTable from './BranchTable';
+import InventoryList from './InventoryList' ; // Envanter Listesi Bileşeni
+import AddInventoryModal from './AddInventoryModal'; // Envanter Ekleme Modalı
+import UpdateInventoryModal from './UpdateInventoryModal';
 import { 
   createCompany, 
   getAllCompanies, 
@@ -15,7 +18,7 @@ import {
   createBranch,
   getAllBranches,
   updateBranch,
-  deleteBranch,
+  deleteBranch,getInventoryByBranch, createInventory, updateInventory, deleteInventory
 } from '../utils/api';
 
 const CompanyPage = () => {
@@ -35,6 +38,12 @@ const CompanyPage = () => {
   const [branchLoading, setBranchLoading] = useState(false); 
   const [isBranchEditMode, setIsBranchEditMode] = useState(false); 
   const [currentBranch, setCurrentBranch] = useState(null); 
+//Envanter verileri
+const [isInventoryAddModalOpen, setIsInventoryAddModalOpen] = useState(false);
+  const [selectedInventory, setSelectedInventory] = useState(null);
+  const [activeInventoryBranch, setActiveInventoryBranch] = useState(null);
+  const [inventories, setInventories] = useState([]); // <-- Initialize inventories
+  const [branchIdForInventory, setBranchIdForInventory] = useState(null);
 
   // Şirket verilerini çekme
   const fetchCompanies = async () => {
@@ -65,6 +74,7 @@ const CompanyPage = () => {
   useEffect(() => {
     fetchCompanies();
     fetchBranches();
+    
   }, []);
 
   // Tema geçişi
@@ -186,7 +196,43 @@ console.log("Güncellenmiş Şirket Verisi:", updateData);
     setIsBranchEditMode(false);
     setCurrentBranch(null);
   };
+// Envanter Ekleme Fonksiyonları
+const openInventoryAddModal = (branch_id) => {
+  setBranchIdForInventory(branch_id);
+  setIsInventoryAddModalOpen(true);
+};
 
+const closeInventoryAddModal = () => {
+  setIsInventoryAddModalOpen(false);
+  setBranchIdForInventory(null);
+};
+
+const handleInventoryAdded = () => {
+  // Envanter eklendikten sonra envanter listesini güncelleyin
+  fetchInventories(activeInventoryBranch);
+};
+
+const handleInventoryUpdated = () => {
+  // Envanter güncellendikten sonra envanter listesini güncelleyin
+  fetchInventories(activeInventoryBranch);
+  setSelectedInventory(null);
+};
+
+// Envanter Listeleme Fonksiyonu
+const fetchInventories = async (branchId) => {
+  try {
+    const data = await getInventoryByBranch(branchId); // API çağrısı
+    setInventories(data);
+  } catch (error) {
+    console.error("Envanterler alınırken hata oluştu:", error);
+  }
+};
+
+useEffect(() => {
+  if (activeTab === 'inventory' && activeInventoryBranch) {
+    fetchInventories(activeInventoryBranch);
+  }
+}, [activeTab, activeInventoryBranch]);
   return (
     <div className={darkMode ? "dark" : ""}>
       <div className={`min-h-screen ${darkMode ? "bg-gray-900" : "bg-white"} text-gray-800 dark:text-white transition-colors duration-300`}>
@@ -217,13 +263,23 @@ console.log("Güncellenmiş Şirket Verisi:", updateData);
             </button>
             <button
               onClick={() => setActiveTab('branch')}
-              className={`px-6 py-3 rounded-md font-semibold transition-colors duration-300 ${
+              className={`mr-4 px-6 py-3 rounded-md font-semibold transition-colors duration-300 ${
                 activeTab === 'branch'
                   ? 'bg-indigo-600 text-white'
                   : 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600'
               }`}
             >
               Şube Ekle
+            </button>
+            <button
+              onClick={() => setActiveTab('inventory')}
+              className={`px-6 py-3 rounded-md font-semibold transition-colors duration-300 ${
+                activeTab === 'inventory'
+                  ? 'bg-indigo-600 text-white'
+                  : 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600'
+              }`}
+            >
+              Envanter
             </button>
           </div>
 
@@ -283,6 +339,71 @@ console.log("Güncellenmiş Şirket Verisi:", updateData);
               />
             </div>
           )}
+          {/* Envanter Yönetimi */}
+          {activeTab === 'inventory' && (
+            <div className="space-y-6">
+              {/* Şube Seçimi */}
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Envanterlerini Görüntülemek İstediğiniz Şubeyi Seçin:
+                </label>
+                <select
+                  value={activeInventoryBranch || ''}
+                  onChange={(e) => setActiveInventoryBranch(e.target.value)}
+                  className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+                >
+                  <option value="" disabled>
+                    Şube Seçin
+                  </option>
+                  {branches.map((branch) => (
+                    <option key={branch._id} value={branch._id}>
+                      {branch.branchName}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Envanter Listesi */}
+              {activeInventoryBranch && (
+  <div>
+    <div className="flex justify-between items-center mb-4">
+      <h2 className="text-2xl font-semibold">Envanter Listesi</h2>
+      <button
+        onClick={() => openInventoryAddModal(activeInventoryBranch)}
+        className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded"
+      >
+        Envanter Ekle
+      </button>
+    </div>
+
+    {/* InventoryList bileşenini burada çağırmalısın */}
+    <InventoryList 
+      branchId={activeInventoryBranch} 
+      onEdit={setSelectedInventory} 
+      //onDelete={handleInventoryDeleted}
+    />
+  </div>
+)}
+
+              {/* Envanter Ekleme Modalı */}
+              {isInventoryAddModalOpen && (
+                <AddInventoryModal
+                  branchId={branchIdForInventory}
+                  onClose={closeInventoryAddModal}
+                  onInventoryAdded={handleInventoryAdded}
+                />
+              )}
+
+              {/* Envanter Güncelleme Modalı */}
+              {selectedInventory && (
+                <UpdateInventoryModal
+                  inventory={selectedInventory}
+                  onClose={() => setSelectedInventory(null)}
+                  onInventoryUpdated={handleInventoryUpdated}
+                />
+              )}
+            </div>
+            )}
         </main>
       </div>
     </div>

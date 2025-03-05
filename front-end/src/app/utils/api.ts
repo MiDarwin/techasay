@@ -71,3 +71,18 @@ export const updateBranch = (_id, updateData) =>
 
 export const deleteBranch = (_id) =>
   apiRequest(`/branches/${_id}`, "DELETE");
+// ** Envanter CRUD İstekleri **
+export const createInventory = (inventoryData) =>
+  apiRequest("/inventory/", "POST", inventoryData);
+
+export const getInventoryByBranch = (branch_id) =>
+  apiRequest(`/inventory/branch/${branch_id}`, "GET");
+
+export const getInventoryById = (inventory_id) =>
+  apiRequest(`/inventory/${inventory_id}`, "GET");
+
+export const updateInventory = (inventory_id, updateData) =>
+  apiRequest(`/inventory/${inventory_id}`, "PUT", updateData);
+
+export const deleteInventory = (inventory_id) =>
+  apiRequest(`/inventory/${inventory_id}`, "DELETE");

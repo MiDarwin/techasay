@@ -20,7 +20,7 @@ const BranchTable = ({ branches, companies, onEdit, onDelete }) => {
         </thead>
         <tbody>
           {branches.map((branch) => (
-            <tr key={branch.id}>
+            <tr key={branch._id}>
               <td className='py-2 px-4 border-b'>{branch._id}</td>
               <td className="py-2 px-4 border-b">{branch.branch_name}</td>
               <td className="py-2 px-4 border-b">{companies[branch.company_id]}</td>
@@ -35,7 +35,7 @@ const BranchTable = ({ branches, companies, onEdit, onDelete }) => {
                   Düzenle
                 </button>
                 <button
-                  onClick={() => onDelete(branch.id)}
+                  onClick={() => onDelete(branch._id)}
                   className="bg-red-500 text-white px-3 py-1 rounded-md"
                 >
                   Sil
