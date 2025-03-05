@@ -1,24 +1,32 @@
 // src/components/BranchForm.jsx
 
-import React, { useState, useEffect } from 'react';
-import PropTypes from 'prop-types';
+import React, { useState, useEffect } from "react";
+import PropTypes from "prop-types";
 
-const BranchForm = ({ onSubmit, companies, initialData = {}, isEditMode, onCancel }) => {
-  const [companyId, setCompanyId] = useState(initialData.company_id || '');
-  const [branchName, setBranchName] = useState(initialData.branch_name || '');
-  const [address, setAddress] = useState(initialData.address || '');
-  const [city, setCity] = useState(initialData.city || '');
-  const [phoneNumber, setPhoneNumber] = useState(initialData.phone_number || '');
-  const [error, setError] = useState('');
+const BranchForm = ({
+  onSubmit,
+  companies,
+  initialData = {},
+  isEditMode,
+  onCancel,
+}) => {
+  const [companyId, setCompanyId] = useState(initialData.company_id || "");
+  const [branchName, setBranchName] = useState(initialData.branch_name || "");
+  const [address, setAddress] = useState(initialData.address || "");
+  const [city, setCity] = useState(initialData.city || "");
+  const [phoneNumber, setPhoneNumber] = useState(
+    initialData.phone_number || ""
+  );
+  const [error, setError] = useState("");
 
   // initialData değiştiğinde form alanlarını güncelle
   useEffect(() => {
-    setCompanyId(initialData.company_id || '');
-    setBranchName(initialData.branch_name || '');
-    setAddress(initialData.address || '');
-    setCity(initialData.city || '');
-    setPhoneNumber(initialData.phone_number || '');
-    setError('');
+    setCompanyId(initialData.company_id || "");
+    setBranchName(initialData.branch_name || "");
+    setAddress(initialData.address || "");
+    setCity(initialData.city || "");
+    setPhoneNumber(initialData.phone_number || "");
+    setError("");
   }, [initialData]);
 
   const handleSubmit = async (e) => {
@@ -26,16 +34,16 @@ const BranchForm = ({ onSubmit, companies, initialData = {}, isEditMode, onCance
 
     // Form Validasyonu
     if (!companyId || !branchName || !address || !city || !phoneNumber) {
-      setError('Lütfen tüm alanları doldurun.');
+      setError("Lütfen tüm alanları doldurun.");
       return;
     }
 
     // Telefon Numarası Formatı Doğrulama
     // Türkiye mobil numaraları için: +90 veya 0 olmadan 10 hane, başlangıç 5-9
     const phoneRegex = /^(\+90|0)?[5-9]\d{9}$/;
-    const normalizedPhoneNumber = phoneNumber.replace(/\s/g, ''); // Boşlukları kaldır
+    const normalizedPhoneNumber = phoneNumber.replace(/\s/g, ""); // Boşlukları kaldır
     if (!phoneRegex.test(normalizedPhoneNumber)) {
-      setError('Geçerli bir telefon numarası girin.');
+      setError("Geçerli bir telefon numarası girin.");
       return;
     }
 
@@ -51,59 +59,54 @@ const BranchForm = ({ onSubmit, companies, initialData = {}, isEditMode, onCance
 
       // Formu sıfırla (sadece ekleme modunda)
       if (!isEditMode) {
-        setCompanyId('');
-        setBranchName('');
-        setAddress('');
-        setCity('');
-        setPhoneNumber('');
+        setCompanyId("");
+        setBranchName("");
+        setAddress("");
+        setCity("");
+        setPhoneNumber("");
       }
 
-      setError('');
+      setError("");
     } catch (submissionError) {
-      setError('Şubeyi eklerken veya güncellerken bir hata oluştu.');
+      setError("Şubeyi eklerken veya güncellerken bir hata oluştu.");
     }
   };
 
   return (
     <div className="bg-white dark:bg-gray-800 p-6 rounded-md shadow-md">
       <h2 className="text-xl font-bold mb-4 text-indigo-600 dark:text-indigo-400">
-        {isEditMode ? 'Şubeyi Güncelle' : 'Yeni Şube Ekle'}
+        {isEditMode ? "Şubeyi Güncelle" : "Yeni Şube Ekle"}
       </h2>
       {error && (
-        <div className="bg-red-500 text-white p-2 rounded mb-4">
-          {error}
-        </div>
+        <div className="bg-red-500 text-white p-2 rounded mb-4">{error}</div>
       )}
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Şirket Seçimi */}
         <div>
-          <label htmlFor="companyId" className="block text-gray-700 dark:text-gray-200 mb-2">
+          <label
+            htmlFor="companyId"
+            className="block text-gray-700 dark:text-gray-200 mb-2"
+          >
             Şirket Seçin
           </label>
-          <select
+          <input
             id="companyId"
+            type="text"
             value={companyId}
             onChange={(e) => setCompanyId(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 
-                       text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full px-3 py-2 border rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600 
+                       text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+            placeholder="Şube Adı Girin"
             required
-          >
-            <option value="">Şirket seçiniz...</option>
-            {companies && companies.length > 0 ? (
-              companies.map((company) => (
-                <option key={company.company_id} value={company.company_id}>
-                  {company.name} {/* Şirket adını göster */}
-                </option>
-              ))
-            ) : (
-              <option disabled>Şirket bulunamadı</option>
-            )}
-          </select>
+          />
         </div>
 
         {/* Şube Adı */}
         <div>
-          <label htmlFor="branchName" className="block text-gray-700 dark:text-gray-200 mb-2">
+          <label
+            htmlFor="branchName"
+            className="block text-gray-700 dark:text-gray-200 mb-2"
+          >
             Şube Adı
           </label>
           <input
@@ -120,7 +123,10 @@ const BranchForm = ({ onSubmit, companies, initialData = {}, isEditMode, onCance
 
         {/* Adres */}
         <div>
-          <label htmlFor="address" className="block text-gray-700 dark:text-gray-200 mb-2">
+          <label
+            htmlFor="address"
+            className="block text-gray-700 dark:text-gray-200 mb-2"
+          >
             Adres
           </label>
           <input
@@ -137,7 +143,10 @@ const BranchForm = ({ onSubmit, companies, initialData = {}, isEditMode, onCance
 
         {/* Şehir */}
         <div>
-          <label htmlFor="city" className="block text-gray-700 dark:text-gray-200 mb-2">
+          <label
+            htmlFor="city"
+            className="block text-gray-700 dark:text-gray-200 mb-2"
+          >
             Şehir
           </label>
           <input
@@ -154,7 +163,10 @@ const BranchForm = ({ onSubmit, companies, initialData = {}, isEditMode, onCance
 
         {/* Telefon Numarası */}
         <div>
-          <label htmlFor="phoneNumber" className="block text-gray-700 dark:text-gray-200 mb-2">
+          <label
+            htmlFor="phoneNumber"
+            className="block text-gray-700 dark:text-gray-200 mb-2"
+          >
             Telefon Numarası
           </label>
           <input
@@ -184,7 +196,7 @@ const BranchForm = ({ onSubmit, companies, initialData = {}, isEditMode, onCance
             type="submit"
             className="bg-indigo-500 text-white py-2 px-4 rounded-md hover:bg-indigo-600 transition duration-200"
           >
-            {isEditMode ? 'Güncelle' : 'Ekle'}
+            {isEditMode ? "Güncelle" : "Ekle"}
           </button>
         </div>
       </form>
@@ -197,7 +209,7 @@ BranchForm.propTypes = {
   companies: PropTypes.arrayOf(
     PropTypes.shape({
       company_id: PropTypes.number.isRequired, // Şirket ID'si
-      name: PropTypes.string.isRequired,       // Şirket adı
+      name: PropTypes.string.isRequired, // Şirket adı
     })
   ).isRequired,
   initialData: PropTypes.shape({

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
-import "../styles/styles.css"
+import "../../styles/styles.css"
 
 const CompanyForm = ({ onSubmit, initialData, isEditMode, onCancel, darkMode }) => {
   const [form, setForm] = useState({

@@ -3,10 +3,10 @@
 "use client"; // Next.js 13 için client component olduğunu belirtir
 
 import React, { useState, useEffect } from 'react';
-import CompanyForm from './CompanyForm';
-import CompanyTable from './CompanyTable';
-import BranchForm from './BranchForm';
-import BranchTable from './BranchTable';
+import CompanyForm from './company/CompanyForm';
+import CompanyTable from './company/CompanyTable';
+import BranchForm from './branch/BranchForm';
+import BranchTable from './branch/BranchTable';
 import InventoryList from './InventoryList' ; // Envanter Listesi Bileşeni
 import AddInventoryModal from './AddInventoryModal'; // Envanter Ekleme Modalı
 import UpdateInventoryModal from './UpdateInventoryModal';

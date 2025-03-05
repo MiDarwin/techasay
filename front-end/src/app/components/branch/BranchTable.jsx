@@ -1,7 +1,7 @@
 // src/components/BranchTable.jsx
 
-import React from 'react';
-import PropTypes from 'prop-types';
+import React from "react";
+import PropTypes from "prop-types";
 
 const BranchTable = ({ branches, companies, onEdit, onDelete }) => {
   return (
@@ -9,7 +9,7 @@ const BranchTable = ({ branches, companies, onEdit, onDelete }) => {
       <table className="min-w-full bg-white dark:bg-gray-800">
         <thead>
           <tr>
-          <th className="py-2 px-4 border-b">Şube ID</th>
+            <th className="py-2 px-4 border-b">Şube ID</th>
             <th className="py-2 px-4 border-b">Şube Adı</th>
             <th className="py-2 px-4 border-b">Şirket Adı</th>
             <th className="py-2 px-4 border-b">Adres</th>
@@ -21,9 +21,9 @@ const BranchTable = ({ branches, companies, onEdit, onDelete }) => {
         <tbody>
           {branches.map((branch) => (
             <tr key={branch._id}>
-              <td className='py-2 px-4 border-b'>{branch._id}</td>
+              <td className="py-2 px-4 border-b">{branch._id}</td>
               <td className="py-2 px-4 border-b">{branch.branch_name}</td>
-              <td className="py-2 px-4 border-b">{companies[branch.company_id]}</td>
+              <td className="py-2 px-4 border-b">{branch.company_id}</td>
               <td className="py-2 px-4 border-b">{branch.address}</td>
               <td className="py-2 px-4 border-b">{branch.city}</td>
               <td className="py-2 px-4 border-b">{branch.phone_number}</td>
