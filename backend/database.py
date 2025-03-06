@@ -42,10 +42,23 @@ def branch_helper(branch) -> dict:
         "updated_at": branch["updated_at"],
     }
 
-def inventory_helper(inventory) -> dict:
+
+async def inventory_helper(inventory) -> dict:
+    # 🔥 branch_id'yi ObjectId'ye çevir
+    branch_id = ObjectId(inventory["branch_id"])
+
+    # 🔥 MongoDB'de branch_id ile eşleşen şubeyi bul
+    branch = await branch_collection.find_one({"_id": branch_id})
+
+    # 🔥 Eğer branch bulunursa, branch_name'i al; bulunmazsa "Bilinmeyen Şube" yap
+    branch_name = branch.get("branch_name", "Bilinmeyen Şube") if branch else "Bilinmeyen Şube"
+    print("Branch:", branch)
+    print("Branch name:", branch_name)
+
     return {
         "id": str(inventory["_id"]),
         "branch_id": str(inventory["branch_id"]),
+        "branch_name": branch_name,  # ✅ Artık doğru bir şekilde ekleniyor
         "device_type": inventory["device_type"],
         "device_model": inventory.get("device_model", ""),
         "quantity": inventory.get("quantity", 0),
@@ -53,6 +66,7 @@ def inventory_helper(inventory) -> dict:
         "created_at": inventory.get("created_at", datetime.utcnow()),
         "updated_at": inventory.get("updated_at", datetime.utcnow()),
     }
+
 
 async def create_indexes():
     # Şirket koleksiyonu için indeksler

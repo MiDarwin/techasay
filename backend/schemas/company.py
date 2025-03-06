@@ -19,6 +19,13 @@ class CompanyCreate(CompanyBase):
 
 class CompanyUpdate(BaseModel):
     name: Optional[str] = Field(None, example="XYZ Şirketi")
+    company_id: Optional[int] = Field(None, example=100002)
+
+    @validator('company_id', pre=True, always=True)
+    def company_id_must_be_six_digits(cls, v):
+        if v is not None and not (100000 <= v <= 999999):
+            raise ValueError('company_id must be a 6-digit number')
+        return v
 
 class Company(CompanyBase):
     id: str = Field(..., alias="_id")  # _id'yi id olarak haritalandırın

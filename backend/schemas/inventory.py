@@ -1,5 +1,3 @@
-# schemas/inventory.py
-
 from pydantic import BaseModel, Field
 from typing import Optional, Dict
 from datetime import datetime
@@ -29,8 +27,9 @@ class InventoryInDB(InventoryBase):
     class Config:
         orm_mode = True
 
+# 🔥 branch_name alanını Inventory şemasına ekledik
 class Inventory(InventoryInDB):
-    pass
+    branch_name: Optional[str] = Field(None, example="Ankara Şubesi")  # ✅ branch_name eklendi
 
 # Yeni arama modeli
 class InventorySearch(BaseModel):

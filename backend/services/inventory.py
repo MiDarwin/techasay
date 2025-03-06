@@ -23,11 +23,10 @@ async def add_inventory(inventory_data: InventoryCreate) -> dict:
 
 # Şubeye Ait Envanterleri Getirme
 async def get_inventory_by_branch(branch_id: str) -> List[dict]:
-    inventories = []
-    cursor = inventory_collection.find({"branch_id": branch_id})
-    async for inventory in cursor:
-        inventories.append(inventory_helper(inventory))
-    return inventories
+    inventories = await inventory_collection.find({"branch_id": branch_id}).to_list(length=None)
+    processed_inventories = [await inventory_helper(inv) for inv in inventories]
+    print("Processed Inventories:", processed_inventories)  # 🔥 İşlenmiş veriyi kontrol edin
+    return processed_inventories
 
 
 # Envanteri Güncelleme
@@ -55,7 +54,7 @@ async def delete_inventory(inventory_id: str) -> bool:
 async def get_inventory_by_id(inventory_id: str) -> Optional[dict]:
     inventory = await inventory_collection.find_one({"_id": ObjectId(inventory_id)})
     if inventory:
-        return inventory_helper(inventory)
+        return await inventory_helper(inventory)
     return None
 
 
