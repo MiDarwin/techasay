@@ -1,5 +1,3 @@
-// src/components/BranchForm.jsx
-
 import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 
@@ -10,7 +8,7 @@ const BranchForm = ({
   isEditMode,
   onCancel,
 }) => {
-  const [companyId, setCompanyId] = useState(initialData.company_id || "");
+  const [companyId, setCompanyId] = useState(initialData.company_id || ""); // company_id tutuluyor
   const [branchName, setBranchName] = useState(initialData.branch_name || "");
   const [address, setAddress] = useState(initialData.address || "");
   const [city, setCity] = useState(initialData.city || "");
@@ -39,7 +37,6 @@ const BranchForm = ({
     }
 
     // Telefon Numarası Formatı Doğrulama
-    // Türkiye mobil numaraları için: +90 veya 0 olmadan 10 hane, başlangıç 5-9
     const phoneRegex = /^(\+90|0)?[5-9]\d{9}$/;
     const normalizedPhoneNumber = phoneNumber.replace(/\s/g, ""); // Boşlukları kaldır
     if (!phoneRegex.test(normalizedPhoneNumber)) {
@@ -50,7 +47,7 @@ const BranchForm = ({
     try {
       // Hata yoksa, onSubmit fonksiyonunu çağır
       await onSubmit({
-        company_id: parseInt(companyId, 10),
+        company_id: parseInt(companyId, 10), // İşlemler için company_id gönderiliyor
         branch_name: branchName,
         address,
         city,
@@ -89,16 +86,23 @@ const BranchForm = ({
           >
             Şirket Seçin
           </label>
-          <input
+          <select
             id="companyId"
-            type="text"
-            value={companyId}
-            onChange={(e) => setCompanyId(e.target.value)}
+            value={companyId} // company_id burada tutuluyor
+            onChange={(e) => setCompanyId(e.target.value)} // company_id'yi güncelliyoruz
             className="w-full px-3 py-2 border rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600 
                        text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-            placeholder="Şirket Adı Seçin"
             required
-          />
+          >
+            <option value="" disabled>
+              Şirket Adı Seçin
+            </option>
+            {companies.map((company) => (
+              <option key={company.company_id} value={company.company_id}>
+                {company.name} {/* Kullanıcıya company_name gösteriliyor */}
+              </option>
+            ))}
+          </select>
         </div>
 
         {/* Şube Adı */}
@@ -208,8 +212,8 @@ BranchForm.propTypes = {
   onSubmit: PropTypes.func.isRequired,
   companies: PropTypes.arrayOf(
     PropTypes.shape({
-      company_id: PropTypes.number.isRequired, // Şirket ID'si
-      name: PropTypes.string.isRequired, // Şirket adı
+      company_id: PropTypes.number.isRequired,
+      name: PropTypes.string.isRequired,
     })
   ).isRequired,
   initialData: PropTypes.shape({

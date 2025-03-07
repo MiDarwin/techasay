@@ -8,34 +8,44 @@ import {
   updateBranch,
   deleteBranch,
   getInventoryByBranch,
+  getAllCompanies,
 } from "../../utils/api";
 
-  const BranchManager = () => {
-    const [branches, setBranches] = useState([]);
-    const [branchError, setBranchError] = useState("");
-    const [isBranchEditMode, setIsBranchEditMode] = useState(false);
-    const [currentBranch, setCurrentBranch] = useState(null);
-    const [companies, setCompanies] = useState([]);
-    const [branchLoading, setBranchLoading] = useState(false); 
+const BranchManager = () => {
+  const [branches, setBranches] = useState([]);
+  const [branchError, setBranchError] = useState("");
+  const [isBranchEditMode, setIsBranchEditMode] = useState(false);
+  const [currentBranch, setCurrentBranch] = useState(null);
+  const [companies, setCompanies] = useState([]);
+
+  const [branchLoading, setBranchLoading] = useState(false);
   const fetchBranches = async () => {
-      try {
-        setBranchLoading(true);
-        const data = await getAllBranches();
-        setBranches(data);
-        setBranchLoading(false);
-      } catch (err) {
-        setBranchError(err.detail || 'Şubeler alınırken bir hata oluştu.');
-        setBranchLoading(false);
-      }
+    try {
+      setBranchLoading(true);
+      const data = await getAllBranches();
+      setBranches(data);
+      setBranchLoading(false);
+    } catch (err) {
+      setBranchError(err.detail || "Şubeler alınırken bir hata oluştu.");
+      setBranchLoading(false);
+    }
+  };
+  const fetchCompanies = async () => {
+    try {
+      const data = await getAllCompanies(); // Şirketleri backend'den çekiyoruz
+      setCompanies(data);
+    } catch (err) {
+      console.error("Şirketler alınırken bir hata oluştu:", err);
+    }
   };
   // Şube ekleme
   const handleAddBranch = async (branchData) => {
     try {
       await createBranch(branchData);
       fetchBranches();
-      setBranchError('');
+      setBranchError("");
     } catch (err) {
-      setBranchError(err.detail || 'Şube eklenirken bir hata oluştu.');
+      setBranchError(err.detail || "Şube eklenirken bir hata oluştu.");
     }
   };
 
@@ -46,27 +56,29 @@ import {
       fetchBranches();
       setIsBranchEditMode(false);
       setCurrentBranch(null);
-      setBranchError('');
+      setBranchError("");
     } catch (err) {
-      console.error('Şube güncellenirken hata oluştu:', err);
+      console.error("Şube güncellenirken hata oluştu:", err);
       if (err.response && err.response.data && err.response.data.detail) {
-        const errorMessages = err.response.data.detail.map(detail => detail.msg).join(', ');
+        const errorMessages = err.response.data.detail
+          .map((detail) => detail.msg)
+          .join(", ");
         setBranchError(errorMessages);
       } else {
-        setBranchError('Şube güncellenirken bir hata oluştu.');
+        setBranchError("Şube güncellenirken bir hata oluştu.");
       }
     }
   };
 
   // Şube silme
   const handleDeleteBranch = async (_id) => {
-    if (window.confirm('Bu şubeyi silmek istediğinize emin misiniz?')) {
+    if (window.confirm("Bu şubeyi silmek istediğinize emin misiniz?")) {
       try {
         await deleteBranch(_id);
         fetchBranches();
-        setBranchError('');
+        setBranchError("");
       } catch (err) {
-        setBranchError(err.detail || 'Şube silinirken bir hata oluştu.');
+        setBranchError(err.detail || "Şube silinirken bir hata oluştu.");
       }
     }
   };
@@ -82,8 +94,9 @@ import {
     setIsBranchEditMode(false);
     setCurrentBranch(null);
   };
-  
+
   useEffect(() => {
+    fetchCompanies();
     fetchBranches();
   }, []);
 

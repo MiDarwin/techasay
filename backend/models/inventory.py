@@ -18,8 +18,8 @@ async def inventory_helper(inventory) -> dict:
 
     # 🔥 Eğer branch bulunursa, branch_name'i al; bulunmazsa "Bilinmeyen Şube" yap
     branch_name = branch.get("branch_name", "Bilinmeyen Şube") if branch else "Bilinmeyen Şube"
-    print("Branch:", branch)
-    print("Branch name:", branch_name)
+    #print("Branch:", branch)
+    #print("Branch name:", branch_name)
 
     return {
         "id": str(inventory["_id"]),

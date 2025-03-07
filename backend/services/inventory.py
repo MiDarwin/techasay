@@ -18,7 +18,7 @@ async def add_inventory(inventory_data: InventoryCreate) -> dict:
     inventory["updated_at"] = datetime.utcnow()
     result = await inventory_collection.insert_one(inventory)
     new_inventory = await inventory_collection.find_one({"_id": result.inserted_id})
-    return inventory_helper(new_inventory)
+    return await inventory_helper(new_inventory)
 
 
 # Şubeye Ait Envanterleri Getirme
@@ -40,7 +40,7 @@ async def update_inventory(inventory_id: str, update_data: InventoryUpdate) -> O
         )
     updated_inventory = await inventory_collection.find_one({"_id": ObjectId(inventory_id)})
     if updated_inventory:
-        return inventory_helper(updated_inventory)
+        return  await inventory_helper(updated_inventory)
     return None
 
 

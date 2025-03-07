@@ -57,7 +57,7 @@ async def create_branch(branch: BranchCreate) -> Branch:
         )
 
     created_branch = await branch_collection.find_one({"_id": new_branch.inserted_id})
-    return branch_helper(created_branch)
+    return await branch_helper(created_branch)
 
 
 async def update_branch(branch_id: str, branch: BranchUpdate) -> Branch:
@@ -86,11 +86,11 @@ async def update_branch(branch_id: str, branch: BranchUpdate) -> Branch:
         if result.modified_count == 1:
             updated_branch = await branch_collection.find_one({"_id": ObjectId(branch_id)})
             if updated_branch:
-                return branch_helper(updated_branch)
+                return await branch_helper(updated_branch)
 
     existing_branch = await branch_collection.find_one({"_id": ObjectId(branch_id)})
     if existing_branch:
-        return branch_helper(existing_branch)
+        return await branch_helper(existing_branch)
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Branch not found")
 
 
