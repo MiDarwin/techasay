@@ -51,7 +51,7 @@ const InventoryList = ({ branchId, onEdit, onDelete }) => {
     <table className="min-w-full bg-white dark:bg-gray-800 text-black dark:text-white">
       <thead>
         <tr>
-          <th className="py-2 px-4 border-b">ID</th>
+          <th className="py-2 px-4 border-b">Şube Adı</th>
           <th className="py-2 px-4 border-b">Ürün Türü</th>
           <th className="py-2 px-4 border-b">Ürün Modeli</th>
           <th className="py-2 px-4 border-b">Miktar</th>
@@ -61,7 +61,7 @@ const InventoryList = ({ branchId, onEdit, onDelete }) => {
       <tbody>
         {inventories.map((inventory) => (
           <tr key={inventory.id}>
-            <td className="py-2 px-4 border-b">{inventory.id}</td>
+            <td className="py-2 px-4 border-b">{inventory.branch_name}</td>
             <td className="py-2 px-4 border-b">{inventory.device_type}</td>
             <td className="py-2 px-4 border-b">{inventory.device_model}</td>
             <td className="py-2 px-4 border-b">{inventory.quantity}</td>
