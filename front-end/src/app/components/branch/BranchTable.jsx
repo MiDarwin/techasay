@@ -23,7 +23,7 @@ const BranchTable = ({ branches, companies, onEdit, onDelete }) => {
             <tr key={branch._id}>
               <td className="py-2 px-4 border-b">{branch._id}</td>
               <td className="py-2 px-4 border-b">{branch.branch_name}</td>
-              <td className="py-2 px-4 border-b">{branch.company_id}</td>
+              <td className="py-2 px-4 border-b">{branch.company_name}</td>
               <td className="py-2 px-4 border-b">{branch.address}</td>
               <td className="py-2 px-4 border-b">{branch.city}</td>
               <td className="py-2 px-4 border-b">{branch.phone_number}</td>

@@ -20,6 +20,7 @@ class BranchUpdate(BaseModel):
 
 class Branch(BranchBase):
     id: str = Field(alias="_id")
+    company_name: str  # ✅ Şirket adı eklendi
     created_at: datetime
     updated_at: datetime
 

@@ -30,10 +30,17 @@ def company_helper(company) -> dict:
         "updated_at": company["updated_at"]
     }
 
-def branch_helper(branch) -> dict:
+async def branch_helper(branch) -> dict:
+    # Şirket bilgilerini almak için company_id'yi kullan
+    company = await company_collection.find_one({"company_id": branch["company_id"]})
+
+    # Eğer şirket bulunursa, adını al; bulunmazsa "Bilinmeyen Şirket"
+    company_name = company.get("name", "Bilinmeyen Şirket") if company else "Bilinmeyen Şirket"
+
     return {
         "_id": str(branch["_id"]),
         "company_id": branch["company_id"],
+        "company_name": company_name,  # ✅ Şirket adı eklendi
         "branch_name": branch["branch_name"],
         "address": branch["address"],
         "city": branch["city"],

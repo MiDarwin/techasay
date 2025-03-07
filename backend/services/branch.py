@@ -9,7 +9,7 @@ from bson import ObjectId
 async def get_all_branches() -> List[Branch]:
     branches = []
     async for branch in branch_collection.find():
-        branches.append(branch_helper(branch))
+        branches.append(await branch_helper(branch))  # ✅ await eklendi
     return branches
 
 
@@ -18,16 +18,14 @@ async def get_branch_by_id(branch_id: str) -> Branch:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid branch ID format")
     branch = await branch_collection.find_one({"_id": ObjectId(branch_id)})
     if branch:
-        return branch_helper(branch)
+        return await branch_helper(branch)  # ✅ await eklendi
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Branch not found")
-
 
 async def get_branches_by_company_id(company_id: int) -> List[Branch]:
     branches = []
     async for branch in branch_collection.find({"company_id": company_id}):
-        branches.append(branch_helper(branch))
+        branches.append(await branch_helper(branch))  # ✅ await eklendi
     return branches
-
 
 async def create_branch(branch: BranchCreate) -> Branch:
     # 1. company_id'nin companies koleksiyonunda mevcut olup olmadığını kontrol et

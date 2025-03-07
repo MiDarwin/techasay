@@ -96,7 +96,7 @@ const BranchForm = ({
             onChange={(e) => setCompanyId(e.target.value)}
             className="w-full px-3 py-2 border rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600 
                        text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-            placeholder="Şube Adı Girin"
+            placeholder="Şirket Adı Seçin"
             required
           />
         </div>

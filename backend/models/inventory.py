@@ -6,8 +6,6 @@ client = AsyncIOMotorClient(MONGO_URI)
 db = client.user_database
 
 # Mevcut koleksiyonlar
-excel_data_collection = db.excel_data
-company_collection = db.companies
 branch_collection = db.branches
 
 
