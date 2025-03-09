@@ -86,3 +86,4 @@ export const updateInventory = (inventory_id, updateData) =>
 
 export const deleteInventory = (inventory_id) =>
   apiRequest(`/inventory/${inventory_id}`, "DELETE");
+export const getAllInventory = () => apiRequest("/inventory/", "GET");

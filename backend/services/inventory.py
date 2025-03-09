@@ -80,3 +80,7 @@ async def search_inventory(search_params: InventorySearch) -> List[dict]:
     async for inventory in cursor:
         inventories.append(inventory_helper(inventory))
     return inventories
+async def get_all_inventories() -> List[dict]:
+    inventories = await inventory_collection.find().to_list(length=None)
+    processed_inventories = [await inventory_helper(inv) for inv in inventories]
+    return processed_inventories

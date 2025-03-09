@@ -10,7 +10,7 @@ from services.inventory import (
     update_inventory,
     delete_inventory,
     get_inventory_by_id,
-    search_inventory
+    search_inventory,get_all_inventories
 )
 
 router = APIRouter(
@@ -60,4 +60,10 @@ async def search_inventory_endpoint(search_params: InventorySearch = Body(...)):
     inventories = await search_inventory(search_params)
     if not inventories:
         raise HTTPException(status_code=404, detail="No inventories match the search criteria")
+    return inventories
+@router.get("/", response_model=List[Inventory])
+async def read_all_inventories():
+    inventories = await get_all_inventories()
+    if not inventories:
+        raise HTTPException(status_code=404, detail="Hiç envanter bulunamadı")
     return inventories
