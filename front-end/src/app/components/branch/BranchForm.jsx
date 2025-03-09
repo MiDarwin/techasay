@@ -1,6 +1,91 @@
 import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 
+// Türkiye'nin 81 ilini içeren dizi
+const turkishCities = [
+  "Adana",
+  "Adıyaman",
+  "Afyonkarahisar",
+  "Ağrı",
+  "Amasya",
+  "Ankara",
+  "Antalya",
+  "Artvin",
+  "Aydın",
+  "Balıkesir",
+  "Bilecik",
+  "Bingöl",
+  "Bitlis",
+  "Bolu",
+  "Burdur",
+  "Bursa",
+  "Çanakkale",
+  "Çankırı",
+  "Çorum",
+  "Denizli",
+  "Diyarbakır",
+  "Edirne",
+  "Elazığ",
+  "Erzincan",
+  "Erzurum",
+  "Eskişehir",
+  "Gaziantep",
+  "Giresun",
+  "Gümüşhane",
+  "Hakkâri",
+  "Hatay",
+  "Isparta",
+  "Mersin",
+  "İstanbul",
+  "İzmir",
+  "Kars",
+  "Kastamonu",
+  "Kayseri",
+  "Kırklareli",
+  "Kırşehir",
+  "Kocaeli",
+  "Konya",
+  "Kütahya",
+  "Malatya",
+  "Manisa",
+  "Kahramanmaraş",
+  "Mardin",
+  "Muğla",
+  "Muş",
+  "Nevşehir",
+  "Niğde",
+  "Ordu",
+  "Rize",
+  "Sakarya",
+  "Samsun",
+  "Siirt",
+  "Sinop",
+  "Sivas",
+  "Tekirdağ",
+  "Tokat",
+  "Trabzon",
+  "Tunceli",
+  "Şanlıurfa",
+  "Uşak",
+  "Van",
+  "Yozgat",
+  "Zonguldak",
+  "Aksaray",
+  "Bayburt",
+  "Karaman",
+  "Kırıkkale",
+  "Batman",
+  "Şırnak",
+  "Bartın",
+  "Ardahan",
+  "Iğdır",
+  "Yalova",
+  "Karabük",
+  "Kilis",
+  "Osmaniye",
+  "Düzce",
+];
+
 const BranchForm = ({
   onSubmit,
   companies,
@@ -8,7 +93,7 @@ const BranchForm = ({
   isEditMode,
   onCancel,
 }) => {
-  const [companyId, setCompanyId] = useState(initialData.company_id || ""); // company_id tutuluyor
+  const [companyId, setCompanyId] = useState(initialData.company_id || "");
   const [branchName, setBranchName] = useState(initialData.branch_name || "");
   const [address, setAddress] = useState(initialData.address || "");
   const [city, setCity] = useState(initialData.city || "");
@@ -145,7 +230,7 @@ const BranchForm = ({
           />
         </div>
 
-        {/* Şehir */}
+        {/* Şehir Seçimi */}
         <div>
           <label
             htmlFor="city"
@@ -153,16 +238,23 @@ const BranchForm = ({
           >
             Şehir
           </label>
-          <input
+          <select
             id="city"
-            type="text"
             value={city}
             onChange={(e) => setCity(e.target.value)}
             className="w-full px-3 py-2 border rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600 
                        text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-            placeholder="Şehir Girin"
             required
-          />
+          >
+            <option value="" disabled>
+              Şehir Seçin
+            </option>
+            {turkishCities.map((cityName, index) => (
+              <option key={index} value={cityName}>
+                {cityName}
+              </option>
+            ))}
+          </select>
         </div>
 
         {/* Telefon Numarası */}
