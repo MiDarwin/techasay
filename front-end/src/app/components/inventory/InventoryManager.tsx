@@ -1,78 +1,102 @@
+// InventoryManager.tsx
+
 "use client"; // Next.js 13 için client component olduğunu belirtir
 
 import React, { useState, useEffect } from "react";
 import InventoryList from "./InventoryList"; // Envanter Listesi Bileşeni
 import AddInventoryModal from "./AddInventoryModal"; // Envanter Ekleme Modalı
 import UpdateInventoryModal from "./UpdateInventoryModal"; // Envanter Güncelleme Modalı
-import { getInventoryByBranch, getAllBranches } from "../../utils/api"; // API çağrıları
+import {
+  getAllInventory,
+  getAllBranches,
+  deleteInventory,
+} from "../../utils/api"; // API çağrıları
 
 const InventoryManager = () => {
   const [activeTab, setActiveTab] = useState("inventory");
   const [branches, setBranches] = useState([]); // Şube listesi
   const [isInventoryAddModalOpen, setIsInventoryAddModalOpen] = useState(false);
   const [selectedInventory, setSelectedInventory] = useState(null);
-  const [activeInventoryBranch, setActiveInventoryBranch] = useState(null);
-  const [inventories, setInventories] = useState([]); // Envanter listesi
-  const [branchIdForInventory, setBranchIdForInventory] = useState(null);
-  const [branchLoading, setBranchLoading] = useState(false);
-  const [branchError, setBranchError] = useState("");
-  useEffect(() => {
-    console.log("Gelen branches verisi:", branches);
-  }, [branches]);
+  const [activeInventoryBranch, setActiveInventoryBranch] = useState(""); // "" için 'All' seçeneği
+  const [allInventories, setAllInventories] = useState([]); // Tüm envanterler
+  const [filteredInventories, setFilteredInventories] = useState([]); // Filtrelenmiş envanterler
+  const [branchesLoading, setBranchesLoading] = useState(false);
+  const [branchesError, setBranchesError] = useState("");
+  const [inventoriesLoading, setInventoriesLoading] = useState(false);
+  const [inventoriesError, setInventoriesError] = useState("");
 
   // Şube listesini çekme fonksiyonu
   const fetchBranches = async () => {
     try {
-      setBranchLoading(true);
+      setBranchesLoading(true);
       const data = await getAllBranches();
       setBranches(data);
-      setBranchLoading(false);
+      setBranchesLoading(false);
     } catch (err) {
-      setBranchError(err.detail || "Şubeler alınırken bir hata oluştu.");
-      setBranchLoading(false);
+      setBranchesError(
+        err.response?.data?.detail || "Şubeler alınırken bir hata oluştu."
+      );
+      setBranchesLoading(false);
     }
   };
 
-  // Envanter Listeleme Fonksiyonu
-  const fetchInventories = async (branchId) => {
+  // Tüm Envanterleri Çekme Fonksiyonu
+  const fetchAllInventories = async () => {
     try {
-      const data = await getInventoryByBranch(branchId); // API çağrısı
-      setInventories(data);
-    } catch (error) {
-      console.error("Envanterler alınırken hata oluştu:", error);
+      setInventoriesLoading(true);
+      const data = await getAllInventory();
+      setAllInventories(data);
+      setFilteredInventories(data);
+      setInventoriesLoading(false);
+    } catch (err) {
+      setInventoriesError(
+        err.response?.data?.detail || "Envanterler alınırken bir hata oluştu."
+      );
+      setInventoriesLoading(false);
     }
   };
 
-  // İlk açılışta şubeleri yükle
+  // İlk açılışta şubeleri ve tüm envanterleri yükle
   useEffect(() => {
     fetchBranches();
+    fetchAllInventories();
   }, []);
 
-  // Seçili şube değiştiğinde envanterleri yükle
+  // Şube seçimi değiştiğinde envanterleri filtrele
   useEffect(() => {
-    if (activeTab === "inventory" && activeInventoryBranch) {
-      fetchInventories(activeInventoryBranch);
+    if (activeInventoryBranch === "") {
+      // Tüm envanterleri göster
+      setFilteredInventories(allInventories);
+    } else {
+      // Seçili şubeye ait envanterleri filtrele
+      const filtered = allInventories.filter(
+        (inventory) => inventory.branch_id === activeInventoryBranch
+      );
+      setFilteredInventories(filtered);
     }
-  }, [activeTab, activeInventoryBranch]);
+  }, [activeInventoryBranch, allInventories]);
 
   // Envanter Ekleme Fonksiyonları
-  const openInventoryAddModal = (branch_id) => {
-    setBranchIdForInventory(branch_id);
+  const openInventoryAddModal = () => {
     setIsInventoryAddModalOpen(true);
   };
 
   const closeInventoryAddModal = () => {
     setIsInventoryAddModalOpen(false);
-    setBranchIdForInventory(null);
   };
 
   const handleInventoryAdded = () => {
-    fetchInventories(activeInventoryBranch);
+    fetchAllInventories();
   };
 
   const handleInventoryUpdated = () => {
-    fetchInventories(activeInventoryBranch);
+    fetchAllInventories();
     setSelectedInventory(null);
+  };
+
+  // Envanter Silme Fonksiyonu
+  const handleInventoryDeleted = () => {
+    fetchAllInventories();
   };
 
   return (
@@ -87,50 +111,49 @@ const InventoryManager = () => {
                   Envanterlerini Görüntülemek İstediğiniz Şubeyi Seçin:
                 </label>
                 <select
-                  value={activeInventoryBranch || ""}
+                  value={activeInventoryBranch}
                   onChange={(e) => setActiveInventoryBranch(e.target.value)}
                   className="block text-gray-700 dark:text-gray-200 mb-2"
                 >
-                  <option value="" disabled>
-                    Şube Seçin
-                  </option>
+                  <option value="">Tüm Şubeler</option> {/* 'All' seçeneği */}
                   {branches.map((branch) => (
                     <option key={branch._id} value={branch._id}>
-                      {branch.branch_name}{" "}
-                      {/* branchName değil, branch_name kullanmalısın */}
+                      {branch.branch_name}
                     </option>
                   ))}
                 </select>
               </div>
 
               {/* Envanter Listesi */}
-              {activeInventoryBranch && (
-                <div>
-                  <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-2xl font-semibold">Envanter Listesi</h2>
-                    <button
-                      onClick={() =>
-                        openInventoryAddModal(activeInventoryBranch)
-                      }
-                      className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded"
-                    >
-                      Envanter Ekle
-                    </button>
-                  </div>
-
-                  {/* InventoryList bileşeni */}
-                  <InventoryList
-                    branchId={activeInventoryBranch}
-                    inventories={inventories} // Envanter listesi eklendi
-                    onEdit={setSelectedInventory}
-                  />
+              <div>
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-2xl font-semibold">Envanter Listesi</h2>
+                  <button
+                    onClick={openInventoryAddModal}
+                    className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded"
+                  >
+                    Envanter Ekle
+                  </button>
                 </div>
-              )}
+
+                {/* Envanter Yükleniyor veya Hata */}
+                {inventoriesLoading ? (
+                  <p>Envanterler yükleniyor...</p>
+                ) : inventoriesError ? (
+                  <p className="text-red-500">{inventoriesError}</p>
+                ) : (
+                  <InventoryList
+                    inventories={filteredInventories} // Filtrelenmiş envanterler
+                    onEdit={setSelectedInventory}
+                    onDelete={handleInventoryDeleted} // onDelete prop'u ekleniyor
+                  />
+                )}
+              </div>
 
               {/* Envanter Ekleme Modalı */}
               {isInventoryAddModalOpen && (
                 <AddInventoryModal
-                  branchId={branchIdForInventory}
+                  branches={branches} // Şubeleri prop olarak geçiyoruz
                   onClose={closeInventoryAddModal}
                   onInventoryAdded={handleInventoryAdded}
                 />
