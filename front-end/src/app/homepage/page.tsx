@@ -9,7 +9,7 @@ import BranchManager from "../components/branch/BranchManager";
 import InventoryManager from "../components/inventory/InventoryManager";
 
 const HomePage = () => {
-  const [activeTab, setActiveTab] = useState("company");
+  const [activeTab, setActiveTab] = useState("branch");
 
   const handleTabChange = (tab) => {
     setActiveTab(tab);
