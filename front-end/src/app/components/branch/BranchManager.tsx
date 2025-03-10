@@ -10,7 +10,6 @@ import {
   getInventoryByBranch,
   getAllCompanies,
 } from "../../utils/api";
-
 const BranchManager = () => {
   const [branches, setBranches] = useState([]);
   const [branchError, setBranchError] = useState("");
@@ -57,7 +56,89 @@ const BranchManager = () => {
       setBranchError(err.detail || "Şube eklenirken bir hata oluştu.");
     }
   };
-
+  const turkishCities = [
+    "Adana",
+    "Adıyaman",
+    "Afyonkarahisar",
+    "Ağrı",
+    "Amasya",
+    "Ankara",
+    "Antalya",
+    "Artvin",
+    "Aydın",
+    "Balıkesir",
+    "Bilecik",
+    "Bingöl",
+    "Bitlis",
+    "Bolu",
+    "Burdur",
+    "Bursa",
+    "Çanakkale",
+    "Çankırı",
+    "Çorum",
+    "Denizli",
+    "Diyarbakır",
+    "Edirne",
+    "Elazığ",
+    "Erzincan",
+    "Erzurum",
+    "Eskişehir",
+    "Gaziantep",
+    "Giresun",
+    "Gümüşhane",
+    "Hakkâri",
+    "Hatay",
+    "Isparta",
+    "Mersin",
+    "İstanbul",
+    "İzmir",
+    "Kars",
+    "Kastamonu",
+    "Kayseri",
+    "Kırklareli",
+    "Kırşehir",
+    "Kocaeli",
+    "Konya",
+    "Kütahya",
+    "Malatya",
+    "Manisa",
+    "Kahramanmaraş",
+    "Mardin",
+    "Muğla",
+    "Muş",
+    "Nevşehir",
+    "Niğde",
+    "Ordu",
+    "Rize",
+    "Sakarya",
+    "Samsun",
+    "Siirt",
+    "Sinop",
+    "Sivas",
+    "Tekirdağ",
+    "Tokat",
+    "Trabzon",
+    "Tunceli",
+    "Şanlıurfa",
+    "Uşak",
+    "Van",
+    "Yozgat",
+    "Zonguldak",
+    "Aksaray",
+    "Bayburt",
+    "Karaman",
+    "Kırıkkale",
+    "Batman",
+    "Şırnak",
+    "Bartın",
+    "Ardahan",
+    "Iğdır",
+    "Yalova",
+    "Karabük",
+    "Kilis",
+    "Osmaniye",
+    "Düzce",
+  ];
   // Şube güncelleme
   const handleUpdateBranch = async (_id, updateData) => {
     try {
@@ -112,13 +193,23 @@ const BranchManager = () => {
   return (
     <div>
       <form onSubmit={handleFilterSubmit} className="mb-4">
-        <input
-          type="text"
-          placeholder="Şehir"
+        <select
+          id="city"
           value={cityFilter}
           onChange={(e) => setCityFilter(e.target.value)}
           className="border p-2 mr-2"
-        />
+          required
+        >
+          <option value="" disabled>
+            Şehir Seçin
+          </option>
+          {turkishCities.map((cityName, index) => (
+            <option key={index} value={cityName}>
+              {cityName}
+            </option>
+          ))}
+        </select>
+
         <input
           type="text"
           placeholder="Arama (Şube Adı, Adres, Telefon Numarası)"
