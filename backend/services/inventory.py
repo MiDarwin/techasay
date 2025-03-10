@@ -7,10 +7,6 @@ from typing import List, Optional, Dict
 from database import inventory_collection
 from models.inventory import inventory_helper
 from schemas.inventory import InventoryCreate, InventoryUpdate, InventorySearch
-
-
-# Diğer CRUD fonksiyonları...
-
 # Envanter Oluşturma
 async def add_inventory(inventory_data: InventoryCreate) -> dict:
     inventory = inventory_data.dict()
@@ -20,14 +16,12 @@ async def add_inventory(inventory_data: InventoryCreate) -> dict:
     new_inventory = await inventory_collection.find_one({"_id": result.inserted_id})
     return await inventory_helper(new_inventory)
 
-
 # Şubeye Ait Envanterleri Getirme
 async def get_inventory_by_branch(branch_id: str) -> List[dict]:
     inventories = await inventory_collection.find({"branch_id": branch_id}).to_list(length=None)
     processed_inventories = [await inventory_helper(inv) for inv in inventories]
     print("Processed Inventories:", processed_inventories)  # 🔥 İşlenmiş veriyi kontrol edin
     return processed_inventories
-
 
 # Envanteri Güncelleme
 async def update_inventory(inventory_id: str, update_data: InventoryUpdate) -> Optional[dict]:
@@ -43,12 +37,10 @@ async def update_inventory(inventory_id: str, update_data: InventoryUpdate) -> O
         return  await inventory_helper(updated_inventory)
     return None
 
-
 # Envanteri Silme
 async def delete_inventory(inventory_id: str) -> bool:
     result = await inventory_collection.delete_one({"_id": ObjectId(inventory_id)})
     return result.deleted_count == 1
-
 
 # Belirli Bir Envanteri Getirme
 async def get_inventory_by_id(inventory_id: str) -> Optional[dict]:
@@ -56,7 +48,6 @@ async def get_inventory_by_id(inventory_id: str) -> Optional[dict]:
     if inventory:
         return await inventory_helper(inventory)
     return None
-
 
 # Genel Arama Fonksiyonu
 async def search_inventory(search_params: InventorySearch) -> List[dict]:

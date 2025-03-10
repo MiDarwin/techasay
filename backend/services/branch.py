@@ -1,4 +1,4 @@
-from database import branch_collection, branch_helper, company_collection
+from database import branch_collection, branch_helper, company_collection,inventory_collection
 from schemas.branch import BranchCreate, BranchUpdate, Branch
 from fastapi import HTTPException, status
 from typing import List
@@ -97,6 +97,16 @@ async def update_branch(branch_id: str, branch: BranchUpdate) -> Branch:
 async def delete_branch(branch_id: str):
     if not ObjectId.is_valid(branch_id):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid branch ID format")
+
+    # Envanterde bu şubeye ait herhangi bir kayıt olup olmadığını kontrol et
+    inventory_exists = await inventory_collection.find_one({"branch_id": branch_id})
+    if inventory_exists:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Cannot delete branch because it has associated inventory records."
+        )
+
+    # Şube silme işlemi
     result = await branch_collection.delete_one({"_id": ObjectId(branch_id)})
     if result.deleted_count == 1:
         return {"message": "Branch deleted successfully"}
