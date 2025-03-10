@@ -17,12 +17,14 @@ const BranchManager = () => {
   const [isBranchEditMode, setIsBranchEditMode] = useState(false);
   const [currentBranch, setCurrentBranch] = useState(null);
   const [companies, setCompanies] = useState([]);
-
+  const [cityFilter, setCityFilter] = useState("");
+  const [searchFilter, setSearchFilter] = useState("");
+  const [branchNameFilter, setBranchNameFilter] = useState("");
   const [branchLoading, setBranchLoading] = useState(false);
   const fetchBranches = async () => {
     try {
       setBranchLoading(true);
-      const data = await getAllBranches();
+      const data = await getAllBranches(cityFilter, searchFilter); // Hem şehir hem de genel arama parametrelerini gönderiyoruz
       setBranches(data);
       setBranchLoading(false);
     } catch (err) {
@@ -30,6 +32,13 @@ const BranchManager = () => {
       setBranchLoading(false);
     }
   };
+
+  // Filtreleme butonuna tıklama
+  const handleFilterSubmit = (e) => {
+    e.preventDefault();
+    fetchBranches();
+  };
+
   const fetchCompanies = async () => {
     try {
       const data = await getAllCompanies(); // Şirketleri backend'den çekiyoruz
@@ -102,6 +111,25 @@ const BranchManager = () => {
 
   return (
     <div>
+      <form onSubmit={handleFilterSubmit} className="mb-4">
+        <input
+          type="text"
+          placeholder="Şehir"
+          value={cityFilter}
+          onChange={(e) => setCityFilter(e.target.value)}
+          className="border p-2 mr-2"
+        />
+        <input
+          type="text"
+          placeholder="Arama (Şube Adı, Adres, Telefon Numarası)"
+          value={searchFilter}
+          onChange={(e) => setSearchFilter(e.target.value)}
+          className="border p-2 mr-2"
+        />
+        <button type="submit" className="bg-blue-500 text-white px-4 py-2">
+          Ara
+        </button>
+      </form>
       <BranchForm
         onSubmit={
           isBranchEditMode

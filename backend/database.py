@@ -83,7 +83,7 @@ async def create_indexes():
     # Branch koleksiyonu için indeksler
     await branch_collection.create_index("company_id")
     await branch_collection.create_index("branch_name")
-
+    await branch_collection.create_index("city");  # Şehir için indeks
     # Envanter koleksiyonu için indeksler
     await inventory_collection.create_index("branch_id")
     await inventory_collection.create_index(

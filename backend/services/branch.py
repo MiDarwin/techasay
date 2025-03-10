@@ -1,3 +1,5 @@
+from pymongo.errors import DuplicateKeyError
+
 from database import branch_collection, branch_helper, company_collection,inventory_collection
 from schemas.branch import BranchCreate, BranchUpdate, Branch
 from fastapi import HTTPException, status
@@ -6,12 +8,23 @@ from datetime import datetime
 from bson import ObjectId
 
 
-async def get_all_branches() -> List[Branch]:
-    branches = []
-    async for branch in branch_collection.find():
-        branches.append(await branch_helper(branch))  # ✅ await eklendi
-    return branches
+async def get_all_branches(city: str = None, search: str = None) -> List[Branch]:
+    query = {}
 
+    if city:
+        query["city"] = city
+
+    if search:
+        query["$or"] = [
+            {"branch_name": {"$regex": search, "$options": "i"}},  # Şube adında arama
+            {"address": {"$regex": search, "$options": "i"}},    # Adreste arama
+            {"phone_number": {"$regex": search, "$options": "i"}} # Telefon numarasında arama
+        ]
+
+    branches = []
+    async for branch in branch_collection.find(query):
+        branches.append(await branch_helper(branch))
+    return branches
 
 async def get_branch_by_id(branch_id: str) -> Branch:
     if not ObjectId.is_valid(branch_id):
