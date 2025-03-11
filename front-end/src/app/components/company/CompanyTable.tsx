@@ -7,110 +7,69 @@ import {
   TableHead,
   TableRow,
   Paper,
-  Button,
+  IconButton,
+  Tooltip,
 } from "@mui/material";
-import { makeStyles } from "@mui/styles";
-
-// Stil tanımlamaları için makeStyles kullanımı
-const useStyles = makeStyles({
-  table: {
-    minWidth: 650,
-  },
-  header: {
-    backgroundColor: "#1976d2", // Başlık arka plan rengi (Mavi)
-  },
-  headerCell: {
-    color: "#fff",
-    fontWeight: "bold",
-  },
-  evenRow: {
-    backgroundColor: "#f5f5f5", // Çift satır arka plan rengi (Açık gri)
-    "&:hover": {
-      backgroundColor: "#e0e0e0", // Hover durumunda daha koyu gri
-    },
-  },
-  oddRow: {
-    backgroundColor: "#ffffff", // Tek satır arka plan rengi (Beyaz)
-    "&:hover": {
-      backgroundColor: "#f0f0f0", // Hover durumunda daha koyu beyaz
-    },
-  },
-  cell: {
-    color: "#000",
-  },
-  button: {
-    marginRight: "8px",
-  },
-  updateButton: {
-    backgroundColor: "#f59e0b", // Sarı renk
-    color: "#000",
-    "&:hover": {
-      backgroundColor: "#fdd835", // Hover durumunda daha koyu sarı
-    },
-  },
-  deleteButton: {
-    backgroundColor: "#f44336", // Kırmızı renk
-    color: "#fff",
-    "&:hover": {
-      backgroundColor: "#d32f2f", // Hover durumunda daha koyu kırmızı
-    },
-  },
-  noDataRow: {
-    backgroundColor: "#ffffff",
-  },
-});
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 const CompanyTable = ({ companies, onEdit, onDelete }) => {
-  const classes = useStyles();
-
   return (
-    <TableContainer component={Paper} elevation={1}>
-      <Table className={classes.table} aria-label="şirket tablosu">
-        <TableHead className={classes.header}>
-          <TableRow>
-            <TableCell className={classes.headerCell}>ID</TableCell>
-            <TableCell className={classes.headerCell}>Şirket ID</TableCell>
-            <TableCell className={classes.headerCell}>Şirket Adı</TableCell>
-            <TableCell className={classes.headerCell}>İşlemler</TableCell>
+    <TableContainer
+      component={Paper}
+      sx={{ borderRadius: "8px", boxShadow: 3 }}
+    >
+      <Table>
+        <TableHead>
+          <TableRow
+            sx={{
+              backgroundColor: "#1976d2",
+              color: "#ffffff",
+              "& th": {
+                fontWeight: "bold",
+                fontSize: "1.1rem",
+              },
+            }}
+          >
+            <TableCell>ID</TableCell>
+            <TableCell>Şirket ID</TableCell>
+            <TableCell>Şirket Adı</TableCell>
+            <TableCell>İşlemler</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
           {companies.map((company, index) => (
             <TableRow
               key={company._id}
-              className={index % 2 === 0 ? classes.evenRow : classes.oddRow}
+              sx={{
+                backgroundColor: index % 2 === 0 ? "#f7f9fc" : "#ffffff",
+                "&:hover": {
+                  backgroundColor: "#e3f2fd",
+                },
+              }}
             >
-              <TableCell className={classes.cell}>{company._id}</TableCell>
-              <TableCell className={classes.cell}>
-                {typeof company.company_id === "object"
-                  ? JSON.stringify(company.company_id)
-                  : company.company_id}
-              </TableCell>
-              <TableCell className={classes.cell}>
-                {typeof company.name === "object"
-                  ? `${company.name.first} ${company.name.last}`
-                  : company.name}
-              </TableCell>
+              <TableCell>{company._id}</TableCell>
+              <TableCell>{company.company_id}</TableCell>
+              <TableCell>{company.name}</TableCell>
               <TableCell>
-                <Button
-                  variant="contained"
-                  className={`${classes.button} ${classes.updateButton}`}
-                  onClick={() => onEdit(company)}
-                >
-                  Güncelle
-                </Button>
-                <Button
-                  variant="contained"
-                  className={classes.deleteButton}
-                  onClick={() => onDelete(company._id)}
-                >
-                  Sil
-                </Button>
+                <Tooltip title="Düzenle">
+                  <IconButton onClick={() => onEdit(company)} color="warning">
+                    <EditIcon />
+                  </IconButton>
+                </Tooltip>
+                <Tooltip title="Sil">
+                  <IconButton
+                    onClick={() => onDelete(company._id)}
+                    color="error"
+                  >
+                    <DeleteIcon />
+                  </IconButton>
+                </Tooltip>
               </TableCell>
             </TableRow>
           ))}
           {companies.length === 0 && (
-            <TableRow className={classes.noDataRow}>
+            <TableRow>
               <TableCell colSpan={4} align="center">
                 Hiç Şirket Bulunmuyor.
               </TableCell>

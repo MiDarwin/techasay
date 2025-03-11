@@ -12,6 +12,7 @@ import {
   getAllCompanies,
 } from "../../utils/api";
 import AddIcon from "@mui/icons-material/Add";
+import Button from "@mui/material/Button"; // MUI Button bileşeni
 const BranchManager = () => {
   const [branches, setBranches] = useState([]);
   const [branchError, setBranchError] = useState("");
@@ -147,16 +148,19 @@ const BranchManager = () => {
           />
         </form>
 
-        <button
+        {/* MUI Button kullanarak Şube Ekle butonunu güncelle */}
+        <Button
+          variant="contained"
+          color="success" // Şirket ekleme butonu ile aynı renk
           onClick={() => {
             setIsFormVisible(true);
             setCurrentBranch(null);
           }}
-          className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition duration-200 flex items-center"
+          className="flex items-center"
         >
           <AddIcon className="mr-2" /> {/* İkonu ekle */}
           Şube Ekle
-        </button>
+        </Button>
       </div>
 
       <Modal isOpen={isFormVisible} onClose={closeBranchModal}>
