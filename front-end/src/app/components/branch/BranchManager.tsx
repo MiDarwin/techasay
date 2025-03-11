@@ -13,6 +13,7 @@ import {
 } from "../../utils/api";
 import AddIcon from "@mui/icons-material/Add";
 import Button from "@mui/material/Button"; // MUI Button bileşeni
+import AddBusinessIcon from "@mui/icons-material/AddBusiness";
 const BranchManager = () => {
   const [branches, setBranches] = useState([]);
   const [branchError, setBranchError] = useState("");
@@ -158,7 +159,7 @@ const BranchManager = () => {
           }}
           className="flex items-center"
         >
-          <AddIcon className="mr-2" /> {/* İkonu ekle */}
+          <AddBusinessIcon className="mr-2" /> {/* İkonu ekle */}
           Şube Ekle
         </Button>
       </div>

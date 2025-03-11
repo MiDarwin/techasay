@@ -1,19 +1,28 @@
-// AddInventoryModal.jsx
 import React, { useState } from "react";
 import { createInventory } from "../../utils/api";
+import {
+  Button,
+  TextField,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+} from "@mui/material";
 
 const AddInventoryModal = ({ branches, onClose, onInventoryAdded }) => {
-  const [branchId, setBranchId] = useState(""); // Seçili şube ID'si
+  const [branchId, setBranchId] = useState("");
   const [deviceType, setDeviceType] = useState("");
   const [deviceModel, setDeviceModel] = useState("");
   const [quantity, setQuantity] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false); // Yüklenme durumu
-  const [error, setError] = useState(""); // Hata mesajı
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // Gerekli alanları kontrol et
     if (!branchId) {
       setError("Lütfen bir şube seçin.");
       return;
@@ -29,7 +38,6 @@ const AddInventoryModal = ({ branches, onClose, onInventoryAdded }) => {
     try {
       setIsSubmitting(true);
       await createInventory(inventoryData);
-      console.info("Envanter başarıyla eklendi.");
       onInventoryAdded();
       onClose();
     } catch (error) {
@@ -40,86 +48,67 @@ const AddInventoryModal = ({ branches, onClose, onInventoryAdded }) => {
   };
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="bg-white dark:bg-gray-800 p-6 rounded shadow-lg w-full max-w-md">
-        <h2 className="text-xl font-semibold mb-4">Envanter Ekle</h2>
-        <form onSubmit={handleSubmit}>
-          {/* Şube Seçimi */}
-          <label className="block mb-2">Şube:</label>
-          <select
+    <Dialog open onClose={onClose}>
+      <DialogTitle>Envanter Ekle</DialogTitle>
+      <DialogContent>
+        <FormControl fullWidth margin="normal">
+          <InputLabel>Şube Seçin</InputLabel>
+          <Select
             value={branchId}
             onChange={(e) => setBranchId(e.target.value)}
             required
-            className="w-full px-3 py-2 border rounded mb-4"
           >
-            <option value="" disabled>
+            <MenuItem value="" disabled>
               Şube Seçin
-            </option>
+            </MenuItem>
             {branches.map((branch) => (
-              <option key={branch._id} value={branch._id}>
+              <MenuItem key={branch._id} value={branch._id}>
                 {branch.branch_name}
-              </option>
+              </MenuItem>
             ))}
-          </select>
-
-          <label className="block mb-2">Ürün Türü:</label>
-          <select
-            value={deviceType}
-            onChange={(e) => setDeviceType(e.target.value)}
-            required
-            className="w-full px-3 py-2 border rounded mb-4"
-          >
-            <option value="" disabled>
-              Ürün Türü Seçin
-            </option>
-            <option value="Adaptör">Adaptör</option>
-            <option value="Anten">Anten</option>
-            <option value="Ethernet Kablosu">Ethernet Kablosu</option>
-            <option value="SIM Kart">SIM Kart</option>
-            {/* Diğer seçenekleri buraya ekleyebilirsiniz */}
-          </select>
-
-          <label className="block mb-2">Ürün Modeli:</label>
-          <input
-            type="text"
-            value={deviceModel}
-            onChange={(e) => setDeviceModel(e.target.value)}
-            required
-            className="w-full px-3 py-2 border rounded mb-4"
-          />
-
-          <label className="block mb-2">Miktar:</label>
-          <input
-            type="number"
-            value={quantity}
-            onChange={(e) => setQuantity(e.target.value)}
-            required
-            className="w-full px-3 py-2 border rounded mb-4"
-          />
-
-          {error && <p className="text-red-500 mb-4">{error}</p>}
-
-          <div className="flex justify-end">
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className={`bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded mr-2 ${
-                isSubmitting ? "opacity-50 cursor-not-allowed" : ""
-              }`}
-            >
-              {isSubmitting ? "Ekleniyor..." : "Ekle"}
-            </button>
-            <button
-              type="button"
-              onClick={onClose}
-              className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded"
-            >
-              İptal
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+          </Select>
+        </FormControl>
+        <TextField
+          label="Ürün Türü"
+          value={deviceType}
+          onChange={(e) => setDeviceType(e.target.value)}
+          required
+          fullWidth
+          margin="normal"
+        />
+        <TextField
+          label="Ürün Modeli"
+          value={deviceModel}
+          onChange={(e) => setDeviceModel(e.target.value)}
+          required
+          fullWidth
+          margin="normal"
+        />
+        <TextField
+          label="Miktar"
+          type="number"
+          value={quantity}
+          onChange={(e) => setQuantity(e.target.value)}
+          required
+          fullWidth
+          margin="normal"
+        />
+        {error && <p className="text-red-500 mb-4">{error}</p>}
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose} color="primary">
+          İptal
+        </Button>
+        <Button
+          type="submit"
+          onClick={handleSubmit}
+          color="success"
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? "Ekleniyor..." : "Ekle"}
+        </Button>
+      </DialogActions>
+    </Dialog>
   );
 };
 

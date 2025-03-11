@@ -12,7 +12,7 @@ import {
 import TextField from "@mui/material/TextField"; // MUI TextField bileşeni
 import AddIcon from "@mui/icons-material/Add"; // Ekleme ikonu
 import Button from "@mui/material/Button"; // MUI Button bileşeni
-import SearchIcon from "@mui/icons-material/Search";
+import DomainAddIcon from "@mui/icons-material/DomainAdd";
 const CompanyManager = () => {
   const [companies, setCompanies] = useState([]);
   const [companyError, setCompanyError] = useState("");
@@ -114,7 +114,7 @@ const CompanyManager = () => {
           }}
           className="flex items-center"
         >
-          <AddIcon className="mr-2" /> {/* İkonu ekle */}
+          <DomainAddIcon className="mr-2" /> {/* İkonu ekle */}
           Şirket Ekle
         </Button>
       </div>
