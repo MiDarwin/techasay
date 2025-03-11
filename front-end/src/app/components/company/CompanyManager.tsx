@@ -12,6 +12,7 @@ import {
 import TextField from "@mui/material/TextField"; // MUI TextField bileşeni
 import AddIcon from "@mui/icons-material/Add"; // Ekleme ikonu
 import Button from "@mui/material/Button"; // MUI Button bileşeni
+import SearchIcon from "@mui/icons-material/Search";
 const CompanyManager = () => {
   const [companies, setCompanies] = useState([]);
   const [companyError, setCompanyError] = useState("");

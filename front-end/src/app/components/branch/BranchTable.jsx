@@ -18,7 +18,7 @@ import {
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
-import InventoryIcon from "@mui/icons-material/Inventory";
+import BackpackIcon from "@mui/icons-material/Backpack"; // Envanter ikonu
 import { getInventoryByBranch } from "../../utils/api"; // API'den envanter almak için kullanılan fonksiyon
 
 const style = {
@@ -114,7 +114,7 @@ const BranchTable = ({ branches, companies, onEdit, onDelete }) => {
                       color="primary"
                       aria-label="Şube Envanterini Görüntüle"
                     >
-                      <InventoryIcon />
+                      <BackpackIcon />
                     </IconButton>
                   </Tooltip>
                 </TableCell>
