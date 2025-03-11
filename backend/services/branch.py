@@ -8,11 +8,14 @@ from datetime import datetime
 from bson import ObjectId
 
 
-async def get_all_branches(city: str = None, search: str = None) -> List[Branch]:
+async def get_all_branches(city: str = None, search: str = None, company_id: int = None) -> List[Branch]:
     query = {}
 
     if city:
         query["city"] = city
+
+    if company_id:  # Şirket ID'sine göre filtre
+        query["company_id"] = company_id
 
     if search:
         query["$or"] = [

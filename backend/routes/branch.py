@@ -11,8 +11,8 @@ router = APIRouter(
 )
 
 @router.get("/", response_model=List[Branch])
-async def read_branches(city: str = None, search: str = None):
-    return await branch_service.get_all_branches(city=city, search=search)
+async def read_branches(city: str = None, search: str = None, company_id: int = None):
+    return await branch_service.get_all_branches(city=city, search=search, company_id=company_id)
 @router.get("/{branch_id}", response_model=Branch)
 async def read_branch(branch_id: str):
     return await branch_service.get_branch_by_id(branch_id)

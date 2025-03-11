@@ -11,21 +11,23 @@ import {
   deleteBranch,
   getAllCompanies,
 } from "../../utils/api";
-
+import AddIcon from "@mui/icons-material/Add";
 const BranchManager = () => {
   const [branches, setBranches] = useState([]);
   const [branchError, setBranchError] = useState("");
   const [currentBranch, setCurrentBranch] = useState(null);
   const [companies, setCompanies] = useState([]);
   const [cityFilter, setCityFilter] = useState("");
+  const [companyFilter, setCompanyFilter] = useState(""); // companyFilter durumu eklendi
   const [searchFilter, setSearchFilter] = useState("");
   const [branchLoading, setBranchLoading] = useState(false);
   const [isFormVisible, setIsFormVisible] = useState(false);
 
-  const fetchBranches = async () => {
+  // Şubeleri getir
+  const fetchBranches = async (city = "", search = "", company = "") => {
     try {
       setBranchLoading(true);
-      const data = await getAllBranches(cityFilter, searchFilter);
+      const data = await getAllBranches(city, search, company); // Şirket filtresi eklendi
       setBranches(data);
       setBranchLoading(false);
     } catch (err) {
@@ -34,11 +36,10 @@ const BranchManager = () => {
     }
   };
 
-  // Filtreleme butonuna tıklama
-  const handleFilterSubmit = (e) => {
-    e.preventDefault();
-    fetchBranches();
-  };
+  // Şirket, şehir ve arama filtrelerinde değişiklik yapıldığında şubeleri getir
+  useEffect(() => {
+    fetchBranches(cityFilter, searchFilter, companyFilter);
+  }, [cityFilter, searchFilter, companyFilter]);
 
   const fetchCompanies = async () => {
     try {
@@ -53,7 +54,7 @@ const BranchManager = () => {
   const handleAddBranch = async (branchData) => {
     try {
       await createBranch(branchData);
-      fetchBranches();
+      fetchBranches(cityFilter, searchFilter, companyFilter); // Filtrelerle birlikte şubeleri yeniden getir
       setBranchError("");
       closeBranchModal(); // Güncelleme başarılıysa modalı kapat
       alert("Şube başarı ile eklendi.");
@@ -66,7 +67,7 @@ const BranchManager = () => {
   const handleUpdateBranch = async (_id, updateData) => {
     try {
       await updateBranch(_id, updateData);
-      fetchBranches();
+      fetchBranches(cityFilter, searchFilter, companyFilter); // Filtrelerle birlikte şubeleri yeniden getir
       setBranchError("");
       closeBranchModal(); // Güncelleme başarılıysa modalı kapat
       alert("Şube başarı ile güncellendi.");
@@ -80,7 +81,7 @@ const BranchManager = () => {
     if (window.confirm("Bu şubeyi silmek istediğinize emin misiniz?")) {
       try {
         await deleteBranch(_id);
-        fetchBranches();
+        fetchBranches(cityFilter, searchFilter, companyFilter); // Filtrelerle birlikte şubeleri yeniden getir
         setBranchError("");
       } catch (err) {
         setBranchError(err.detail || "Şube silinirken bir hata oluştu.");
@@ -102,26 +103,34 @@ const BranchManager = () => {
 
   useEffect(() => {
     fetchCompanies();
+    // İlk başta tüm şubeleri getir
     fetchBranches();
   }, []);
 
   return (
     <div className="flex flex-col">
-      <div className="flex items-center mb-4">
-        <form
-          onSubmit={handleFilterSubmit}
-          className="flex items-center flex-grow mr-4"
-        >
+      <div className="flex items-center mb-4 p-4 rounded-lg shadow-lg bg-white border border-gray-300">
+        <form className="flex items-center flex-grow mr-4">
+          <select
+            id="companyFilter"
+            value={companyFilter}
+            onChange={(e) => setCompanyFilter(e.target.value)}
+            className="border p-2 mr-2 rounded-lg"
+          >
+            <option value="">Tüm Şirketler</option>
+            {companies.map((company) => (
+              <option key={company._id} value={company.company_id}>
+                {company.name}
+              </option>
+            ))}
+          </select>
           <select
             id="cityFilter"
             value={cityFilter}
             onChange={(e) => setCityFilter(e.target.value)}
-            className="border p-2 mr-2"
-            required
+            className="border p-2 mr-2 rounded-lg"
           >
-            <option value="" disabled>
-              Şehir Seçin
-            </option>
+            <option value="">Tüm Şehirler</option>
             {turkishCities.map((city, index) => (
               <option key={index} value={city}>
                 {city}
@@ -134,22 +143,19 @@ const BranchManager = () => {
             placeholder="Arama (Şube Adı, Adres, Telefon Numarası)"
             value={searchFilter}
             onChange={(e) => setSearchFilter(e.target.value)}
-            className="border p-2 mr-2"
+            className="border p-2 mr-2 rounded-lg"
           />
-
-          <button type="submit" className="bg-blue-500 text-white px-4 py-2">
-            Ara
-          </button>
         </form>
 
         <button
           onClick={() => {
             setIsFormVisible(true);
-            setCurrentBranch(null); // Yeni şube eklerken mevcut branch verisini sıfırla
+            setCurrentBranch(null);
           }}
-          className="bg-green-500 text-white px-4 py-2 rounded-md"
+          className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition duration-200 flex items-center"
         >
-          Şube Ekle (+)
+          <AddIcon className="mr-2" /> {/* İkonu ekle */}
+          Şube Ekle
         </button>
       </div>
 
@@ -160,9 +166,9 @@ const BranchManager = () => {
               ? handleUpdateBranch.bind(null, currentBranch._id)
               : handleAddBranch
           }
-          initialData={currentBranch || {}} // Düzenleme için mevcut veriler
-          isEditMode={!!currentBranch} // Eğer currentBranch doluysa düzenleme modunda
-          onCancel={closeBranchModal} // Modalı kapat
+          initialData={currentBranch || {}}
+          isEditMode={!!currentBranch}
+          onCancel={closeBranchModal}
           companies={companies}
         />
       </Modal>
@@ -176,7 +182,7 @@ const BranchManager = () => {
       <BranchTable
         branches={branches}
         companies={companies.reduce((acc, company) => {
-          acc[company._id] = company.company;
+          acc[company.company_id] = company.name;
           return acc;
         }, {})}
         onEdit={openBranchEditModal}

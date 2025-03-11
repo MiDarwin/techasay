@@ -58,7 +58,7 @@ export const deleteCompany = (_id) =>
 export const createBranch = (branchData) =>
   apiRequest("/branches/", "POST", branchData);
 
-export const getAllBranches = (city = "", search = "") => {
+export const getAllBranches = (city = "", search = "", company = "") => {
   const params = new URLSearchParams();
   if (city) {
     params.append("city", city);
@@ -66,8 +66,12 @@ export const getAllBranches = (city = "", search = "") => {
   if (search) {
     params.append("search", search);
   }
+  if (company) {
+    params.append("company_id", company); // Şirket ID'sini ekledik
+  }
   return apiRequest(`/branches/?${params.toString()}`, "GET");
 };
+
 
 export const getBranchById = (branch_id) =>
   apiRequest(`/branches/${branch_id}`, "GET");
