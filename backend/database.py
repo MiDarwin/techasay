@@ -12,7 +12,7 @@ db = client.user_database
 excel_data_collection = db.excel_data
 company_collection = db.companies
 branch_collection = db.branches
-
+sub_branch_collection = db.sub_branches  # Alt şube koleksiyonu
 # Yeni koleksiyon
 inventory_collection = db.inventory  # Envanter koleksiyonu
 
@@ -75,7 +75,22 @@ async def inventory_helper(inventory) -> dict:
         "created_at": inventory.get("created_at", datetime.utcnow()),
         "updated_at": inventory.get("updated_at", datetime.utcnow()),
     }
+async def sub_branch_helper(sub_branch) -> dict:
+    # İlgili şube bilgilerini almak için branch_id'yi kullan
+    branch = await branch_collection.find_one({"_id": ObjectId(sub_branch["branch_id"])})
 
+    # Eğer şube bulunursa, branch_name'i al; bulunmazsa "Bilinmeyen Şube"
+    branch_name = branch.get("branch_name", "Bilinmeyen Şube") if branch else "Bilinmeyen Şube"
+
+    return {
+        "_id": str(sub_branch["_id"]),
+        "branch_id": str(sub_branch["branch_id"]),
+        "branch_name": branch_name,
+        "name": sub_branch["name"],
+        "location": sub_branch.get("location", ""),
+        "created_at": sub_branch.get("created_at", datetime.utcnow()),
+        "updated_at": sub_branch.get("updated_at", datetime.utcnow()),
+    }
 
 async def create_indexes():
     # Şirket koleksiyonu için indeksler

@@ -1,11 +1,14 @@
 from pymongo.errors import DuplicateKeyError
 
-from database import branch_collection, branch_helper, company_collection,inventory_collection
+from database import branch_collection, branch_helper, company_collection, inventory_collection, sub_branch_collection, \
+    sub_branch_helper
 from schemas.branch import BranchCreate, BranchUpdate, Branch
 from fastapi import HTTPException, status
 from typing import List
 from datetime import datetime
 from bson import ObjectId
+
+from schemas.sub_branch import SubBranchCreate
 
 
 async def get_all_branches(city: str = None, search: str = None, company_id: int = None) -> List[Branch]:
@@ -121,3 +124,23 @@ async def delete_branch(branch_id: str):
     if result.deleted_count == 1:
         return {"message": "Branch deleted successfully"}
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Branch not found")
+
+from database import sub_branch_collection  # Alt şube koleksiyonu
+
+async def create_sub_branch(sub_branch: SubBranchCreate) -> dict:
+    sub_branch_dict = sub_branch.dict()
+    sub_branch_dict["created_at"] = datetime.utcnow()
+    sub_branch_dict["updated_at"] = datetime.utcnow()
+
+    new_sub_branch = await sub_branch_collection.insert_one(sub_branch_dict)
+    created_sub_branch = await sub_branch_collection.find_one({"_id": new_sub_branch.inserted_id})
+
+    return await sub_branch_helper(created_sub_branch)  # Helper fonksiyonunu kullanarak geri döndür
+async def get_sub_branches_by_branch_id(branch_id: str) -> List[dict]:
+    if not ObjectId.is_valid(branch_id):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid branch ID format")
+
+    sub_branches = []
+    async for sub_branch in sub_branch_collection.find({"branch_id": branch_id}):
+        sub_branches.append(await sub_branch_helper(sub_branch))
+    return sub_branches

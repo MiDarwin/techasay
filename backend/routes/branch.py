@@ -1,7 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from typing import List
 from schemas.branch import Branch, BranchCreate, BranchUpdate
+from schemas.sub_branch import SubBranchCreate
 from services import branch as branch_service
+from services.branch import create_sub_branch
 from utils.auth import get_current_user
 
 router = APIRouter(
@@ -33,3 +35,10 @@ async def update_existing_branch(branch_id: str, branch: BranchUpdate):
 async def delete_existing_branch(branch_id: str):
     await branch_service.delete_branch(branch_id)
     return
+
+@router.post("/sub-branches", response_model=dict, status_code=status.HTTP_201_CREATED)
+async def create_new_sub_branch(sub_branch: SubBranchCreate):
+    return await create_sub_branch(sub_branch)
+@router.get("/sub-branches/{branch_id}", response_model=List[dict])
+async def read_sub_branches(branch_id: str):
+    return await branch_service.get_sub_branches_by_branch_id(branch_id)
