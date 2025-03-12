@@ -18,7 +18,10 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import BackpackIcon from "@mui/icons-material/Backpack"; // Envanter ikonu
 import LocationOnIcon from "@mui/icons-material/LocationOn"; // Konum ikonu
-import { getInventoryByBranch } from "../../utils/api"; // API'den envanter almak için kullanılan fonksiyon
+import {
+  getInventoryByBranch,
+  getSubBranchesByBranchId,
+} from "../../utils/api"; // API'den envanter ve alt şubeleri almak için kullanılan fonksiyonlar
 
 const style = {
   position: "absolute",
@@ -33,27 +36,36 @@ const style = {
 };
 
 const BranchTable = ({ branches, companies, onEdit, onDelete }) => {
-  const [open, setOpen] = useState(false);
+  const [openInventory, setOpenInventory] = useState(false);
+  const [openSubBranches, setOpenSubBranches] = useState(false);
   const [inventory, setInventory] = useState([]);
+  const [subBranches, setSubBranches] = useState([]);
   const [selectedBranchId, setSelectedBranchId] = useState(null);
 
-  const handleOpen = async (branchId) => {
+  const handleOpenInventory = async (branchId) => {
     setSelectedBranchId(branchId);
     const data = await getInventoryByBranch(branchId); // API'den envanteri al
     setInventory(data);
-    setOpen(true);
+    setOpenInventory(true);
   };
 
-  const handleClose = () => setOpen(false);
+  const handleOpenSubBranches = async (branchId) => {
+    setSelectedBranchId(branchId);
+    const data = await getSubBranchesByBranchId(branchId); // API'den alt şubeleri al
+    setSubBranches(data);
+    setOpenSubBranches(true);
+  };
+
+  const handleCloseInventory = () => setOpenInventory(false);
+  const handleCloseSubBranches = () => setOpenSubBranches(false);
 
   const openLocationLink = (link) => {
-    // Eğer link http:// veya https:// ile başlamıyorsa, bu ön ekleri ekle
     const formattedLink =
       link.startsWith("http://") || link.startsWith("https://")
         ? link
         : `http://${link}`;
 
-    window.open(formattedLink, "_blank"); // Yeni sekmede aç
+    window.open(formattedLink, "_blank");
   };
 
   return (
@@ -101,11 +113,10 @@ const BranchTable = ({ branches, companies, onEdit, onDelete }) => {
                 <TableCell>{branch.phone_number}</TableCell>
                 <TableCell>{branch.branch_note || "Yok"}</TableCell>
                 <TableCell>
-                  {/* Konum İkonu */}
                   {branch.location_link && (
                     <Tooltip title="Konum Göster">
                       <IconButton
-                        onClick={() => openLocationLink(branch.location_link)} // Yeni fonksiyonu çağır
+                        onClick={() => openLocationLink(branch.location_link)}
                         color="primary"
                         aria-label="Konum Göster"
                       >
@@ -131,9 +142,18 @@ const BranchTable = ({ branches, companies, onEdit, onDelete }) => {
                       <DeleteIcon />
                     </IconButton>
                   </Tooltip>
+                  <Tooltip title="Alt Şubeleri Görüntüle">
+                    <IconButton
+                      onClick={() => handleOpenSubBranches(branch._id)} // Alt şubeleri görüntüle
+                      color="primary"
+                      aria-label="Alt Şubeleri Görüntüle"
+                    >
+                      <BackpackIcon />
+                    </IconButton>
+                  </Tooltip>
                   <Tooltip title="Şube Envanterini Görüntüle">
                     <IconButton
-                      onClick={() => handleOpen(branch._id)}
+                      onClick={() => handleOpenInventory(branch._id)}
                       color="primary"
                       aria-label="Şube Envanterini Görüntüle"
                     >
@@ -148,7 +168,7 @@ const BranchTable = ({ branches, companies, onEdit, onDelete }) => {
       </TableContainer>
 
       {/* Envanter Modal */}
-      <Modal open={open} onClose={handleClose}>
+      <Modal open={openInventory} onClose={handleCloseInventory}>
         <Box sx={style}>
           {selectedBranchId && (
             <Typography variant="h6" component="h2" sx={{ mb: 2 }}>
@@ -205,6 +225,44 @@ const BranchTable = ({ branches, companies, onEdit, onDelete }) => {
           </Box>
         </Box>
       </Modal>
+
+      {/* Alt Şubeler Modal */}
+      <Modal open={openSubBranches} onClose={handleCloseSubBranches}>
+        <Box sx={style}>
+          {selectedBranchId && (
+            <Typography variant="h6" component="h2" sx={{ mb: 2 }}>
+              {
+                branches.find((branch) => branch._id === selectedBranchId)
+                  ?.branch_name
+              }{" "}
+              Alt Şubeleri:
+            </Typography>
+          )}
+          <Box mt={2}>
+            {subBranches.length > 0 ? (
+              <ul>
+                {subBranches.map((subBranch) => (
+                  <li key={subBranch.id} style={{ marginBottom: "10px" }}>
+                    <Typography
+                      variant="body1"
+                      component="span"
+                      fontWeight="bold"
+                    >
+                      Alt Şube Adı:
+                    </Typography>
+                    <Typography variant="body1" component="span">
+                      {subBranch.name}
+                    </Typography>
+                    {/* Diğer alt şube bilgilerini buraya ekleyebilirsiniz */}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <Typography>No sub-branches found for this branch.</Typography>
+            )}
+          </Box>
+        </Box>
+      </Modal>
     </>
   );
 };
@@ -218,7 +276,7 @@ BranchTable.propTypes = {
       address: PropTypes.string.isRequired,
       city: PropTypes.string.isRequired,
       phone_number: PropTypes.string.isRequired,
-      location_link: PropTypes.string, // location_link alanı
+      location_link: PropTypes.string,
       branch_note: PropTypes.string,
     })
   ).isRequired,

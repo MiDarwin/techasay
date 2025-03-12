@@ -128,14 +128,22 @@ async def delete_branch(branch_id: str):
 from database import sub_branch_collection  # Alt şube koleksiyonu
 
 async def create_sub_branch(sub_branch: SubBranchCreate) -> dict:
+    # Alt şube oluşturma işlemi
     sub_branch_dict = sub_branch.dict()
     sub_branch_dict["created_at"] = datetime.utcnow()
     sub_branch_dict["updated_at"] = datetime.utcnow()
 
+    # Alt şube veritabanına kaydet
     new_sub_branch = await sub_branch_collection.insert_one(sub_branch_dict)
     created_sub_branch = await sub_branch_collection.find_one({"_id": new_sub_branch.inserted_id})
 
-    return await sub_branch_helper(created_sub_branch)  # Helper fonksiyonunu kullanarak geri döndür
+    # Ana şubenin alt_sube_var alanını güncelle
+    await branch_collection.update_one(
+        {"_id": ObjectId(sub_branch_dict["branch_id"])},
+        {"$set": {"sub_branch": True}}  # Alt şube var olarak ayarlayın
+    )
+
+    return await sub_branch_helper(created_sub_branch)
 async def get_sub_branches_by_branch_id(branch_id: str) -> List[dict]:
     if not ObjectId.is_valid(branch_id):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid branch ID format")

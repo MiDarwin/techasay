@@ -132,3 +132,19 @@ export const createSubBranch = async (subBranchData) => {
 
   return response.json(); // Başarılı ise yanıtı döndür
 };
+export const getSubBranchesByBranchId = async (branchId) => {
+  const token = localStorage.getItem("access_token"); // Token'ı localStorage'dan al
+  const response = await fetch(`${BASE_URL}/branches/sub-branches/${branchId}`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}` // Token'ı Authorization header'ına ekle
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error("Alt şubelere erişim sağlanırken bir hata oluştu.");
+  }
+
+  return response.json();
+};
