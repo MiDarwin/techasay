@@ -56,9 +56,9 @@ const BranchManager = () => {
   const handleAddBranch = async (branchData) => {
     try {
       await createBranch(branchData);
-      fetchBranches(cityFilter, searchFilter, companyFilter); // Filtrelerle birlikte şubeleri yeniden getir
+      fetchBranches(cityFilter, searchFilter, companyFilter);
       setBranchError("");
-      closeBranchModal(); // Güncelleme başarılıysa modalı kapat
+      closeBranchModal();
       alert("Şube başarı ile eklendi.");
     } catch (err) {
       setBranchError(err.detail || "Şube eklenirken bir hata oluştu.");
@@ -69,9 +69,9 @@ const BranchManager = () => {
   const handleUpdateBranch = async (_id, updateData) => {
     try {
       await updateBranch(_id, updateData);
-      fetchBranches(cityFilter, searchFilter, companyFilter); // Filtrelerle birlikte şubeleri yeniden getir
+      fetchBranches(cityFilter, searchFilter, companyFilter);
       setBranchError("");
-      closeBranchModal(); // Güncelleme başarılıysa modalı kapat
+      closeBranchModal();
       alert("Şube başarı ile güncellendi.");
     } catch (err) {
       setBranchError(err.detail || "Şube güncellenirken bir hata oluştu.");

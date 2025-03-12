@@ -40,11 +40,12 @@ async def branch_helper(branch) -> dict:
     return {
         "_id": str(branch["_id"]),
         "company_id": branch["company_id"],
-        "company_name": company_name,  # ✅ Şirket adı eklendi
+        "company_name": company_name,
         "branch_name": branch["branch_name"],
         "address": branch["address"],
         "city": branch["city"],
         "phone_number": branch["phone_number"],
+        "branch_note": branch.get("branch_note", ""),  # Şube notu eklendi
         "created_at": branch["created_at"],
         "updated_at": branch["updated_at"],
     }

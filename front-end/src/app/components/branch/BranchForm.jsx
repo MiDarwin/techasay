@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import { turkishCities } from "./cities";
-// Türkiye'nin 81 ilini içeren dizi
 
 const BranchForm = ({
   onSubmit,
@@ -17,6 +16,7 @@ const BranchForm = ({
   const [phoneNumber, setPhoneNumber] = useState(
     initialData.phone_number || ""
   );
+  const [branchNote, setBranchNote] = useState(initialData.branch_note || ""); // Yeni alan
   const [error, setError] = useState("");
 
   // initialData değiştiğinde form alanlarını güncelle
@@ -26,6 +26,7 @@ const BranchForm = ({
     setAddress(initialData.address || "");
     setCity(initialData.city || "");
     setPhoneNumber(initialData.phone_number || "");
+    setBranchNote(initialData.branch_note || ""); // Yeni alan
     setError("");
   }, [initialData]);
 
@@ -49,11 +50,12 @@ const BranchForm = ({
     try {
       // Hata yoksa, onSubmit fonksiyonunu çağır
       await onSubmit({
-        company_id: parseInt(companyId, 10), // İşlemler için company_id gönderiliyor
+        company_id: parseInt(companyId, 10),
         branch_name: branchName,
         address,
         city,
         phone_number: normalizedPhoneNumber,
+        branch_note: branchNote, // Yeni alan
       });
 
       // Formu sıfırla (sadece ekleme modunda)
@@ -63,6 +65,7 @@ const BranchForm = ({
         setAddress("");
         setCity("");
         setPhoneNumber("");
+        setBranchNote(""); // Yeni alan
       }
 
       setError("");
@@ -90,8 +93,8 @@ const BranchForm = ({
           </label>
           <select
             id="companyId"
-            value={companyId} // company_id burada tutuluyor
-            onChange={(e) => setCompanyId(e.target.value)} // company_id'yi güncelliyoruz
+            value={companyId}
+            onChange={(e) => setCompanyId(e.target.value)}
             className="w-full px-3 py-2 border rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600 
                        text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
             required
@@ -101,7 +104,7 @@ const BranchForm = ({
             </option>
             {companies.map((company) => (
               <option key={company.company_id} value={company.company_id}>
-                {company.name} {/* Kullanıcıya company_name gösteriliyor */}
+                {company.name}
               </option>
             ))}
           </select>
@@ -194,6 +197,24 @@ const BranchForm = ({
           />
         </div>
 
+        {/* Şube Notu (Opsiyonel) */}
+        <div>
+          <label
+            htmlFor="branchNote"
+            className="block text-gray-700 dark:text-gray-200 mb-2"
+          >
+            Şube Notu (Opsiyonel)
+          </label>
+          <textarea
+            id="branchNote"
+            value={branchNote}
+            onChange={(e) => setBranchNote(e.target.value)}
+            className="w-full px-3 py-2 border rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600 
+                       text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+            placeholder="Şube Notu Girin"
+          />
+        </div>
+
         {/* Form Düğmeleri */}
         <div className="flex justify-between">
           {isEditMode && (
@@ -231,6 +252,7 @@ BranchForm.propTypes = {
     address: PropTypes.string,
     city: PropTypes.string,
     phone_number: PropTypes.string,
+    branch_note: PropTypes.string, // Yeni alan
   }),
   isEditMode: PropTypes.bool,
   onCancel: PropTypes.func,

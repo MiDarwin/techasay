@@ -70,6 +70,7 @@ const BranchTable = ({ branches, companies, onEdit, onDelete }) => {
               <TableCell>Şube Adı</TableCell>
               <TableCell>Adres</TableCell>
               <TableCell>Telefon Numarası</TableCell>
+              <TableCell>Şube Notu</TableCell> {/* Yeni hücre */}
               <TableCell>İşlemler</TableCell>
             </TableRow>
           </TableHead>
@@ -89,6 +90,7 @@ const BranchTable = ({ branches, companies, onEdit, onDelete }) => {
                 <TableCell>{branch.branch_name}</TableCell>
                 <TableCell>{branch.address}</TableCell>
                 <TableCell>{branch.phone_number}</TableCell>
+                <TableCell>{branch.branch_note || "Yok"}</TableCell>{" "}
                 <TableCell>
                   <Tooltip title="Düzenle">
                     <IconButton

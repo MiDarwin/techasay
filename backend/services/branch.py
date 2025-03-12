@@ -44,12 +44,10 @@ async def get_branches_by_company_id(company_id: int) -> List[Branch]:
     return branches
 
 async def create_branch(branch: BranchCreate) -> Branch:
-    # 1. company_id'nin companies koleksiyonunda mevcut olup olmadığını kontrol et
     existing_company = await company_collection.find_one({"company_id": branch.company_id})
     if not existing_company:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Company ID does not exist")
 
-    # 2. Aynı company_id ve branch_name ile daha önce oluşturulmuş bir şube olup olmadığını kontrol et
     existing_branch = await branch_collection.find_one({
         "company_id": branch.company_id,
         "branch_name": branch.branch_name
@@ -84,11 +82,9 @@ async def update_branch(branch_id: str, branch: BranchUpdate) -> Branch:
     if update_data:
         update_data["updated_at"] = datetime.utcnow()
 
-        # Eğer branch_name güncelleniyorsa, aynı company_id ve branch_name ile başka bir şube olup olmadığını kontrol et
         if "branch_name" in update_data:
             existing_branch = await branch_collection.find_one({
                 "company_id": update_data.get("company_id", branch_id),
-                # Bu kısım şirket ID'sini doğru alacak şekilde düzenlenmeli
                 "branch_name": update_data["branch_name"],
                 "_id": {"$ne": ObjectId(branch_id)}
             })
@@ -108,7 +104,6 @@ async def update_branch(branch_id: str, branch: BranchUpdate) -> Branch:
     if existing_branch:
         return await branch_helper(existing_branch)
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Branch not found")
-
 
 async def delete_branch(branch_id: str):
     if not ObjectId.is_valid(branch_id):
