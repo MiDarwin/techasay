@@ -76,8 +76,22 @@ export const getAllBranches = (city = "", search = "", company = "") => {
 export const getBranchById = (branch_id) =>
   apiRequest(`/branches/${branch_id}`, "GET");
 
-export const getBranchesByCompanyId = (company_id) =>
-  apiRequest(`/branches/company/${company_id}`, "GET");
+export const getBranchesByCompanyId = async (companyId) => {
+  const token = localStorage.getItem("access_token"); // Token'ı localStorage'dan al
+  const response = await fetch(`${BASE_URL}/branches/company/${companyId}`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}` // Token'ı Authorization header'ına ekle
+    }
+  });
+  
+  if (!response.ok) {
+    throw new Error("Şubelere erişim sağlanırken bir hata oluştu.");
+  }
+  
+  return response.json();
+};
 
 export const updateBranch = (_id, updateData) =>
   apiRequest(`/branches/${_id}`, "PUT", updateData);
@@ -100,3 +114,21 @@ export const updateInventory = (inventory_id, updateData) =>
 export const deleteInventory = (inventory_id) =>
   apiRequest(`/inventory/${inventory_id}`, "DELETE");
 export const getAllInventory = () => apiRequest("/inventory/", "GET");
+export const createSubBranch = async (subBranchData) => {
+  const token = localStorage.getItem("access_token"); // Token'ı localStorage'dan al
+  const response = await fetch(`${BASE_URL}/branches/sub-branches`, { // Doğru URL'yi kullan
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}` // Token'ı Authorization header'ına ekle
+    },
+    body: JSON.stringify(subBranchData), // Body'yi JSON formatına çevir
+  });
+
+  if (!response.ok) {
+    const error = await response.json(); // Hata mesajını al
+    throw new Error(error.detail || "Alt şube eklenirken bir hata oluştu."); // Hata mesajını döndür
+  }
+
+  return response.json(); // Başarılı ise yanıtı döndür
+};

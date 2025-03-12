@@ -55,14 +55,15 @@ async def search_inventory(search_params: InventorySearch) -> List[dict]:
 
     if search_params.branch_id:
         query["branch_id"] = search_params.branch_id
+    if search_params.sub_branch_id:  # Yeni filtre eklendi
+        query["sub_branch_id"] = search_params.sub_branch_id
     if search_params.device_type:
-        query["device_type"] = {"$regex": search_params.device_type, "$options": "i"}  # Büyük küçük harf duyarsız
+        query["device_type"] = {"$regex": search_params.device_type, "$options": "i"}
     if search_params.device_model:
         query["device_model"] = {"$regex": search_params.device_model, "$options": "i"}
     if search_params.quantity is not None:
         query["quantity"] = search_params.quantity
     if search_params.specs:
-        # specs içinde belirli anahtar-değer çiftleri aramak
         for key, value in search_params.specs.items():
             query[f"specs.{key}"] = {"$regex": value, "$options": "i"}
 

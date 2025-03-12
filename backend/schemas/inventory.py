@@ -4,6 +4,7 @@ from datetime import datetime
 
 class InventoryBase(BaseModel):
     branch_id: Optional[str] = Field(None, example="60d5f483f8d2b34d8c8b4567")
+    sub_branch_id: Optional[str] = Field(None, example="60d5f48445e1a2c8e1c1c0c1")  # Yeni alan eklendi
     device_type: Optional[str] = Field(None, example="wifi")
     device_model: Optional[str] = Field(None, example="TP-Link AC1750")
     quantity: Optional[int] = Field(None, example=10)
@@ -27,13 +28,12 @@ class InventoryInDB(InventoryBase):
     class Config:
         orm_mode = True
 
-# 🔥 branch_name alanını Inventory şemasına ekledik
 class Inventory(InventoryInDB):
-    branch_name: Optional[str] = Field(None, example="Ankara Şubesi")  # ✅ branch_name eklendi
+    branch_name: Optional[str] = Field(None, example="Ankara Şubesi")
 
-# Yeni arama modeli
 class InventorySearch(BaseModel):
     branch_id: Optional[str] = None
+    sub_branch_id: Optional[str] = None  # Yeni arama modeli için alan eklendi
     device_type: Optional[str] = None
     device_model: Optional[str] = None
     quantity: Optional[int] = None

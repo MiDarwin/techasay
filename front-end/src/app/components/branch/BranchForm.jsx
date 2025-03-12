@@ -16,62 +16,56 @@ const BranchForm = ({
   const [phoneNumber, setPhoneNumber] = useState(
     initialData.phone_number || ""
   );
-  const [branchNote, setBranchNote] = useState(initialData.branch_note || ""); // Yeni alan
+  const [branchNote, setBranchNote] = useState(initialData.branch_note || "");
   const [locationLink, setLocationLink] = useState(
     initialData.location_link || ""
-  ); // Yeni alan
+  );
   const [error, setError] = useState("");
 
-  // initialData değiştiğinde form alanlarını güncelle
   useEffect(() => {
     setCompanyId(initialData.company_id || "");
     setBranchName(initialData.branch_name || "");
     setAddress(initialData.address || "");
     setCity(initialData.city || "");
     setPhoneNumber(initialData.phone_number || "");
-    setBranchNote(initialData.branch_note || ""); // Yeni alan
-    setLocationLink(initialData.location_link || ""); // Yeni alan
+    setBranchNote(initialData.branch_note || "");
+    setLocationLink(initialData.location_link || "");
     setError("");
   }, [initialData]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // Form Validasyonu
     if (!companyId || !branchName || !address || !city || !phoneNumber) {
       setError("Lütfen tüm alanları doldurun.");
       return;
     }
 
-    // Telefon Numarası Formatı Doğrulama
     const phoneRegex = /^(\+90|0)?[5-9]\d{9}$/;
-    const normalizedPhoneNumber = phoneNumber.replace(/\s/g, ""); // Boşlukları kaldır
+    const normalizedPhoneNumber = phoneNumber.replace(/\s/g, "");
     if (!phoneRegex.test(normalizedPhoneNumber)) {
       setError("Geçerli bir telefon numarası girin.");
       return;
     }
 
     try {
-      // Hata yoksa, onSubmit fonksiyonunu çağır
       await onSubmit({
         company_id: parseInt(companyId, 10),
         branch_name: branchName,
         address,
         city,
         phone_number: normalizedPhoneNumber,
-        branch_note: branchNote, // Yeni alan
-        location_link: locationLink, // Yeni alan
+        branch_note: branchNote,
+        location_link: locationLink,
       });
 
-      // Formu sıfırla (sadece ekleme modunda)
       if (!isEditMode) {
         setCompanyId("");
         setBranchName("");
         setAddress("");
         setCity("");
         setPhoneNumber("");
-        setBranchNote(""); // Yeni alan
-        setLocationLink(""); // Yeni alan
+        setBranchNote("");
+        setLocationLink("");
       }
 
       setError("");
@@ -89,117 +83,115 @@ const BranchForm = ({
         <div className="bg-red-500 text-white p-2 rounded mb-4">{error}</div>
       )}
       <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Şirket Seçimi */}
-        <div>
-          <label
-            htmlFor="companyId"
-            className="block text-gray-700 dark:text-gray-200 mb-2"
-          >
-            Şirket Seçin
-          </label>
-          <select
-            id="companyId"
-            value={companyId}
-            onChange={(e) => setCompanyId(e.target.value)}
-            className="w-full px-3 py-2 border rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600 
-                       text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-            required
-          >
-            <option value="" disabled>
-              Şirket Adı Seçin
-            </option>
-            {companies.map((company) => (
-              <option key={company.company_id} value={company.company_id}>
-                {company.name}
+        {/* Yatay Form Alanları */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label
+              htmlFor="companyId"
+              className="block text-gray-700 dark:text-gray-200 mb-2"
+            >
+              Şirket Seçin
+            </label>
+            <select
+              id="companyId"
+              value={companyId}
+              onChange={(e) => setCompanyId(e.target.value)}
+              className="w-full px-3 py-2 border rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600 
+                         text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              required
+            >
+              <option value="" disabled>
+                Şirket Adı Seçin
               </option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label
-            htmlFor="branchName"
-            className="block text-gray-700 dark:text-gray-200 mb-2"
-          >
-            Şube Adı
-          </label>
-          <input
-            id="branchName"
-            type="text"
-            value={branchName}
-            onChange={(e) => setBranchName(e.target.value)}
-            className="w-full px-3 py-2 border rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600 
-                       text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-            placeholder="Şube Adı Girin"
-            required
-          />
-        </div>
-        <div>
-          <label
-            htmlFor="address"
-            className="block text-gray-700 dark:text-gray-200 mb-2"
-          >
-            Adres
-          </label>
-          <input
-            id="address"
-            type="text"
-            value={address}
-            onChange={(e) => setAddress(e.target.value)}
-            className="w-full px-3 py-2 border rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600 
-                       text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-            placeholder="Adres Girin"
-            required
-          />
-        </div>
-
-        {/* Şehir Seçimi */}
-        <div>
-          <label
-            htmlFor="city"
-            className="block text-gray-700 dark:text-gray-200 mb-2"
-          >
-            Şehir
-          </label>
-          <select
-            id="city"
-            value={city}
-            onChange={(e) => setCity(e.target.value)}
-            className="w-full px-3 py-2 border rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600 
-                       text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-            required
-          >
-            <option value="" disabled>
-              Şehir Seçin
-            </option>
-            {turkishCities.map((cityName, index) => (
-              <option key={index} value={cityName}>
-                {cityName}
+              {companies.map((company) => (
+                <option key={company.company_id} value={company.company_id}>
+                  {company.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label
+              htmlFor="branchName"
+              className="block text-gray-700 dark:text-gray-200 mb-2"
+            >
+              Şube Adı
+            </label>
+            <input
+              id="branchName"
+              type="text"
+              value={branchName}
+              onChange={(e) => setBranchName(e.target.value)}
+              className="w-full px-3 py-2 border rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600 
+                         text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              placeholder="Şube Adı Girin"
+              required
+            />
+          </div>
+          <div>
+            <label
+              htmlFor="address"
+              className="block text-gray-700 dark:text-gray-200 mb-2"
+            >
+              Adres
+            </label>
+            <input
+              id="address"
+              type="text"
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+              className="w-full px-3 py-2 border rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600 
+                         text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              placeholder="Adres Girin"
+              required
+            />
+          </div>
+          <div>
+            <label
+              htmlFor="city"
+              className="block text-gray-700 dark:text-gray-200 mb-2"
+            >
+              Şehir
+            </label>
+            <select
+              id="city"
+              value={city}
+              onChange={(e) => setCity(e.target.value)}
+              className="w-full px-3 py-2 border rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600 
+                         text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              required
+            >
+              <option value="" disabled>
+                Şehir Seçin
               </option>
-            ))}
-          </select>
+              {turkishCities.map((cityName, index) => (
+                <option key={index} value={cityName}>
+                  {cityName}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label
+              htmlFor="phoneNumber"
+              className="block text-gray-700 dark:text-gray-200 mb-2"
+            >
+              Telefon Numarası
+            </label>
+            <input
+              id="phoneNumber"
+              type="text"
+              value={phoneNumber}
+              onChange={(e) => setPhoneNumber(e.target.value)}
+              className="w-full px-3 py-2 border rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600 
+                         text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              placeholder="Telefon Numarası Girin"
+              required
+            />
+          </div>
         </div>
 
-        {/* Telefon Numarası */}
-        <div>
-          <label
-            htmlFor="phoneNumber"
-            className="block text-gray-700 dark:text-gray-200 mb-2"
-          >
-            Telefon Numarası
-          </label>
-          <input
-            id="phoneNumber"
-            type="text"
-            value={phoneNumber}
-            onChange={(e) => setPhoneNumber(e.target.value)}
-            className="w-full px-3 py-2 border rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600 
-                       text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-            placeholder="Telefon Numarası Girin"
-            required
-          />
-        </div>
-
-        {/* Şube Notu (Opsiyonel) */}
+        {/* Şube Notu ve Konum Linki */}
         <div>
           <label
             htmlFor="branchNote"
@@ -217,7 +209,6 @@ const BranchForm = ({
           />
         </div>
 
-        {/* Şube Konum Linki (Opsiyonel) */}
         <div>
           <label
             htmlFor="locationLink"
@@ -273,8 +264,8 @@ BranchForm.propTypes = {
     address: PropTypes.string,
     city: PropTypes.string,
     phone_number: PropTypes.string,
-    branch_note: PropTypes.string, // Yeni alan
-    location_link: PropTypes.string, // Yeni alan
+    branch_note: PropTypes.string,
+    location_link: PropTypes.string,
   }),
   isEditMode: PropTypes.bool,
   onCancel: PropTypes.func,

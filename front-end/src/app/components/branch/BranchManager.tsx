@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
 import BranchForm from "./BranchForm";
+import SubBranchForm from "./SubBranchForm"; // Yeni alt şube formu bileşeni
 import BranchTable from "./BranchTable";
 import Modal from "./Modal";
 import { turkishCities } from "./cities";
 import {
   createBranch,
+  createSubBranch, // Alt şube oluşturma API çağrısı
   getAllBranches,
   updateBranch,
   deleteBranch,
@@ -23,6 +25,7 @@ const BranchManager = () => {
   const [searchFilter, setSearchFilter] = useState("");
   const [branchLoading, setBranchLoading] = useState(false);
   const [isFormVisible, setIsFormVisible] = useState(false);
+  const [isSubBranchFormVisible, setIsSubBranchFormVisible] = useState(false); // Alt şube formu durumu
 
   const fetchBranches = async (city = "", search = "", company = "") => {
     try {
@@ -61,6 +64,18 @@ const BranchManager = () => {
     }
   };
 
+  const handleAddSubBranch = async (subBranchData) => {
+    try {
+      await createSubBranch(subBranchData);
+      fetchBranches(cityFilter, searchFilter, companyFilter);
+      setBranchError("");
+      closeSubBranchModal();
+      alert("Alt şube başarı ile eklendi.");
+    } catch (err) {
+      setBranchError(err.detail || "Alt şube eklenirken bir hata oluştu.");
+    }
+  };
+
   const handleUpdateBranch = async (_id, updateData) => {
     try {
       await updateBranch(_id, updateData);
@@ -93,6 +108,14 @@ const BranchManager = () => {
   const closeBranchModal = () => {
     setIsFormVisible(false);
     setCurrentBranch(null);
+  };
+
+  const openSubBranchModal = () => {
+    setIsSubBranchFormVisible(true);
+  };
+
+  const closeSubBranchModal = () => {
+    setIsSubBranchFormVisible(false);
   };
 
   useEffect(() => {
@@ -147,13 +170,24 @@ const BranchManager = () => {
             setIsFormVisible(true);
             setCurrentBranch(null);
           }}
-          className="flex items-center"
+          className="flex items-center mr-2"
         >
           <AddBusinessIcon className="mr-2" />
           Şube Ekle
         </Button>
+
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={openSubBranchModal} // Alt şube modalını aç
+          className="flex items-center"
+        >
+          <AddBusinessIcon className="mr-2" />
+          Alt Şube Ekle
+        </Button>
       </div>
 
+      {/* Şube Ekleme Modalı */}
       <Modal isOpen={isFormVisible} onClose={closeBranchModal}>
         <BranchForm
           onSubmit={
@@ -165,6 +199,16 @@ const BranchManager = () => {
           isEditMode={!!currentBranch}
           onCancel={closeBranchModal}
           companies={companies}
+        />
+      </Modal>
+
+      {/* Alt Şube Ekleme Modalı */}
+      <Modal isOpen={isSubBranchFormVisible} onClose={closeSubBranchModal}>
+        <SubBranchForm
+          onSubmit={handleAddSubBranch}
+          onCancel={closeSubBranchModal}
+          companies={companies}
+          branches={branches} // Eklenen şubeleri geçir
         />
       </Modal>
 

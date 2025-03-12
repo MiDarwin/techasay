@@ -20,7 +20,7 @@ async def read_branch(branch_id: str):
     return await branch_service.get_branch_by_id(branch_id)
 
 @router.get("/company/{company_id}", response_model=List[Branch])
-async def read_branches_by_company(company_id: int):
+async def get_branches_by_company_id(company_id: int):
     return await branch_service.get_branches_by_company_id(company_id)
 
 @router.post("/", response_model=Branch, status_code=status.HTTP_201_CREATED)
