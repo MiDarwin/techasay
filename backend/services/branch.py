@@ -104,7 +104,6 @@ async def update_branch(branch_id: str, branch: BranchUpdate) -> Branch:
     if existing_branch:
         return await branch_helper(existing_branch)
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Branch not found")
-
 async def delete_branch(branch_id: str):
     if not ObjectId.is_valid(branch_id):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid branch ID format")

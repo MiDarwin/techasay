@@ -1,5 +1,3 @@
-// src/components/BranchTable.jsx
-
 import React, { useState } from "react";
 import PropTypes from "prop-types";
 import {
@@ -19,6 +17,7 @@ import {
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import BackpackIcon from "@mui/icons-material/Backpack"; // Envanter ikonu
+import LocationOnIcon from "@mui/icons-material/LocationOn"; // Konum ikonu
 import { getInventoryByBranch } from "../../utils/api"; // API'den envanter almak için kullanılan fonksiyon
 
 const style = {
@@ -47,6 +46,16 @@ const BranchTable = ({ branches, companies, onEdit, onDelete }) => {
 
   const handleClose = () => setOpen(false);
 
+  const openLocationLink = (link) => {
+    // Eğer link http:// veya https:// ile başlamıyorsa, bu ön ekleri ekle
+    const formattedLink =
+      link.startsWith("http://") || link.startsWith("https://")
+        ? link
+        : `http://${link}`;
+
+    window.open(formattedLink, "_blank"); // Yeni sekmede aç
+  };
+
   return (
     <>
       <TableContainer
@@ -70,7 +79,7 @@ const BranchTable = ({ branches, companies, onEdit, onDelete }) => {
               <TableCell>Şube Adı</TableCell>
               <TableCell>Adres</TableCell>
               <TableCell>Telefon Numarası</TableCell>
-              <TableCell>Şube Notu</TableCell> {/* Yeni hücre */}
+              <TableCell>Şube Notu</TableCell>
               <TableCell>İşlemler</TableCell>
             </TableRow>
           </TableHead>
@@ -90,8 +99,20 @@ const BranchTable = ({ branches, companies, onEdit, onDelete }) => {
                 <TableCell>{branch.branch_name}</TableCell>
                 <TableCell>{branch.address}</TableCell>
                 <TableCell>{branch.phone_number}</TableCell>
-                <TableCell>{branch.branch_note || "Yok"}</TableCell>{" "}
+                <TableCell>{branch.branch_note || "Yok"}</TableCell>
                 <TableCell>
+                  {/* Konum İkonu */}
+                  {branch.location_link && (
+                    <Tooltip title="Konum Göster">
+                      <IconButton
+                        onClick={() => openLocationLink(branch.location_link)} // Yeni fonksiyonu çağır
+                        color="primary"
+                        aria-label="Konum Göster"
+                      >
+                        <LocationOnIcon />
+                      </IconButton>
+                    </Tooltip>
+                  )}
                   <Tooltip title="Düzenle">
                     <IconButton
                       onClick={() => onEdit(branch)}
@@ -129,7 +150,6 @@ const BranchTable = ({ branches, companies, onEdit, onDelete }) => {
       {/* Envanter Modal */}
       <Modal open={open} onClose={handleClose}>
         <Box sx={style}>
-          {/* Seçilen şubenin ismini almak için branches dizisinden bul */}
           {selectedBranchId && (
             <Typography variant="h6" component="h2" sx={{ mb: 2 }}>
               {
@@ -198,6 +218,8 @@ BranchTable.propTypes = {
       address: PropTypes.string.isRequired,
       city: PropTypes.string.isRequired,
       phone_number: PropTypes.string.isRequired,
+      location_link: PropTypes.string, // location_link alanı
+      branch_note: PropTypes.string,
     })
   ).isRequired,
   companies: PropTypes.object.isRequired,

@@ -1,8 +1,7 @@
-"use client";
 import React, { useState, useEffect } from "react";
 import BranchForm from "./BranchForm";
 import BranchTable from "./BranchTable";
-import Modal from "./Modal"; // Modal bileşenini import et
+import Modal from "./Modal";
 import { turkishCities } from "./cities";
 import {
   createBranch,
@@ -11,25 +10,24 @@ import {
   deleteBranch,
   getAllCompanies,
 } from "../../utils/api";
-import AddIcon from "@mui/icons-material/Add";
-import Button from "@mui/material/Button"; // MUI Button bileşeni
 import AddBusinessIcon from "@mui/icons-material/AddBusiness";
+import Button from "@mui/material/Button";
+
 const BranchManager = () => {
   const [branches, setBranches] = useState([]);
   const [branchError, setBranchError] = useState("");
   const [currentBranch, setCurrentBranch] = useState(null);
   const [companies, setCompanies] = useState([]);
   const [cityFilter, setCityFilter] = useState("");
-  const [companyFilter, setCompanyFilter] = useState(""); // companyFilter durumu eklendi
+  const [companyFilter, setCompanyFilter] = useState("");
   const [searchFilter, setSearchFilter] = useState("");
   const [branchLoading, setBranchLoading] = useState(false);
   const [isFormVisible, setIsFormVisible] = useState(false);
 
-  // Şubeleri getir
   const fetchBranches = async (city = "", search = "", company = "") => {
     try {
       setBranchLoading(true);
-      const data = await getAllBranches(city, search, company); // Şirket filtresi eklendi
+      const data = await getAllBranches(city, search, company);
       setBranches(data);
       setBranchLoading(false);
     } catch (err) {
@@ -38,7 +36,6 @@ const BranchManager = () => {
     }
   };
 
-  // Şirket, şehir ve arama filtrelerinde değişiklik yapıldığında şubeleri getir
   useEffect(() => {
     fetchBranches(cityFilter, searchFilter, companyFilter);
   }, [cityFilter, searchFilter, companyFilter]);
@@ -52,7 +49,6 @@ const BranchManager = () => {
     }
   };
 
-  // Şube ekleme
   const handleAddBranch = async (branchData) => {
     try {
       await createBranch(branchData);
@@ -65,7 +61,6 @@ const BranchManager = () => {
     }
   };
 
-  // Şube güncelleme
   const handleUpdateBranch = async (_id, updateData) => {
     try {
       await updateBranch(_id, updateData);
@@ -78,12 +73,11 @@ const BranchManager = () => {
     }
   };
 
-  // Şube silme
   const handleDeleteBranch = async (_id) => {
     if (window.confirm("Bu şubeyi silmek istediğinize emin misiniz?")) {
       try {
         await deleteBranch(_id);
-        fetchBranches(cityFilter, searchFilter, companyFilter); // Filtrelerle birlikte şubeleri yeniden getir
+        fetchBranches(cityFilter, searchFilter, companyFilter);
         setBranchError("");
       } catch (err) {
         setBranchError(err.detail || "Şube silinirken bir hata oluştu.");
@@ -91,21 +85,18 @@ const BranchManager = () => {
     }
   };
 
-  // Şube güncelleme formunu açma
   const openBranchEditModal = (branch) => {
-    setCurrentBranch(branch); // Güncellenecek branch verisini ayarlayın
-    setIsFormVisible(true); // Formu görünür yap
+    setCurrentBranch(branch);
+    setIsFormVisible(true);
   };
 
-  // Formu kapat
   const closeBranchModal = () => {
     setIsFormVisible(false);
-    setCurrentBranch(null); // Güncellenen branch verisini sıfırlayın
+    setCurrentBranch(null);
   };
 
   useEffect(() => {
     fetchCompanies();
-    // İlk başta tüm şubeleri getir
     fetchBranches();
   }, []);
 
@@ -149,17 +140,16 @@ const BranchManager = () => {
           />
         </form>
 
-        {/* MUI Button kullanarak Şube Ekle butonunu güncelle */}
         <Button
           variant="contained"
-          color="success" // Şirket ekleme butonu ile aynı renk
+          color="success"
           onClick={() => {
             setIsFormVisible(true);
             setCurrentBranch(null);
           }}
           className="flex items-center"
         >
-          <AddBusinessIcon className="mr-2" /> {/* İkonu ekle */}
+          <AddBusinessIcon className="mr-2" />
           Şube Ekle
         </Button>
       </div>

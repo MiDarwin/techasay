@@ -17,6 +17,9 @@ const BranchForm = ({
     initialData.phone_number || ""
   );
   const [branchNote, setBranchNote] = useState(initialData.branch_note || ""); // Yeni alan
+  const [locationLink, setLocationLink] = useState(
+    initialData.location_link || ""
+  ); // Yeni alan
   const [error, setError] = useState("");
 
   // initialData değiştiğinde form alanlarını güncelle
@@ -27,6 +30,7 @@ const BranchForm = ({
     setCity(initialData.city || "");
     setPhoneNumber(initialData.phone_number || "");
     setBranchNote(initialData.branch_note || ""); // Yeni alan
+    setLocationLink(initialData.location_link || ""); // Yeni alan
     setError("");
   }, [initialData]);
 
@@ -56,6 +60,7 @@ const BranchForm = ({
         city,
         phone_number: normalizedPhoneNumber,
         branch_note: branchNote, // Yeni alan
+        location_link: locationLink, // Yeni alan
       });
 
       // Formu sıfırla (sadece ekleme modunda)
@@ -66,6 +71,7 @@ const BranchForm = ({
         setCity("");
         setPhoneNumber("");
         setBranchNote(""); // Yeni alan
+        setLocationLink(""); // Yeni alan
       }
 
       setError("");
@@ -109,8 +115,6 @@ const BranchForm = ({
             ))}
           </select>
         </div>
-
-        {/* Şube Adı */}
         <div>
           <label
             htmlFor="branchName"
@@ -129,8 +133,6 @@ const BranchForm = ({
             required
           />
         </div>
-
-        {/* Adres */}
         <div>
           <label
             htmlFor="address"
@@ -215,6 +217,25 @@ const BranchForm = ({
           />
         </div>
 
+        {/* Şube Konum Linki (Opsiyonel) */}
+        <div>
+          <label
+            htmlFor="locationLink"
+            className="block text-gray-700 dark:text-gray-200 mb-2"
+          >
+            Şube Konum Linki (Opsiyonel)
+          </label>
+          <input
+            id="locationLink"
+            type="text"
+            value={locationLink}
+            onChange={(e) => setLocationLink(e.target.value)}
+            className="w-full px-3 py-2 border rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600 
+                       text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+            placeholder="Şube Konum Linki Girin"
+          />
+        </div>
+
         {/* Form Düğmeleri */}
         <div className="flex justify-between">
           {isEditMode && (
@@ -253,6 +274,7 @@ BranchForm.propTypes = {
     city: PropTypes.string,
     phone_number: PropTypes.string,
     branch_note: PropTypes.string, // Yeni alan
+    location_link: PropTypes.string, // Yeni alan
   }),
   isEditMode: PropTypes.bool,
   onCancel: PropTypes.func,

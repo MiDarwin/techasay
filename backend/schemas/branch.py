@@ -9,6 +9,7 @@ class BranchBase(BaseModel):
     city: str
     phone_number: str
     branch_note: Optional[str] = None  # Şube notu opsiyonel olarak eklendi
+    location_link: Optional[str] = None  # Şube konum linki opsiyonel olarak eklendi
 
 class BranchCreate(BranchBase):
     pass
@@ -19,6 +20,7 @@ class BranchUpdate(BaseModel):
     city: Optional[str] = None
     phone_number: Optional[str] = None
     branch_note: Optional[str] = None  # Güncellemelerde opsiyonel
+    location_link: Optional[str] = None  # Şube konum linki opsiyonel olarak eklendi
 
 class Branch(BranchBase):
     id: str = Field(alias="_id")
