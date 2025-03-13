@@ -31,7 +31,6 @@ export default function RegisterPage() {
         surname,
         phone_number: formattedPhoneNumber,
         password,
-        permissions: [],
       });
       alert(data.message);
       router.push("/auth/login");
