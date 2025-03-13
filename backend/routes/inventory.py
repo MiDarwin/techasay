@@ -26,6 +26,7 @@ async def create_inventory(inventory: InventoryCreate):
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
+
 @router.get("/branch/{branch_id}", response_model=List[Inventory])
 async def read_inventory_by_branch(branch_id: str):
     inventories = await get_inventory_by_branch(branch_id)

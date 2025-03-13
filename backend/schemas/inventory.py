@@ -9,6 +9,7 @@ class InventoryBase(BaseModel):
     device_model: Optional[str] = Field(None, example="TP-Link AC1750")
     quantity: Optional[int] = Field(None, example=10)
     specs: Optional[Dict] = Field(None, example={"SSID": "MyWiFiNetwork", "password": "securepassword123"})
+    note: Optional[str] = Field(None, example="Ürünün notu")  # Yeni alan
 
 class InventoryCreate(InventoryBase):
     branch_id: str
@@ -19,6 +20,7 @@ class InventoryUpdate(BaseModel):
     device_model: Optional[str] = Field(None, example="TP-Link AC1750")
     quantity: Optional[int] = Field(None, example=10)
     specs: Optional[Dict] = Field(None, example={"SSID": "MyWiFiNetwork", "password": "securepassword123"})
+    note: Optional[str] = Field(None, example="Ürünün notu")  # Yeni alan
 
 class InventoryInDB(InventoryBase):
     id: str

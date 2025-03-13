@@ -233,6 +233,17 @@ const BranchTable = ({ branches, companies, onEdit, onDelete }) => {
                     <Typography variant="body1" component="span">
                       {item.quantity}
                     </Typography>
+                    <br />
+                    <Typography
+                      variant="body1"
+                      component="span"
+                      fontWeight="bold"
+                    >
+                      Ürün Notu:
+                    </Typography>
+                    <Typography variant="body1" component="span">
+                      {item.note || "Yok"}
+                    </Typography>
                   </li>
                 ))}
               </ul>

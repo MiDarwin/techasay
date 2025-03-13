@@ -18,6 +18,7 @@ const AddInventoryModal = ({ branches, onClose, onInventoryAdded }) => {
   const [deviceType, setDeviceType] = useState("");
   const [deviceModel, setDeviceModel] = useState("");
   const [quantity, setQuantity] = useState("");
+  const [note, setNote] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
 
@@ -33,6 +34,7 @@ const AddInventoryModal = ({ branches, onClose, onInventoryAdded }) => {
       device_type: deviceType,
       device_model: deviceModel,
       quantity: parseInt(quantity, 10),
+      note: note,
     };
 
     try {
@@ -94,6 +96,14 @@ const AddInventoryModal = ({ branches, onClose, onInventoryAdded }) => {
           margin="normal"
         />
         {error && <p className="text-red-500 mb-4">{error}</p>}
+        <TextField
+          label="Not"
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+          required
+          fullWidth
+          margin="normal"
+        />
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose} color="primary">

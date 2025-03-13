@@ -24,11 +24,12 @@ async def inventory_helper(inventory) -> dict:
     return {
         "id": str(inventory["_id"]),
         "branch_id": str(inventory["branch_id"]),
-        "branch_name": branch_name,  # ✅ Artık doğru bir şekilde ekleniyor
+        "branch_name": branch_name,
         "device_type": inventory["device_type"],
         "device_model": inventory.get("device_model", ""),
         "quantity": inventory.get("quantity", 0),
         "specs": inventory.get("specs", {}),
+        "note": inventory.get("note", ""),  # Note alanını ekleyin
         "created_at": inventory.get("created_at", datetime.utcnow()),
         "updated_at": inventory.get("updated_at", datetime.utcnow()),
     }

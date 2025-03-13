@@ -34,7 +34,7 @@ async def update_inventory(inventory_id: str, update_data: InventoryUpdate) -> O
         )
     updated_inventory = await inventory_collection.find_one({"_id": ObjectId(inventory_id)})
     if updated_inventory:
-        return  await inventory_helper(updated_inventory)
+        return await inventory_helper(updated_inventory)
     return None
 
 # Envanteri Silme

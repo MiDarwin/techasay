@@ -36,6 +36,7 @@ const InventoryList = ({ inventories, onEdit, onDelete }) => {
             <TableCell>Ürün Türü</TableCell>
             <TableCell>Ürün Modeli</TableCell>
             <TableCell>Miktar</TableCell>
+            <TableCell>Ürün Notu</TableCell>
             <TableCell>İşlemler</TableCell>
           </TableRow>
         </TableHead>
@@ -61,6 +62,7 @@ const InventoryList = ({ inventories, onEdit, onDelete }) => {
                 <TableCell>{inventory.device_type}</TableCell>
                 <TableCell>{inventory.device_model}</TableCell>
                 <TableCell>{inventory.quantity}</TableCell>
+                <TableCell>{inventory.note}</TableCell>
                 <TableCell>
                   <Tooltip title="Düzenle">
                     <IconButton
