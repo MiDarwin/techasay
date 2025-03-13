@@ -1,18 +1,16 @@
-# services/user_service.py
 from sqlalchemy.orm import Session
-from models import User as UserModel
+from models.user import User
 from schemas.user import UserCreate
-from passlib.context import CryptContext
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-def get_user(db: Session, username: str):
-    return db.query(UserModel).filter(UserModel.username == username).first()
-
-def create_user(db: Session, user: UserCreate):
-    hashed_password = pwd_context.hash(user.password)
-    db_user = UserModel(username=user.username, password=hashed_password)
+async def create_user(db: Session, user: UserCreate):
+    db_user = User(
+        first_name=user.first_name,
+        last_name=user.last_name,
+        email=user.email,
+        phone=user.phone,
+        password=user.password  # Şifreleri hash'lemek için bir yöntem kullanmalısınız.
+    )
     db.add(db_user)
-    db.commit()
-    db.refresh(db_user)
+    await db.commit()
+    await db.refresh(db_user)
     return db_user

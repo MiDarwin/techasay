@@ -14,6 +14,7 @@ import {
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import NoBackpackIcon from "@mui/icons-material/NoBackpack";
+
 const InventoryList = ({ inventories, onEdit, onDelete }) => {
   return (
     <TableContainer
@@ -33,6 +34,8 @@ const InventoryList = ({ inventories, onEdit, onDelete }) => {
             }}
           >
             <TableCell>Şube Adı</TableCell>
+            <TableCell>Alt Şube Adı</TableCell>{" "}
+            {/* Alt şube adı için yeni hücre */}
             <TableCell>Ürün Türü</TableCell>
             <TableCell>Ürün Modeli</TableCell>
             <TableCell>Miktar</TableCell>
@@ -43,7 +46,9 @@ const InventoryList = ({ inventories, onEdit, onDelete }) => {
         <TableBody>
           {inventories.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={5} align="center">
+              <TableCell colSpan={7} align="center">
+                {" "}
+                {/* Kolon sayısını güncelledik */}
                 <Typography>Envanter bulunamadı.</Typography>
               </TableCell>
             </TableRow>
@@ -59,6 +64,8 @@ const InventoryList = ({ inventories, onEdit, onDelete }) => {
                 }}
               >
                 <TableCell>{inventory.branch_name}</TableCell>
+                <TableCell>{inventory.sub_branch_name || "Yok"}</TableCell>{" "}
+                {/* Alt şube adı */}
                 <TableCell>{inventory.device_type}</TableCell>
                 <TableCell>{inventory.device_model}</TableCell>
                 <TableCell>{inventory.quantity}</TableCell>

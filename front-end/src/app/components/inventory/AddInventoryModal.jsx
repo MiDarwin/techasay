@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { createInventory } from "../../utils/api";
+import React, { useState, useEffect } from "react";
+import { createInventory, getSubBranchesByBranchId } from "../../utils/api";
 import {
   Button,
   TextField,
@@ -15,12 +15,31 @@ import {
 
 const AddInventoryModal = ({ branches, onClose, onInventoryAdded }) => {
   const [branchId, setBranchId] = useState("");
+  const [subBranchId, setSubBranchId] = useState(""); // Alt şube ID'si için state
   const [deviceType, setDeviceType] = useState("");
   const [deviceModel, setDeviceModel] = useState("");
   const [quantity, setQuantity] = useState("");
   const [note, setNote] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [subBranches, setSubBranches] = useState([]); // Alt şubeleri tutmak için state
+
+  useEffect(() => {
+    const fetchSubBranches = async () => {
+      if (branchId) {
+        try {
+          const data = await getSubBranchesByBranchId(branchId);
+          setSubBranches(data);
+        } catch (error) {
+          console.error("Alt şubeler alınırken hata oluştu:", error);
+        }
+      } else {
+        setSubBranches([]); // Şube seçilmediğinde alt şubeleri sıfırla
+      }
+    };
+
+    fetchSubBranches();
+  }, [branchId]); // branchId değiştiğinde alt şubeleri çek
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -31,6 +50,7 @@ const AddInventoryModal = ({ branches, onClose, onInventoryAdded }) => {
 
     const inventoryData = {
       branch_id: branchId,
+      sub_branch_id: subBranchId, // Alt şube ID'sini ekle
       device_type: deviceType,
       device_model: deviceModel,
       quantity: parseInt(quantity, 10),
@@ -57,7 +77,10 @@ const AddInventoryModal = ({ branches, onClose, onInventoryAdded }) => {
           <InputLabel>Şube Seçin</InputLabel>
           <Select
             value={branchId}
-            onChange={(e) => setBranchId(e.target.value)}
+            onChange={(e) => {
+              setBranchId(e.target.value);
+              setSubBranchId(""); // Yeni şube seçildiğinde alt şube ID'sini sıfırla
+            }}
             required
           >
             <MenuItem value="" disabled>
@@ -70,6 +93,29 @@ const AddInventoryModal = ({ branches, onClose, onInventoryAdded }) => {
             ))}
           </Select>
         </FormControl>
+
+        {/* Alt Şube Seçim Alanı */}
+        <FormControl
+          fullWidth
+          margin="normal"
+          disabled={subBranches.length === 0}
+        >
+          <InputLabel>Alt Şube Seçin</InputLabel>
+          <Select
+            value={subBranchId}
+            onChange={(e) => setSubBranchId(e.target.value)}
+          >
+            <MenuItem value="" disabled>
+              Alt Şube Seçin
+            </MenuItem>
+            {subBranches.map((subBranch) => (
+              <MenuItem key={subBranch._id} value={subBranch._id}>
+                {subBranch.name}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+
         <TextField
           label="Ürün Türü"
           value={deviceType}

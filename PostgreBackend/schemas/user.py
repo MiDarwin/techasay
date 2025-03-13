@@ -1,13 +1,18 @@
-# schemas/user.py
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 
 class UserCreate(BaseModel):
-    username: str
+    first_name: str
+    last_name: str
+    email: EmailStr
+    phone: str
     password: str
 
-class User(BaseModel):
+class UserResponse(BaseModel):
     id: int
-    username: str
+    first_name: str
+    last_name: str
+    email: EmailStr
+    phone: str
 
     class Config:
         orm_mode = True
