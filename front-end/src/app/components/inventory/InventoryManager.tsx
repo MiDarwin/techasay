@@ -51,7 +51,18 @@ const InventoryManager = () => {
       setBranchesLoading(false);
     }
   };
-
+  // Envanteri silme fonksiyonu
+  const handleInventoryDelete = async (inventoryId) => {
+    try {
+      await deleteInventory(inventoryId); // Envanteri sil
+      handleInventoryDeleted(); // Silme işleminden sonra envanterleri güncelle
+    } catch (err) {
+      // Hata durumunda bir mesaj göstermek için hata yakalayın
+      setInventoriesError(
+        err.response?.data?.detail || "Envanter silinirken bir hata oluştu."
+      );
+    }
+  };
   // Tüm Envanterleri Çekme Fonksiyonu
   const fetchAllInventories = async () => {
     try {
@@ -169,7 +180,7 @@ const InventoryManager = () => {
                 <InventoryList
                   inventories={filteredInventories}
                   onEdit={setSelectedInventory}
-                  onDelete={handleInventoryDeleted}
+                  onDelete={handleInventoryDelete}
                 />
               )}
             </div>

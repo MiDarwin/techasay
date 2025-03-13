@@ -38,7 +38,7 @@ async def update_inventory(inventory_id: str, update_data: InventoryUpdate) -> O
     return None
 
 # Envanteri Silme
-async def delete_inventory(inventory_id: str) -> bool:
+async def delete_inventory_(inventory_id: str) -> bool:
     result = await inventory_collection.delete_one({"_id": ObjectId(inventory_id)})
     return result.deleted_count == 1
 

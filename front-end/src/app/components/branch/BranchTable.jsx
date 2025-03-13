@@ -18,7 +18,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import BackpackIcon from "@mui/icons-material/Backpack"; // Envanter ikonu
 import LocationOnIcon from "@mui/icons-material/LocationOn"; // Konum ikonu
-import HolidayVillageIcon from "@mui/icons-material/HolidayVillage";
+import HolidayVillageIcon from "@mui/icons-material/HolidayVillage"; // Alt şube ikonu
 import {
   getInventoryByBranch,
   getSubBranchesByBranchId,
@@ -143,15 +143,17 @@ const BranchTable = ({ branches, companies, onEdit, onDelete }) => {
                       <DeleteIcon />
                     </IconButton>
                   </Tooltip>
-                  <Tooltip title="Alt Şubeleri Görüntüle">
-                    <IconButton
-                      onClick={() => handleOpenSubBranches(branch._id)} // Alt şubeleri görüntüle
-                      color="primary"
-                      aria-label="Alt Şubeleri Görüntüle"
-                    >
-                      <HolidayVillageIcon />
-                    </IconButton>
-                  </Tooltip>
+                  {branch.sub_branch && ( // Alt şube durumu kontrolü
+                    <Tooltip title="Alt Şubeleri Görüntüle">
+                      <IconButton
+                        onClick={() => handleOpenSubBranches(branch._id)} // Alt şubeleri görüntüle
+                        color="primary"
+                        aria-label="Alt Şubeleri Görüntüle"
+                      >
+                        <HolidayVillageIcon />
+                      </IconButton>
+                    </Tooltip>
+                  )}
                   <Tooltip title="Şube Envanterini Görüntüle">
                     <IconButton
                       onClick={() => handleOpenInventory(branch._id)}
@@ -243,7 +245,7 @@ const BranchTable = ({ branches, companies, onEdit, onDelete }) => {
             {subBranches.length > 0 ? (
               <ul>
                 {subBranches.map((subBranch) => (
-                  <li key={subBranch.id} style={{ marginBottom: "10px" }}>
+                  <li key={subBranch._id} style={{ marginBottom: "10px" }}>
                     <Typography
                       variant="body1"
                       component="span"
@@ -279,6 +281,7 @@ BranchTable.propTypes = {
       phone_number: PropTypes.string.isRequired,
       location_link: PropTypes.string,
       branch_note: PropTypes.string,
+      sub_branch: PropTypes.array, // Alt şube durumu
     })
   ).isRequired,
   companies: PropTypes.object.isRequired,

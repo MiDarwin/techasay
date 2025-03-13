@@ -8,7 +8,7 @@ from services.inventory import (
     add_inventory,
     get_inventory_by_branch,
     update_inventory,
-    delete_inventory,
+    delete_inventory_,
     get_inventory_by_id,
     search_inventory,get_all_inventories
 )
@@ -48,8 +48,8 @@ async def update_existing_inventory(inventory_id: str, inventory: InventoryUpdat
     return updated_inventory
 
 @router.delete("/{inventory_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_existing_inventory(inventory_id: str):
-    success = await delete_inventory(inventory_id)
+async def delete_inventory(inventory_id: str):
+    success = await delete_inventory_(inventory_id)
     if not success:
         raise HTTPException(status_code=404, detail="Inventory not found")
     return

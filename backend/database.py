@@ -47,6 +47,7 @@ async def branch_helper(branch) -> dict:
         "phone_number": branch["phone_number"],
         "branch_note": branch.get("branch_note", ""),  # Şube notu eklendi
         "location_link": branch.get("location_link", ""),  # Şube konum linki eklendi
+        "sub_branch": branch.get("sub_branch", False),  # Varsayılan olarak False döndür
         "created_at": branch["created_at"],
         "updated_at": branch["updated_at"],
     }
