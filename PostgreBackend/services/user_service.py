@@ -1,7 +1,6 @@
 # services/user_service.py
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from sqlalchemy.exc import IntegrityError
 from models.user import User
 from schemas.user import UserCreate
 
@@ -32,3 +31,8 @@ async def verify_user_password(db: AsyncSession, email: str, password: str):
     if user and user.verify_password(password):  # Şifreyi kontrol et
         return True
     return False
+async def login_user(db: AsyncSession, email: str, password: str):
+    user = await get_user_by_email(db, email)
+    if not user or not user.verify_password(password):
+        raise ValueError("E-posta veya şifre hatalı.")
+    return user
