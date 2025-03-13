@@ -18,6 +18,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import BackpackIcon from "@mui/icons-material/Backpack"; // Envanter ikonu
 import LocationOnIcon from "@mui/icons-material/LocationOn"; // Konum ikonu
+import HolidayVillageIcon from "@mui/icons-material/HolidayVillage";
 import {
   getInventoryByBranch,
   getSubBranchesByBranchId,
@@ -148,7 +149,7 @@ const BranchTable = ({ branches, companies, onEdit, onDelete }) => {
                       color="primary"
                       aria-label="Alt Şubeleri Görüntüle"
                     >
-                      <BackpackIcon />
+                      <HolidayVillageIcon />
                     </IconButton>
                   </Tooltip>
                   <Tooltip title="Şube Envanterini Görüntüle">

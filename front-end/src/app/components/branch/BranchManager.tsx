@@ -14,6 +14,7 @@ import {
 } from "../../utils/api";
 import AddBusinessIcon from "@mui/icons-material/AddBusiness";
 import Button from "@mui/material/Button";
+import HolidayVillageIcon from "@mui/icons-material/HolidayVillage";
 
 const BranchManager = () => {
   const [branches, setBranches] = useState([]);
@@ -182,7 +183,7 @@ const BranchManager = () => {
           onClick={openSubBranchModal} // Alt şube modalını aç
           className="flex items-center"
         >
-          <AddBusinessIcon className="mr-2" />
+          <HolidayVillageIcon className="mr-2" />
           Alt Şube Ekle
         </Button>
       </div>
