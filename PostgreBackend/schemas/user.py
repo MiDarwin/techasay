@@ -18,6 +18,8 @@ class UserResponse(BaseModel):
     surname: str
     email: str
     phone_number: str
+    access_token: str
+    token_type: str
 
     class Config:
         orm_mode = True

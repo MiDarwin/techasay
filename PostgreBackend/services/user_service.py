@@ -3,6 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from models.user import User
 from schemas.user import UserCreate
+from utils.bearerToken import create_access_token
 
 async def create_user(db: AsyncSession, user: UserCreate):
     # E-posta kontrolü
@@ -31,8 +32,25 @@ async def verify_user_password(db: AsyncSession, email: str, password: str):
     if user and user.verify_password(password):  # Şifreyi kontrol et
         return True
     return False
+
+
 async def login_user(db: AsyncSession, email: str, password: str):
     user = await get_user_by_email(db, email)
     if not user or not user.verify_password(password):
         raise ValueError("E-posta veya şifre hatalı.")
-    return user
+
+    # Token oluştur
+    access_token = create_access_token(data={"user_id": user.id})
+    return {
+        "id": user.id,
+        "name": user.name,
+        "surname": user.surname,
+        "email": user.email,
+        "phone_number": user.phone_number,
+        "access_token": access_token,
+        "token_type": "bearer"
+    }
+# services/user_service.py
+async def get_user_by_id(db: AsyncSession, user_id: int):
+    result = await db.execute(select(User).filter(User.id == user_id))
+    return result.scalars().first()  # İlk sonucu döndür
