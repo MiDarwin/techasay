@@ -7,6 +7,8 @@ import UpdateInventoryModal from "./UpdateInventoryModal"; // Envanter Güncelle
 import {
   getAllInventory,
   getAllBranches,
+  getAllCompanies,
+  getBranchesByCompanyId,
   deleteInventory,
 } from "../../utils/api"; // API çağrıları
 import AddIcon from "@mui/icons-material/Add";
@@ -36,19 +38,29 @@ const InventoryManager = () => {
   const [branchesError, setBranchesError] = useState("");
   const [inventoriesLoading, setInventoriesLoading] = useState(false);
   const [inventoriesError, setInventoriesError] = useState("");
+  const [companies, setCompanies] = useState([]); // Şirket listesi
+  const [selectedCompanyId, setSelectedCompanyId] = useState(""); // Seçilen Şirket ID'si
 
-  // Şube listesini çekme fonksiyonu
-  const fetchBranches = async () => {
+  // Şirketleri alma
+  const fetchCompanies = async () => {
     try {
-      setBranchesLoading(true);
-      const data = await getAllBranches();
-      setBranches(data);
-      setBranchesLoading(false);
+      const companyData = await getAllCompanies();
+      setCompanies(companyData);
     } catch (err) {
-      setBranchesError(
-        err.response?.data?.detail || "Şubeler alınırken bir hata oluştu."
+      setInventoriesError(
+        err.message || "Şirketler alınırken bir hata oluştu."
       );
-      setBranchesLoading(false);
+    }
+  };
+
+  // Şubeleri alma
+  const fetchBranches = async (companyId) => {
+    try {
+      const data = await getBranchesByCompanyId(companyId);
+      setBranches(data);
+    } catch (err) {
+      console.error(err); // Hata mesajını kontrol edin
+      setInventoriesError(err.message || "Şubeler alınırken bir hata oluştu.");
     }
   };
   // Envanteri silme fonksiyonu
@@ -81,10 +93,17 @@ const InventoryManager = () => {
 
   // İlk açılışta şubeleri ve tüm envanterleri yükle
   useEffect(() => {
-    fetchBranches();
+    fetchCompanies();
     fetchAllInventories();
   }, []);
-
+  // Seçilen şirket değiştiğinde şubeleri al
+  useEffect(() => {
+    if (selectedCompanyId) {
+      fetchBranches(selectedCompanyId);
+    } else {
+      setBranches([]); // Şirket seçilmediyse şubeleri temizle
+    }
+  }, [selectedCompanyId]);
   // Şube seçimi değiştiğinde envanterleri filtrele
   useEffect(() => {
     if (activeInventoryBranch === "") {
@@ -133,6 +152,33 @@ const InventoryManager = () => {
           <Box sx={{ padding: 2 }}>
             {/* Filtreleme ve Ekleme Alanı */}
             <div className="flex items-center justify-between mb-4 p-2 rounded-lg shadow-lg bg-white border border-gray-300">
+              {/* Şirket Seçimi */}
+              <FormControl
+                variant="outlined"
+                margin="normal"
+                sx={{ minWidth: 150 }} // Genişliği küçült
+              >
+                <InputLabel>Şirket Seçin</InputLabel>
+                <Select
+                  value={selectedCompanyId}
+                  onChange={(e) => setSelectedCompanyId(e.target.value)}
+                  label="Şirket Seçin"
+                  sx={{ height: "40px" }} // Select bileşeninin yüksekliği
+                >
+                  <MenuItem value="">
+                    <em>Tüm Şirketler</em>
+                  </MenuItem>
+                  {companies.map((company) => (
+                    <MenuItem
+                      key={company.company_id}
+                      value={company.company_id}
+                    >
+                      {company.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+
               {/* Şube Seçimi */}
               <FormControl
                 variant="outlined"

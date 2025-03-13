@@ -8,7 +8,7 @@ from typing import List
 from datetime import datetime
 from bson import ObjectId
 
-from schemas.sub_branch import SubBranchCreate
+from schemas.sub_branch import SubBranchCreate, SubBranchUpdate
 
 
 async def get_all_branches(city: str = None, search: str = None, company_id: int = None) -> List[Branch]:
@@ -152,3 +152,26 @@ async def get_sub_branches_by_branch_id(branch_id: str) -> List[dict]:
     async for sub_branch in sub_branch_collection.find({"branch_id": branch_id}):
         sub_branches.append(await sub_branch_helper(sub_branch))
     return sub_branches
+async def update_sub_branch(sub_branch_id: str, sub_branch: SubBranchUpdate) -> dict:
+    if not ObjectId.is_valid(sub_branch_id):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid sub-branch ID format")
+
+    sub_branch_dict = sub_branch.dict(exclude_unset=True)  # Sadece güncellenen alanları al
+    sub_branch_dict["updated_at"] = datetime.utcnow()
+
+    result = await sub_branch_collection.update_one({"_id": ObjectId(sub_branch_id)}, {"$set": sub_branch_dict})
+
+    if result.modified_count == 0:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Sub-branch not found")
+
+    updated_sub_branch = await sub_branch_collection.find_one({"_id": ObjectId(sub_branch_id)})
+    return await sub_branch_helper(updated_sub_branch)
+
+async def delete_sub_branch(sub_branch_id: str) -> None:
+    if not ObjectId.is_valid(sub_branch_id):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid sub-branch ID format")
+
+    result = await sub_branch_collection.delete_one({"_id": ObjectId(sub_branch_id)})
+
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Sub-branch not found")

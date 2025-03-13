@@ -1,4 +1,4 @@
-const BASE_URL = "http://127.0.0.1:8000";
+const BASE_URL = "http://127.0.1:8000";
 
 export async function apiRequest(
   endpoint,
@@ -72,7 +72,6 @@ export const getAllBranches = (city = "", search = "", company = "") => {
   return apiRequest(`/branches/?${params.toString()}`, "GET");
 };
 
-
 export const getBranchById = (branch_id) =>
   apiRequest(`/branches/${branch_id}`, "GET");
 
@@ -98,6 +97,7 @@ export const updateBranch = (_id, updateData) =>
 
 export const deleteBranch = (_id) =>
   apiRequest(`/branches/${_id}`, "DELETE");
+
 // ** Envanter CRUD İstekleri **
 export const createInventory = (inventoryData) =>
   apiRequest("/inventory/", "POST", inventoryData);
@@ -113,10 +113,13 @@ export const updateInventory = (inventory_id, updateData) =>
 
 export const deleteInventory = (inventory_id) =>
   apiRequest(`/inventory/${inventory_id}`, "DELETE");
+
 export const getAllInventory = () => apiRequest("/inventory/", "GET");
+
+// ** Alt Şube CRUD İstekleri **
 export const createSubBranch = async (subBranchData) => {
   const token = localStorage.getItem("access_token"); // Token'ı localStorage'dan al
-  const response = await fetch(`${BASE_URL}/branches/sub-branches`, { // Doğru URL'yi kullan
+  const response = await fetch(`${BASE_URL}/branches/sub-branches`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -132,6 +135,7 @@ export const createSubBranch = async (subBranchData) => {
 
   return response.json(); // Başarılı ise yanıtı döndür
 };
+
 export const getSubBranchesByBranchId = async (branchId) => {
   const token = localStorage.getItem("access_token"); // Token'ı localStorage'dan al
   const response = await fetch(`${BASE_URL}/branches/sub-branches/${branchId}`, {
@@ -147,4 +151,40 @@ export const getSubBranchesByBranchId = async (branchId) => {
   }
 
   return response.json();
+};
+
+// Alt Şube Güncelleme ve Silme İstekleri
+export const updateSubBranch = async (subBranchId, updateData) => {
+  const token = localStorage.getItem("access_token");
+  const response = await fetch(`${BASE_URL}/branches/sub-branches/${subBranchId}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`
+    },
+    body: JSON.stringify(updateData),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.detail || "Alt şube güncellenirken bir hata oluştu.");
+  }
+
+  return response.json();
+};
+
+export const deleteSubBranch = async (subBranchId) => {
+  const token = localStorage.getItem("access_token");
+  const response = await fetch(`${BASE_URL}/branches/sub-branches/${subBranchId}`, {
+    method: "DELETE",
+    headers: {
+      "Authorization": `Bearer ${token}`
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error("Alt şube silinirken bir hata oluştu.");
+  }
+
+  return; // Başarılı ise boş döndür
 };

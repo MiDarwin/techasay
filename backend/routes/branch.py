@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from typing import List
 from schemas.branch import Branch, BranchCreate, BranchUpdate
-from schemas.sub_branch import SubBranchCreate
+from schemas.sub_branch import SubBranchCreate,SubBranchUpdate
 from services import branch as branch_service
-from services.branch import create_sub_branch
+from services.branch import create_sub_branch,update_sub_branch, delete_sub_branch
 from utils.auth import get_current_user
 
 router = APIRouter(
@@ -42,3 +42,10 @@ async def create_new_sub_branch(sub_branch: SubBranchCreate):
 @router.get("/sub-branches/{branch_id}", response_model=List[dict])
 async def read_sub_branches(branch_id: str):
     return await branch_service.get_sub_branches_by_branch_id(branch_id)
+@router.put("/sub-branches/{sub_branch_id}", response_model=dict)
+async def update_sub_branch(sub_branch_id: str, sub_branch: SubBranchUpdate):
+    return await update_sub_branch(sub_branch_id, sub_branch)
+
+@router.delete("/sub-branches/{sub_branch_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def remove_sub_branch(sub_branch_id: str):
+    await delete_sub_branch(sub_branch_id)

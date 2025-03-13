@@ -22,6 +22,7 @@ import HolidayVillageIcon from "@mui/icons-material/HolidayVillage"; // Alt şub
 import {
   getInventoryByBranch,
   getSubBranchesByBranchId,
+  deleteSubBranch, // Alt şube silme API çağrısı
 } from "../../utils/api"; // API'den envanter ve alt şubeleri almak için kullanılan fonksiyonlar
 
 const style = {
@@ -67,6 +68,19 @@ const BranchTable = ({ branches, companies, onEdit, onDelete }) => {
         : `http://${link}`;
 
     window.open(formattedLink, "_blank");
+  };
+
+  const handleDeleteSubBranch = async (subBranchId) => {
+    if (window.confirm("Bu alt şubeyi silmek istediğinize emin misiniz?")) {
+      try {
+        await deleteSubBranch(subBranchId);
+        // Alt şube silindikten sonra alt şubeleri tekrar al
+        const data = await getSubBranchesByBranchId(selectedBranchId);
+        setSubBranches(data);
+      } catch (err) {
+        alert(err.detail || "Alt şube silinirken bir hata oluştu.");
+      }
+    }
   };
 
   return (
@@ -256,6 +270,15 @@ const BranchTable = ({ branches, companies, onEdit, onDelete }) => {
                     <Typography variant="body1" component="span">
                       {subBranch.name}
                     </Typography>
+                    <Tooltip title="Sil">
+                      <IconButton
+                        onClick={() => handleDeleteSubBranch(subBranch._id)}
+                        color="error"
+                        aria-label="Sil"
+                      >
+                        <DeleteIcon />
+                      </IconButton>
+                    </Tooltip>
                     {/* Diğer alt şube bilgilerini buraya ekleyebilirsiniz */}
                   </li>
                 ))}
