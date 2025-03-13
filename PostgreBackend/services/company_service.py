@@ -11,8 +11,9 @@ async def create_company(db: AsyncSession, company: CompanyCreate):
     await db.refresh(db_company)
     return db_company
 
-async def get_company_by_id(db: AsyncSession, company_id: int):
-    result = await db.execute(select(Company).filter(Company.id == company_id))
+async def get_company_by_company_id(db: AsyncSession, company_id: int):
+    # company_id'ye göre sorgulama yapıyoruz
+    result = await db.execute(select(Company).filter(Company.company_id == company_id))
     return result.scalars().first()
 
 async def get_companies(db: AsyncSession, skip: int = 0, limit: int = 10):
