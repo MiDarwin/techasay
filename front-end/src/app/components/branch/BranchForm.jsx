@@ -49,7 +49,7 @@ const BranchForm = ({
 
     try {
       await onSubmit({
-        company_id: parseInt(companyId, 10),
+        company_id: parseInt(companyId, 10), // Şirket ID'sinin doğru olduğunu kontrol et
         branch_name: branchName,
         address,
         city,
@@ -57,18 +57,7 @@ const BranchForm = ({
         branch_note: branchNote,
         location_link: locationLink,
       });
-
-      if (!isEditMode) {
-        setCompanyId("");
-        setBranchName("");
-        setAddress("");
-        setCity("");
-        setPhoneNumber("");
-        setBranchNote("");
-        setLocationLink("");
-      }
-
-      setError("");
+      // Formu sıfırla
     } catch (submissionError) {
       setError("Şubeyi eklerken veya güncellerken bir hata oluştu.");
     }
@@ -83,7 +72,6 @@ const BranchForm = ({
         <div className="bg-red-500 text-white p-2 rounded mb-4">{error}</div>
       )}
       <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Yatay Form Alanları */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label
@@ -260,7 +248,7 @@ BranchForm.propTypes = {
   ).isRequired,
   initialData: PropTypes.shape({
     company_id: PropTypes.number,
-    branch_name: PropTypes.string,
+    branch_name: PropTypes.string, // "branch_name" yerine "name"
     address: PropTypes.string,
     city: PropTypes.string,
     phone_number: PropTypes.string,

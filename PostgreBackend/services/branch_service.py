@@ -3,6 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from models.branch import Branch
 from schemas.branch import BranchCreate
+from sqlalchemy.orm import joinedload  # Ekle
 
 async def create_branch(db: AsyncSession, branch: BranchCreate, company_id: int):
     db_branch = Branch(**branch.dict(), company_id=company_id)  # company_id kullanılıyor
@@ -11,9 +12,30 @@ async def create_branch(db: AsyncSession, branch: BranchCreate, company_id: int)
     await db.refresh(db_branch)
     return db_branch
 
+
 async def get_branches(db: AsyncSession, company_id: int, skip: int = 0, limit: int = 10):
-    result = await db.execute(select(Branch).filter(Branch.company_id == company_id).offset(skip).limit(limit))
-    return result.scalars().all()
+    result = await db.execute(
+        select(Branch)
+        .options(joinedload(Branch.company))
+        .filter(Branch.company_id == company_id)
+        .offset(skip)
+        .limit(limit)
+    )
+    branches = result.scalars().all()
+
+    return [
+        {
+            "id": branch.id,
+            "name": branch.branch_name,  # Burayı branch_name olarak güncelleyebilirsiniz.
+            "address": branch.address,
+            "city": branch.city,
+            "phone_number": branch.phone_number,
+            "company_id": branch.company_id,
+            "company_name": branch.company.name,
+            "branch_note": branch.branch_note if hasattr(branch, 'branch_note') else "",  # Varsayılan değer
+        }
+        for branch in branches
+    ]
 
 async def get_branch_by_id(db: AsyncSession, branch_id: int):
     result = await db.execute(select(Branch).filter(Branch.id == branch_id))

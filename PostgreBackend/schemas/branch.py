@@ -11,9 +11,15 @@ class BranchBase(BaseModel):
 class BranchCreate(BranchBase):
     pass
 
-class BranchResponse(BranchBase):
+class BranchResponse(BaseModel):
     id: int
+    name: str  # Bunu branch_name olarak değiştirebilirsiniz.
+    address: str
+    city: str
+    phone_number: str
     company_id: int
+    company_name: str
+    branch_note: str  # Yeni alan, gerekli ise ekleyin
 
     class Config:
         orm_mode = True

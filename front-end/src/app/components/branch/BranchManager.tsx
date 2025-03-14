@@ -7,7 +7,7 @@ import { turkishCities } from "./cities";
 import {
   createBranch,
   createSubBranch, // Alt şube oluşturma API çağrısı
-  getAllBranches,
+  getBranchesByCompanyId, // Güncellenmiş fonksiyonu kullan
   updateBranch,
   deleteBranch,
   getAllCompanies,
@@ -31,7 +31,7 @@ const BranchManager = () => {
   const fetchBranches = async (city = "", search = "", company = "") => {
     try {
       setBranchLoading(true);
-      const data = await getAllBranches(city, search, company);
+      const data = await getBranchesByCompanyId(company); // Güncellenmiş API çağrısı
       setBranches(data);
       setBranchLoading(false);
     } catch (err) {
@@ -55,7 +55,8 @@ const BranchManager = () => {
 
   const handleAddBranch = async (branchData) => {
     try {
-      await createBranch(branchData);
+      const companyId = branchData.company_id; // Şirket ID'sini almak
+      await createBranch(companyId, branchData); // API çağrısını yap
       fetchBranches(cityFilter, searchFilter, companyFilter);
       setBranchError("");
       closeBranchModal();
@@ -64,22 +65,18 @@ const BranchManager = () => {
       setBranchError(err.detail || "Şube eklenirken bir hata oluştu.");
     }
   };
-
-  const handleAddSubBranch = async (subBranchData) => {
+  const handleUpdateBranch = async (branch) => {
     try {
-      await createSubBranch(subBranchData);
-      fetchBranches(cityFilter, searchFilter, companyFilter);
-      setBranchError("");
-      closeSubBranchModal();
-      alert("Alt şube başarı ile eklendi.");
-    } catch (err) {
-      setBranchError(err.detail || "Alt şube eklenirken bir hata oluştu.");
-    }
-  };
-
-  const handleUpdateBranch = async (_id, updateData) => {
-    try {
-      await updateBranch(_id, updateData);
+      // branch._id yerine branch.id kullanın
+      await updateBranch(branch.id, {
+        company_id: branch.company_id,
+        name: branch.name,
+        address: branch.address,
+        city: branch.city,
+        phone_number: branch.phone_number,
+        branch_note: branch.branch_note,
+        location_link: branch.location_link,
+      });
       fetchBranches(cityFilter, searchFilter, companyFilter);
       setBranchError("");
       closeBranchModal();
@@ -206,7 +203,6 @@ const BranchManager = () => {
       {/* Alt Şube Ekleme Modalı */}
       <Modal isOpen={isSubBranchFormVisible} onClose={closeSubBranchModal}>
         <SubBranchForm
-          onSubmit={handleAddSubBranch}
           onCancel={closeSubBranchModal}
           companies={companies}
           branches={branches} // Eklenen şubeleri geçir

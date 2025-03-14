@@ -123,7 +123,7 @@ const BranchTable = ({ branches, companies, onEdit, onDelete }) => {
               >
                 <TableCell>{branch.company_name}</TableCell>
                 <TableCell>{branch.city}</TableCell>
-                <TableCell>{branch.branch_name}</TableCell>
+                <TableCell>{branch.name}</TableCell>
                 <TableCell>{branch.address}</TableCell>
                 <TableCell>{branch.phone_number}</TableCell>
                 <TableCell>{branch.branch_note || "Yok"}</TableCell>

@@ -55,8 +55,8 @@ export const deleteCompany = (company_id) =>
   apiRequest(`/companies/${company_id}`, "DELETE");
 
 // Şube CRUD İstekleri
-export const createBranch = (branchData) =>
-  apiRequest("/branches/", "POST", branchData);
+export const createBranch = (companyId, branchData) => 
+  apiRequest(`/companies/${companyId}/branches`, "POST", branchData);
 
 export const getAllBranches = (city = "", search = "", company = "") => {
   const params = new URLSearchParams();
@@ -77,7 +77,7 @@ export const getBranchById = (branch_id) =>
 
 export const getBranchesByCompanyId = async (companyId) => {
   const token = localStorage.getItem("access_token"); // Token'ı localStorage'dan al
-  const response = await fetch(`${BASE_URL}/branches/company/${companyId}`, {
+  const response = await fetch(`${BASE_URL}/companies/${companyId}/branches`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
@@ -91,7 +91,6 @@ export const getBranchesByCompanyId = async (companyId) => {
   
   return response.json();
 };
-
 export const updateBranch = (_id, updateData) =>
   apiRequest(`/branches/${_id}`, "PUT", updateData);
 
