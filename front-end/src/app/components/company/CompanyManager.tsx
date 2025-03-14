@@ -45,9 +45,9 @@ const CompanyManager = () => {
     }
   };
 
-  const handleUpdateCompany = async (_id, updateData) => {
+  const handleUpdateCompany = async (company_id, updateData) => {
     try {
-      await updateCompany(_id, updateData);
+      await updateCompany(company_id, updateData); // company_id kullan
       fetchCompanies();
       setIsEditMode(false);
       setCurrentCompany(null);
@@ -57,9 +57,9 @@ const CompanyManager = () => {
     }
   };
 
-  const handleDeleteCompany = async (_id) => {
+  const handleDeleteCompany = async (company_id) => {
     try {
-      await deleteCompany(_id);
+      await deleteCompany(company_id); // company_id kullan
       fetchCompanies();
     } catch (err) {
       setCompanyError(err.detail || "Şirket silinirken hata oluştu.");

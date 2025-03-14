@@ -92,10 +92,10 @@ const CompanyForm = ({
         company_id: parseInt(
           `${form.company_id_prefix}${form.company_id_suffix}`,
           10
-        ),
+        ), // company_id'yi oluştur
       };
-      if (isEditMode && initialData && initialData._id) {
-        onSubmit(initialData._id, submissionData);
+      if (isEditMode && initialData && initialData.company_id) {
+        onSubmit(initialData.company_id, submissionData); // company_id kullan
       } else {
         onSubmit(submissionData);
       }

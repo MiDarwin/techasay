@@ -48,11 +48,11 @@ export const getCompanyById = (_id) => apiRequest(`/companies/${_id}`, "GET");
 export const getCompanyByCompanyId = (company_id) =>
   apiRequest(`/companies/by_company_id/${company_id}`, "GET");
 
-export const updateCompany = (_id, updateData) =>
-  apiRequest(`/companies/${_id}`, "PUT", updateData);
+export const updateCompany = (company_id, updateData) =>
+  apiRequest(`/companies/${company_id}`, "PUT", updateData);
 
-export const deleteCompany = (_id) =>
-  apiRequest(`/companies/${_id}`, "DELETE");
+export const deleteCompany = (company_id) =>
+  apiRequest(`/companies/${company_id}`, "DELETE");
 
 // Şube CRUD İstekleri
 export const createBranch = (branchData) =>

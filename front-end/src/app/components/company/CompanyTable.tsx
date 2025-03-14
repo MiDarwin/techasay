@@ -31,7 +31,6 @@ const CompanyTable = ({ companies, onEdit, onDelete }) => {
               },
             }}
           >
-            <TableCell>ID</TableCell>
             <TableCell>Şirket ID</TableCell>
             <TableCell>Şirket Adı</TableCell>
             <TableCell>İşlemler</TableCell>
@@ -40,7 +39,7 @@ const CompanyTable = ({ companies, onEdit, onDelete }) => {
         <TableBody>
           {companies.map((company, index) => (
             <TableRow
-              key={company._id}
+              key={company.company_id}
               sx={{
                 backgroundColor: index % 2 === 0 ? "#f7f9fc" : "#ffffff",
                 "&:hover": {
@@ -48,7 +47,6 @@ const CompanyTable = ({ companies, onEdit, onDelete }) => {
                 },
               }}
             >
-              <TableCell>{company._id}</TableCell>
               <TableCell>{company.company_id}</TableCell>
               <TableCell>{company.name}</TableCell>
               <TableCell>
@@ -59,7 +57,7 @@ const CompanyTable = ({ companies, onEdit, onDelete }) => {
                 </Tooltip>
                 <Tooltip title="Sil">
                   <IconButton
-                    onClick={() => onDelete(company._id)}
+                    onClick={() => onDelete(company.company_id)}
                     color="error"
                   >
                     <DeleteIcon />
