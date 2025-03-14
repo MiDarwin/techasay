@@ -6,8 +6,33 @@ from models.company import Company
 from schemas import company
 from schemas.branch import BranchCreate, BranchResponse
 from sqlalchemy.orm import joinedload  # Ekle
+from sqlalchemy import or_
 
+async def get_all_branches(db: AsyncSession, skip: int = 0, limit: int = 50):
+    """Tüm şubeleri getir (varsayılan olarak ilk 50 şube)."""
+    query = (
+        select(Branch)
+        .options(joinedload(Branch.company))  # Şirket bilgilerini de yükle
+        .offset(skip)
+        .limit(limit)  # İlk 50 kaydı getir
+    )
+    result = await db.execute(query)
+    branches = result.scalars().all()
 
+    return [
+        {
+            "id": branch.id,
+            "name": branch.branch_name,
+            "address": branch.address,
+            "city": branch.city,
+            "phone_number": branch.phone_number,
+            "company_id": branch.company_id,
+            "company_name": branch.company.name if branch.company else None,
+            "location_link": branch.location_link,
+            "branch_note": branch.branch_note if hasattr(branch, 'branch_note') else ""
+        }
+        for branch in branches
+    ]
 async def create_branch(db: AsyncSession, branch: BranchCreate, company_id: int):
     db_branch = Branch(
         branch_name=branch.branch_name,
@@ -40,27 +65,38 @@ async def create_branch(db: AsyncSession, branch: BranchCreate, company_id: int)
     )
 
 
-async def get_branches(db: AsyncSession, company_id: int, skip: int = 0, limit: int = 10):
-    result = await db.execute(
-        select(Branch)
-        .options(joinedload(Branch.company))
-        .filter(Branch.company_id == company_id)
-        .offset(skip)
-        .limit(limit)
-    )
+async def get_branches(db: AsyncSession, company_id: int, skip: int = 0, limit: int = 10, city: str = None,
+                       textinput: str = None):
+    query = select(Branch).options(joinedload(Branch.company)).filter(Branch.company_id == company_id)
+
+    if city:  # Eğer city parametresi varsa, city'e göre filtrele
+        query = query.filter(Branch.city.ilike(f"%{city}%"))
+
+    if textinput:  # Eğer textinput varsa, name, address, city ve phone_number'da arama yap
+        query = query.filter(
+            or_(
+                Branch.branch_name.ilike(f"%{textinput}%"),
+                Branch.address.ilike(f"%{textinput}%"),
+                Branch.city.ilike(f"%{textinput}%"),
+                Branch.phone_number.ilike(f"%{textinput}%")
+            )
+        )
+
+    query = query.offset(skip).limit(limit)
+    result = await db.execute(query)
     branches = result.scalars().all()
 
     return [
         {
             "id": branch.id,
-            "name": branch.branch_name,  # Burayı branch_name olarak güncelleyebilirsiniz.
+            "name": branch.branch_name,
             "address": branch.address,
             "city": branch.city,
             "phone_number": branch.phone_number,
             "company_id": branch.company_id,
             "company_name": branch.company.name,
-            "location_link":branch.location_link,
-            "branch_note": branch.branch_note if hasattr(branch, 'branch_note') else "",  # Varsayılan değer
+            "location_link": branch.location_link,
+            "branch_note": branch.branch_note if hasattr(branch, 'branch_note') else "",
         }
         for branch in branches
     ]

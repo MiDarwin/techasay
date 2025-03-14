@@ -1,5 +1,5 @@
 # routes/branch.py
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException,Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from schemas.branch import BranchCreate, BranchResponse, BranchUpdate
 from services.branch_service import create_branch, get_branches, update_branch, delete_branch
@@ -16,8 +16,15 @@ async def create_branch_endpoint(company_id: int, branch: BranchCreate, db: Asyn
         raise HTTPException(status_code=500, detail=str(e))  # Hata durumunda uygun bir yanıt döndür
 
 @router.get("/companies/{company_id}/branches", response_model=list[BranchResponse])
-async def read_branches(company_id: int, skip: int = 0, limit: int = 10, db: AsyncSession = Depends(get_db)):
-    return await get_branches(db, company_id, skip=skip, limit=limit)
+async def read_branches(
+    company_id: int,
+    skip: int = 0,
+    limit: int = 10,
+    city: str = Query(None),  # city opsiyonel bir query parametresi
+    textinput: str = Query(None),  # textinput opsiyonel bir query parametresi
+    db: AsyncSession = Depends(get_db)
+):
+    return await get_branches(db, company_id, skip=skip, limit=limit, city=city, textinput=textinput)
 
 
 @router.put("/branches/{branch_id}", response_model=BranchUpdate)
@@ -35,3 +42,13 @@ async def delete_branch_endpoint(branch_id: int, db: AsyncSession = Depends(get_
     if not deleted_branch:
         raise HTTPException(status_code=404, detail="Şube bulunamadı.")
     return {"detail": "Şube başarıyla silindi."}
+@router.get("/branches", response_model=list[dict])
+async def read_all_branches(skip: int = 0, limit: int = 50, db: AsyncSession = Depends(get_db)):
+    """
+    Tüm şubeleri getir (varsayılan olarak ilk 50 şube).
+    """
+    try:
+        branches = await get_all_branches(db, skip=skip, limit=limit)
+        return branches
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

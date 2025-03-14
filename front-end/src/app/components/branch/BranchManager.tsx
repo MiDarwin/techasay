@@ -31,17 +31,20 @@ const BranchManager = () => {
   const fetchBranches = async (city = "", search = "", company = "") => {
     try {
       setBranchLoading(true);
-      const data = await getBranchesByCompanyId(company); // Güncellenmiş API çağrısı
-      setBranches(data);
+      const data = await getBranchesByCompanyId(company, city, search); // Güncellenmiş API çağrısı
+      setBranches(data); // Gelen şube verilerini state'e ata
       setBranchLoading(false);
     } catch (err) {
-      setBranchError(err.detail || "Şubeler alınırken bir hata oluştu.");
+      setBranchError(err.message || "Şubeler alınırken bir hata oluştu."); // Hata mesajını state'e ata
       setBranchLoading(false);
     }
   };
 
+  // useEffect, filtrelerdeki değişiklikleri izler ve API çağrısını tetikler
   useEffect(() => {
-    fetchBranches(cityFilter, searchFilter, companyFilter);
+    if (companyFilter) {
+      fetchBranches(cityFilter, searchFilter, companyFilter);
+    }
   }, [cityFilter, searchFilter, companyFilter]);
 
   const fetchCompanies = async () => {

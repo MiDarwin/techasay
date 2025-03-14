@@ -75,20 +75,25 @@ export const getAllBranches = (city = "", search = "", company = "") => {
 export const getBranchById = (branch_id) =>
   apiRequest(`/branches/${branch_id}`, "GET");
 
-export const getBranchesByCompanyId = async (companyId) => {
+export const getBranchesByCompanyId = async (companyId, city = "", search = "") => {
   const token = localStorage.getItem("access_token"); // Token'ı localStorage'dan al
-  const response = await fetch(`${BASE_URL}/companies/${companyId}/branches`, {
+  const params = new URLSearchParams(); // Query parametrelerini oluşturmak için URLSearchParams kullanılır
+
+  if (city) params.append("city", city); // Eğer city varsa ekle
+  if (search) params.append("textinput", search); // Eğer search varsa ekle
+
+  const response = await fetch(`${BASE_URL}/companies/${companyId}/branches?${params.toString()}`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
       "Authorization": `Bearer ${token}` // Token'ı Authorization header'ına ekle
     }
   });
-  
+
   if (!response.ok) {
     throw new Error("Şubelere erişim sağlanırken bir hata oluştu.");
   }
-  
+
   return response.json();
 };
 export const updateBranch = async (branchId, updateData) => {
