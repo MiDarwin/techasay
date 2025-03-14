@@ -2,15 +2,42 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from models.branch import Branch
-from schemas.branch import BranchCreate
+from models.company import Company
+from schemas import company
+from schemas.branch import BranchCreate, BranchResponse
 from sqlalchemy.orm import joinedload  # Ekle
 
+
 async def create_branch(db: AsyncSession, branch: BranchCreate, company_id: int):
-    db_branch = Branch(**branch.dict(), company_id=company_id)  # company_id kullanılıyor
+    db_branch = Branch(
+        branch_name=branch.branch_name,
+        address=branch.address,
+        city=branch.city,
+        phone_number=branch.phone_number,
+        branch_note=branch.branch_note,
+        location_link=branch.location_link,
+        company_id=company_id
+    )
+
     db.add(db_branch)
     await db.commit()
     await db.refresh(db_branch)
-    return db_branch
+
+    # Şirketi yükleyin
+    company_result = await db.execute(select(Company).filter(Company.id == company_id))
+    company = company_result.scalars().first()
+
+    return BranchResponse(
+        id=db_branch.id,
+        name=db_branch.branch_name,
+        address=db_branch.address,
+        city=db_branch.city,
+        phone_number=db_branch.phone_number,
+        company_id=db_branch.company_id,
+        company_name=company.name if company else "",  # Şirket adı varsa
+        branch_note=db_branch.branch_note,
+        location_link=db_branch.location_link
+    )
 
 
 async def get_branches(db: AsyncSession, company_id: int, skip: int = 0, limit: int = 10):

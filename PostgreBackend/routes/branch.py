@@ -9,7 +9,11 @@ router = APIRouter()
 
 @router.post("/companies/{company_id}/branches", response_model=BranchResponse)
 async def create_branch_endpoint(company_id: int, branch: BranchCreate, db: AsyncSession = Depends(get_db)):
-    return await create_branch(db, branch, company_id)
+    try:
+        created_branch = await create_branch(db, branch, company_id)
+        return created_branch  # Başarılı yanıt olarak oluşturulan dalı döndür
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))  # Hata durumunda uygun bir yanıt döndür
 
 @router.get("/companies/{company_id}/branches", response_model=list[BranchResponse])
 async def read_branches(company_id: int, skip: int = 0, limit: int = 10, db: AsyncSession = Depends(get_db)):

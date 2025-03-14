@@ -12,7 +12,7 @@ class Branch(Base):
     city = Column(String, index=True)
     phone_number = Column(String, index=True)
     branch_note = Column(String, index=True)
-
+    location_link = Column(String, index=True)
     # İlişkili şirket
     company_id = Column(Integer, ForeignKey("companies.company_id"))
     company = relationship("Company", back_populates="branches")

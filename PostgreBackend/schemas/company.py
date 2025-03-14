@@ -11,6 +11,7 @@ class CompanyCreate(CompanyBase):
 class CompanyResponse(CompanyBase):
     id: int
 
+
     class Config:
         orm_mode = True
 
