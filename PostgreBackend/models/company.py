@@ -10,5 +10,5 @@ class Company(Base):
     name = Column(String, index=True)
     company_id = Column(Integer, unique=True, index=True)
 
-    # İlişkili alt şubeler (varsa)
-    #branches = relationship("Branch", back_populates="company")
+    # İlişkili alt şubeler
+    branches = relationship("Branch", back_populates="company", cascade="all, delete-orphan")
