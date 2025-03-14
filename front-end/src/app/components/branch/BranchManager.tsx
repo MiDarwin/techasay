@@ -67,20 +67,10 @@ const BranchManager = () => {
   };
   const handleUpdateBranch = async (branch) => {
     try {
-      // branch._id yerine branch.id kullanın
-      await updateBranch(branch.id, {
-        company_id: branch.company_id,
-        name: branch.name,
-        address: branch.address,
-        city: branch.city,
-        phone_number: branch.phone_number,
-        branch_note: branch.branch_note,
-        location_link: branch.location_link,
-      });
-      fetchBranches(cityFilter, searchFilter, companyFilter);
+      await updateBranch(branch.id, branch); // ID kullanarak güncelle
+      fetchBranches();
       setBranchError("");
       closeBranchModal();
-      alert("Şube başarı ile güncellendi.");
     } catch (err) {
       setBranchError(err.detail || "Şube güncellenirken bir hata oluştu.");
     }
@@ -99,7 +89,12 @@ const BranchManager = () => {
   };
 
   const openBranchEditModal = (branch) => {
-    setCurrentBranch(branch);
+    const mappedBranch = {
+      ...branch,
+      branch_name: branch.name, // name → branch_name olarak güncelleniyor
+    };
+
+    setCurrentBranch(mappedBranch);
     setIsFormVisible(true);
   };
 
@@ -188,11 +183,7 @@ const BranchManager = () => {
       {/* Şube Ekleme Modalı */}
       <Modal isOpen={isFormVisible} onClose={closeBranchModal}>
         <BranchForm
-          onSubmit={
-            currentBranch
-              ? handleUpdateBranch.bind(null, currentBranch._id)
-              : handleAddBranch
-          }
+          onSubmit={currentBranch ? handleUpdateBranch : handleAddBranch}
           initialData={currentBranch || {}}
           isEditMode={!!currentBranch}
           onCancel={closeBranchModal}
@@ -218,11 +209,11 @@ const BranchManager = () => {
       <BranchTable
         branches={branches}
         companies={companies.reduce((acc, company) => {
-          acc[company.id] = company.name; // Burada 'company.id' doğru mu?
+          acc[company.company_id] = company.name;
           return acc;
         }, {})}
         onEdit={openBranchEditModal}
-        onDelete={handleDeleteBranch} // Burada handleDeleteBranch doğru bir şekilde çağrılmalı
+        onDelete={handleDeleteBranch}
       />
     </div>
   );

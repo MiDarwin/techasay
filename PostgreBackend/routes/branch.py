@@ -1,7 +1,7 @@
 # routes/branch.py
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
-from schemas.branch import BranchCreate, BranchResponse
+from schemas.branch import BranchCreate, BranchResponse, BranchUpdate
 from services.branch_service import create_branch, get_branches, update_branch, delete_branch
 from database import get_db
 
@@ -19,12 +19,15 @@ async def create_branch_endpoint(company_id: int, branch: BranchCreate, db: Asyn
 async def read_branches(company_id: int, skip: int = 0, limit: int = 10, db: AsyncSession = Depends(get_db)):
     return await get_branches(db, company_id, skip=skip, limit=limit)
 
-@router.put("/branches/{branch_id}", response_model=BranchResponse)
+
+@router.put("/branches/{branch_id}", response_model=BranchUpdate)
 async def update_branch_endpoint(branch_id: int, branch: BranchCreate, db: AsyncSession = Depends(get_db)):
     updated_branch = await update_branch(db, branch_id, branch)
     if not updated_branch:
         raise HTTPException(status_code=404, detail="Şube bulunamadı.")
-    return updated_branch
+
+    # Pydantic modeline dönüştürme
+    return BranchUpdate.from_orm(updated_branch)
 
 @router.delete("/branches/{branch_id}", response_model=dict)
 async def delete_branch_endpoint(branch_id: int, db: AsyncSession = Depends(get_db)):

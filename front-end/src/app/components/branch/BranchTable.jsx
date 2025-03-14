@@ -22,9 +22,10 @@ import HolidayVillageIcon from "@mui/icons-material/HolidayVillage"; // Alt şub
 import {
   getInventoryByBranch,
   getSubBranchesByBranchId,
-  deleteSubBranch, // Alt şube silme API çağrısı
+  deleteSubBranch,
+  updateBranch, // Alt şube silme API çağrısı
 } from "../../utils/api"; // API'den envanter ve alt şubeleri almak için kullanılan fonksiyonlar
-
+import UpdateBranchModal from "./UpdateBranchModal";
 const style = {
   position: "absolute",
   top: "50%",
@@ -43,7 +44,8 @@ const BranchTable = ({ branches, companies, onEdit, onDelete }) => {
   const [inventory, setInventory] = useState([]);
   const [subBranches, setSubBranches] = useState([]);
   const [selectedBranchId, setSelectedBranchId] = useState(null);
-
+  const [selectedBranch, setSelectedBranch] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const handleOpenInventory = async (branchId) => {
     setSelectedBranchId(branchId);
     const data = await getInventoryByBranch(branchId); // API'den envanteri al
@@ -57,10 +59,27 @@ const BranchTable = ({ branches, companies, onEdit, onDelete }) => {
     setSubBranches(data);
     setOpenSubBranches(true);
   };
+  const handleEditClick = (branch) => {
+    setSelectedBranch(branch);
+    setIsModalOpen(true);
+  };
 
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedBranch(null);
+  };
   const handleCloseInventory = () => setOpenInventory(false);
   const handleCloseSubBranches = () => setOpenSubBranches(false);
-
+  const handleUpdateBranch = async (branchId, updatedData) => {
+    try {
+      // Correct API call with branch_id in the URL
+      await updateBranch(branchId, updatedData);
+      alert("Şube başarıyla güncellendi.");
+      // Tabloyu yeniden yükleyin veya güncellenen veriyi tabloya yansıtın
+    } catch (error) {
+      alert("Şube güncellerken bir hata oluştu.");
+    }
+  };
   const openLocationLink = (link) => {
     const formattedLink =
       link.startsWith("http://") || link.startsWith("https://")
@@ -141,7 +160,7 @@ const BranchTable = ({ branches, companies, onEdit, onDelete }) => {
                   )}
                   <Tooltip title="Düzenle">
                     <IconButton
-                      onClick={() => onEdit(branch)}
+                      onClick={() => handleEditClick(branch)}
                       color="warning"
                       aria-label="Düzenle"
                     >
@@ -183,7 +202,12 @@ const BranchTable = ({ branches, companies, onEdit, onDelete }) => {
           </TableBody>
         </Table>
       </TableContainer>
-
+      <UpdateBranchModal
+        open={isModalOpen}
+        onClose={handleCloseModal}
+        branchData={selectedBranch}
+        onUpdate={handleUpdateBranch}
+      />
       {/* Envanter Modal */}
       <Modal open={openInventory} onClose={handleCloseInventory}>
         <Box sx={style}>

@@ -24,4 +24,13 @@ class BranchResponse(BaseModel):
     location_link: Optional[str] = None  # İsteğe bağlı hale getirildi
 
     class Config:
-        orm_mode = True
+        from_attributes = True  # Pydantic v2 için gerekli
+class BranchUpdate(BaseModel):
+    branch_name: Optional[str] = None
+    address: Optional[str] = None
+    city: Optional[str] = None
+    phone_number: Optional[str] = None
+    branch_note: Optional[str] = None  # Güncellemelerde opsiyonel
+    location_link: Optional[str] = None  # Şube konum linki opsiyonel
+    class Config:
+        from_attributes = True  # Pydantic v2 için gerekli

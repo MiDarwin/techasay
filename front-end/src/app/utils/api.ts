@@ -91,8 +91,19 @@ export const getBranchesByCompanyId = async (companyId) => {
   
   return response.json();
 };
-export const updateBranch = (_id, updateData) =>
-  apiRequest(`/branches/${_id}`, "PUT", updateData);
+export const updateBranch = async (branchId, updateData) => {
+  const response = await fetch(`${BASE_URL}/branches/${branchId}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(updateData),
+  });
+
+  if (!response.ok) {
+    throw new Error("Güncelleme işlemi başarısız oldu.");
+  }
+};
 
 export const deleteBranch = (branchId) => {
   return apiRequest(`/branches/${branchId}`, "DELETE");

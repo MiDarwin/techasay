@@ -23,6 +23,7 @@ const BranchForm = ({
   const [error, setError] = useState("");
 
   useEffect(() => {
+    console.log("initialData:", initialData); // Bu satır eklendi
     setCompanyId(initialData.company_id || "");
     setBranchName(initialData.branch_name || "");
     setAddress(initialData.address || "");
@@ -39,7 +40,16 @@ const BranchForm = ({
       setError("Lütfen tüm alanları doldurun.");
       return;
     }
-
+    const handleUpdateBranch = async (updatedData) => {
+      try {
+        await updateBranch(selectedBranch._id, updatedData);
+        alert("Şube başarıyla güncellendi.");
+        setIsEditMode(false); // Düzenleme modunu kapat
+        // Tabloyu güncellemek için yeni verileri çekebilirsiniz
+      } catch (err) {
+        alert(err.message || "Şubeyi güncellerken bir hata oluştu.");
+      }
+    };
     const phoneRegex = /^(\+90|0)?[5-9]\d{9}$/;
     const normalizedPhoneNumber = phoneNumber.replace(/\s/g, "");
     if (!phoneRegex.test(normalizedPhoneNumber)) {
@@ -248,7 +258,7 @@ BranchForm.propTypes = {
   ).isRequired,
   initialData: PropTypes.shape({
     company_id: PropTypes.number,
-    branch_name: PropTypes.string, // "branch_name" yerine "name"
+    name: PropTypes.string, // "branch_name" yerine "name"
     address: PropTypes.string,
     city: PropTypes.string,
     phone_number: PropTypes.string,
