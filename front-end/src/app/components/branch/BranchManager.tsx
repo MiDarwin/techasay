@@ -86,12 +86,12 @@ const BranchManager = () => {
     }
   };
 
-  const handleDeleteBranch = async (_id) => {
+  const handleDeleteBranch = async (id) => {
     if (window.confirm("Bu şubeyi silmek istediğinize emin misiniz?")) {
       try {
-        await deleteBranch(_id);
-        fetchBranches(cityFilter, searchFilter, companyFilter);
-        setBranchError("");
+        await deleteBranch(id);
+        fetchBranches(cityFilter, searchFilter, companyFilter); // Silme işlemi sonrası güncelle
+        setBranchError(""); // Hata mesajını temizle
       } catch (err) {
         setBranchError(err.detail || "Şube silinirken bir hata oluştu.");
       }
@@ -218,11 +218,11 @@ const BranchManager = () => {
       <BranchTable
         branches={branches}
         companies={companies.reduce((acc, company) => {
-          acc[company.company_id] = company.name;
+          acc[company.id] = company.name; // Burada 'company.id' doğru mu?
           return acc;
         }, {})}
         onEdit={openBranchEditModal}
-        onDelete={handleDeleteBranch}
+        onDelete={handleDeleteBranch} // Burada handleDeleteBranch doğru bir şekilde çağrılmalı
       />
     </div>
   );

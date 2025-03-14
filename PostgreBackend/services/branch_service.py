@@ -59,6 +59,7 @@ async def get_branches(db: AsyncSession, company_id: int, skip: int = 0, limit: 
             "phone_number": branch.phone_number,
             "company_id": branch.company_id,
             "company_name": branch.company.name,
+            "location_link":branch.location_link,
             "branch_note": branch.branch_note if hasattr(branch, 'branch_note') else "",  # Varsayılan değer
         }
         for branch in branches

@@ -94,8 +94,9 @@ export const getBranchesByCompanyId = async (companyId) => {
 export const updateBranch = (_id, updateData) =>
   apiRequest(`/branches/${_id}`, "PUT", updateData);
 
-export const deleteBranch = (_id) =>
-  apiRequest(`/branches/${_id}`, "DELETE");
+export const deleteBranch = (branchId) => {
+  return apiRequest(`/branches/${branchId}`, "DELETE");
+};
 
 // ** Envanter CRUD İstekleri **
 export const createInventory = (inventoryData) =>

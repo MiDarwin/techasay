@@ -150,7 +150,7 @@ const BranchTable = ({ branches, companies, onEdit, onDelete }) => {
                   </Tooltip>
                   <Tooltip title="Sil">
                     <IconButton
-                      onClick={() => onDelete(branch._id)}
+                      onClick={() => onDelete(branch.id)}
                       color="error"
                       aria-label="Sil"
                     >
