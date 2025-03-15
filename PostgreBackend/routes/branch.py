@@ -2,7 +2,8 @@
 from fastapi import APIRouter, Depends, HTTPException,Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from schemas.branch import BranchCreate, BranchResponse, BranchUpdate
-from services.branch_service import create_branch, get_branches, update_branch, delete_branch, create_sub_branch
+from services.branch_service import create_branch, get_branches, update_branch, delete_branch, create_sub_branch, \
+    get_sub_branches
 from database import get_db
 
 router = APIRouter()
@@ -64,3 +65,12 @@ async def create_sub_branch_endpoint(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@router.get("/branches/{branch_id}/sub-branches", response_model=list[BranchResponse])
+async def get_sub_branches_endpoint(branch_id: int, db: AsyncSession = Depends(get_db)):
+    """
+    Belirtilen branch_id'ye ait alt şubeleri döndürür.
+    """
+    sub_branches = await get_sub_branches(db, branch_id)
+    if not sub_branches:
+        raise HTTPException(status_code=404, detail="Alt şube bulunamadı.")
+    return sub_branches

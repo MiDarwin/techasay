@@ -99,11 +99,7 @@ async def delete_branch(db: AsyncSession, branch_id: int):
         return db_branch
     return None
 async def get_all_branches(db: AsyncSession, limit: int = 50):
-    """
-    Şirket ID olmadan tüm şubeleri getirir. Varsayılan olarak ilk 50 şubeyi döndürür.
-    Alt şubeler (company_id'si None olanlar) döndürülmez.
-    Ayrıca her şube için has_sub_branches alanı eklenir.
-    """
+
     query = select(Branch).options(joinedload(Branch.company)).filter(Branch.company_id.isnot(None)).limit(limit)
     result = await db.execute(query)
     branches = result.scalars().all()
@@ -163,3 +159,23 @@ async def create_sub_branch(db: AsyncSession, branch: BranchCreate, parent_branc
         company_id=parent_branch.company_id if parent_branch else None,  # Üst şube şirketi
         company_name=parent_branch.company.name if parent_branch and parent_branch.company else None  # Şirket adı
     )
+async def get_sub_branches(db: AsyncSession, parent_branch_id: int):
+    """Belirtilen parent_branch_id'ye ait alt şubeleri getirir."""
+    query = select(Branch).filter(Branch.parent_branch_id == parent_branch_id)
+    result = await db.execute(query)
+    sub_branches = result.scalars().all()
+
+    return [
+        {
+            "id": branch.id,
+            "name": branch.branch_name,
+            "address": branch.address,
+            "city": branch.city,
+            "phone_number": branch.phone_number,
+            "company_id": branch.company_id,
+            "location_link": branch.location_link,
+            "branch_note": branch.branch_note if hasattr(branch, 'branch_note') else "",
+            "parent_branch_id": branch.parent_branch_id,
+        }
+        for branch in sub_branches
+    ]
