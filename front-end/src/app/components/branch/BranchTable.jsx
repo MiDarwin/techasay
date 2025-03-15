@@ -132,7 +132,7 @@ const BranchTable = ({ branches, companies, onEdit, onDelete }) => {
           <TableBody>
             {branches.map((branch, index) => (
               <TableRow
-                key={branch._id}
+                key={branch.id}
                 sx={{
                   backgroundColor: index % 2 === 0 ? "#f7f9fc" : "#ffffff",
                   "&:hover": {

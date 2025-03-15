@@ -6,7 +6,6 @@ import AddInventoryModal from "./AddInventoryModal"; // Envanter Ekleme Modalı
 import UpdateInventoryModal from "./UpdateInventoryModal"; // Envanter Güncelleme Modalı
 import {
   getAllInventory,
-  getAllBranches,
   getAllCompanies,
   getBranchesByCompanyId,
   deleteInventory,

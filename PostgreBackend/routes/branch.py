@@ -42,13 +42,14 @@ async def delete_branch_endpoint(branch_id: int, db: AsyncSession = Depends(get_
     if not deleted_branch:
         raise HTTPException(status_code=404, detail="Şube bulunamadı.")
     return {"detail": "Şube başarıyla silindi."}
-@router.get("/branches", response_model=list[dict])
-async def read_all_branches(skip: int = 0, limit: int = 50, db: AsyncSession = Depends(get_db)):
+from services.branch_service import create_branch, get_branches, get_all_branches, update_branch, delete_branch
+
+@router.get("/branches", response_model=list[BranchResponse])
+async def read_all_branches(
+    limit: int = 50,  # Varsayılan limit 50
+    db: AsyncSession = Depends(get_db)
+):
     """
-    Tüm şubeleri getir (varsayılan olarak ilk 50 şube).
+    Şirket ID olmadan tüm şubeleri getirir. Varsayılan olarak ilk 50 şubeyi döndürür.
     """
-    try:
-        branches = await get_all_branches(db, skip=skip, limit=limit)
-        return branches
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    return await get_all_branches(db, limit=limit)

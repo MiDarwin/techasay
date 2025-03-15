@@ -57,19 +57,21 @@ export const deleteCompany = (company_id) =>
 // Şube CRUD İstekleri
 export const createBranch = (companyId, branchData) => 
   apiRequest(`/companies/${companyId}/branches`, "POST", branchData);
+export const getAllBranches = async (limit = 50) => {
+  const token = localStorage.getItem("access_token"); // Token'ı localStorage'dan al
+  const response = await fetch(`${BASE_URL}/branches?limit=${limit}`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}` // Token'ı Authorization header'ına ekle
+    }
+  });
 
-export const getAllBranches = (city = "", search = "", company = "") => {
-  const params = new URLSearchParams();
-  if (city) {
-    params.append("city", city);
+  if (!response.ok) {
+    throw new Error("Tüm şubeler alınırken bir hata oluştu.");
   }
-  if (search) {
-    params.append("search", search);
-  }
-  if (company) {
-    params.append("company_id", company); // Şirket ID'sini ekledik
-  }
-  return apiRequest(`/branches/?${params.toString()}`, "GET");
+
+  return await response.json(); // JSON formatında dönen veriyi çöz
 };
 
 export const getBranchById = (branch_id) =>

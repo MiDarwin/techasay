@@ -11,6 +11,7 @@ import {
   updateBranch,
   deleteBranch,
   getAllCompanies,
+  getAllBranches,
 } from "../../utils/api";
 import AddBusinessIcon from "@mui/icons-material/AddBusiness";
 import Button from "@mui/material/Button";
@@ -27,11 +28,11 @@ const BranchManager = () => {
   const [branchLoading, setBranchLoading] = useState(false);
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [isSubBranchFormVisible, setIsSubBranchFormVisible] = useState(false); // Alt şube formu durumu
-
-  const fetchBranches = async (city = "", search = "", company = "") => {
+  // Yeni eklenen fonksiyon: Tüm şubeleri getir
+  const fetchAllBranches = async () => {
     try {
-      setBranchLoading(true);
-      const data = await getBranchesByCompanyId(company, city, search); // Güncellenmiş API çağrısı
+      setBranchLoading(true); // Yüklenme durumunu göster
+      const data = await getAllBranches(); // API çağrısı
       setBranches(data); // Gelen şube verilerini state'e ata
       setBranchLoading(false);
     } catch (err) {
@@ -39,11 +40,32 @@ const BranchManager = () => {
       setBranchLoading(false);
     }
   };
+  const fetchBranches = async (city = "", search = "", company = "") => {
+    try {
+      setBranchLoading(true);
+
+      if (!company) {
+        // Eğer companyFilter boşsa tüm şubeleri getir
+        await fetchAllBranches();
+      } else {
+        // Eğer companyFilter doluysa şirket bazlı şubeleri getir
+        const data = await getBranchesByCompanyId(company, city, search);
+        setBranches(data); // Gelen şube verilerini state'e ata
+      }
+
+      setBranchLoading(false);
+    } catch (err) {
+      setBranchError(err.message || "Şubeler alınırken bir hata oluştu.");
+      setBranchLoading(false);
+    }
+  };
 
   // useEffect, filtrelerdeki değişiklikleri izler ve API çağrısını tetikler
   useEffect(() => {
-    if (companyFilter) {
-      fetchBranches(cityFilter, searchFilter, companyFilter);
+    if (!companyFilter) {
+      fetchAllBranches(); // Tüm şubeleri getir
+    } else {
+      fetchBranches(cityFilter, searchFilter, companyFilter); // Filtreye göre şubeleri getir
     }
   }, [cityFilter, searchFilter, companyFilter]);
 
@@ -116,7 +138,7 @@ const BranchManager = () => {
 
   useEffect(() => {
     fetchCompanies();
-    fetchBranches();
+    fetchAllBranches();
   }, []);
 
   return (
@@ -131,7 +153,7 @@ const BranchManager = () => {
           >
             <option value="">Tüm Şirketler</option>
             {companies.map((company) => (
-              <option key={company._id} value={company.company_id}>
+              <option key={company.id} value={company.company_id}>
                 {company.name}
               </option>
             ))}
@@ -143,8 +165,8 @@ const BranchManager = () => {
             className="border p-2 mr-2 rounded-lg"
           >
             <option value="">Tüm Şehirler</option>
-            {turkishCities.map((city, index) => (
-              <option key={index} value={city}>
+            {turkishCities.map((city) => (
+              <option key={city} value={city}>
                 {city}
               </option>
             ))}

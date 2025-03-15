@@ -8,31 +8,7 @@ from schemas.branch import BranchCreate, BranchResponse
 from sqlalchemy.orm import joinedload  # Ekle
 from sqlalchemy import or_
 
-async def get_all_branches(db: AsyncSession, skip: int = 0, limit: int = 50):
-    """Tüm şubeleri getir (varsayılan olarak ilk 50 şube)."""
-    query = (
-        select(Branch)
-        .options(joinedload(Branch.company))  # Şirket bilgilerini de yükle
-        .offset(skip)
-        .limit(limit)  # İlk 50 kaydı getir
-    )
-    result = await db.execute(query)
-    branches = result.scalars().all()
 
-    return [
-        {
-            "id": branch.id,
-            "name": branch.branch_name,
-            "address": branch.address,
-            "city": branch.city,
-            "phone_number": branch.phone_number,
-            "company_id": branch.company_id,
-            "company_name": branch.company.name if branch.company else None,
-            "location_link": branch.location_link,
-            "branch_note": branch.branch_note if hasattr(branch, 'branch_note') else ""
-        }
-        for branch in branches
-    ]
 async def create_branch(db: AsyncSession, branch: BranchCreate, company_id: int):
     db_branch = Branch(
         branch_name=branch.branch_name,
@@ -122,3 +98,25 @@ async def delete_branch(db: AsyncSession, branch_id: int):
         await db.commit()
         return db_branch
     return None
+async def get_all_branches(db: AsyncSession, limit: int = 50):
+    """
+    Şirket ID olmadan tüm şubeleri getirir. Varsayılan olarak ilk 50 şubeyi döndürür.
+    """
+    query = select(Branch).options(joinedload(Branch.company)).limit(limit)
+    result = await db.execute(query)
+    branches = result.scalars().all()
+
+    return [
+        {
+            "id": branch.id,
+            "name": branch.branch_name,
+            "address": branch.address,
+            "city": branch.city,
+            "phone_number": branch.phone_number,
+            "company_id": branch.company_id,
+            "company_name": branch.company.name,
+            "location_link": branch.location_link,
+            "branch_note": branch.branch_note if hasattr(branch, 'branch_note') else "",
+        }
+        for branch in branches
+    ]
