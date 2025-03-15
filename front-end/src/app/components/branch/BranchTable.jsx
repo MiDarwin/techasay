@@ -40,9 +40,7 @@ const style = {
 
 const BranchTable = ({ branches, companies, onEdit, onDelete }) => {
   const [openInventory, setOpenInventory] = useState(false);
-  const [openSubBranches, setOpenSubBranches] = useState(false);
   const [inventory, setInventory] = useState([]);
-  const [subBranches, setSubBranches] = useState([]);
   const [selectedBranchId, setSelectedBranchId] = useState(null);
   const [selectedBranch, setSelectedBranch] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -53,12 +51,6 @@ const BranchTable = ({ branches, companies, onEdit, onDelete }) => {
     setOpenInventory(true);
   };
 
-  const handleOpenSubBranches = async (branchId) => {
-    setSelectedBranchId(branchId);
-    const data = await getSubBranchesByBranchId(branchId); // API'den alt şubeleri al
-    setSubBranches(data);
-    setOpenSubBranches(true);
-  };
   const handleEditClick = (branch) => {
     setSelectedBranch(branch);
     setIsModalOpen(true);
@@ -69,7 +61,6 @@ const BranchTable = ({ branches, companies, onEdit, onDelete }) => {
     setSelectedBranch(null);
   };
   const handleCloseInventory = () => setOpenInventory(false);
-  const handleCloseSubBranches = () => setOpenSubBranches(false);
   const handleUpdateBranch = async (branchId, updatedData) => {
     try {
       // Correct API call with branch_id in the URL
@@ -176,17 +167,7 @@ const BranchTable = ({ branches, companies, onEdit, onDelete }) => {
                       <DeleteIcon />
                     </IconButton>
                   </Tooltip>
-                  {branch.sub_branch && ( // Alt şube durumu kontrolü
-                    <Tooltip title="Alt Şubeleri Görüntüle">
-                      <IconButton
-                        onClick={() => handleOpenSubBranches(branch._id)} // Alt şubeleri görüntüle
-                        color="primary"
-                        aria-label="Alt Şubeleri Görüntüle"
-                      >
-                        <HolidayVillageIcon />
-                      </IconButton>
-                    </Tooltip>
-                  )}
+
                   <Tooltip title="Şube Envanterini Görüntüle">
                     <IconButton
                       onClick={() => handleOpenInventory(branch._id)}
@@ -196,6 +177,17 @@ const BranchTable = ({ branches, companies, onEdit, onDelete }) => {
                       <BackpackIcon />
                     </IconButton>
                   </Tooltip>
+
+                  {branch.has_sub_branches && (
+                    <Tooltip title="Alt Şubeleri Görüntüle">
+                      <IconButton
+                        color="success"
+                        aria-label="Alt Şubeleri Görüntüle"
+                      >
+                        <HolidayVillageIcon />
+                      </IconButton>
+                    </Tooltip>
+                  )}
                 </TableCell>
               </TableRow>
             ))}
@@ -273,53 +265,6 @@ const BranchTable = ({ branches, companies, onEdit, onDelete }) => {
               </ul>
             ) : (
               <Typography>No inventory found for this branch.</Typography>
-            )}
-          </Box>
-        </Box>
-      </Modal>
-
-      {/* Alt Şubeler Modal */}
-      <Modal open={openSubBranches} onClose={handleCloseSubBranches}>
-        <Box sx={style}>
-          {selectedBranchId && (
-            <Typography variant="h6" component="h2" sx={{ mb: 2 }}>
-              {
-                branches.find((branch) => branch._id === selectedBranchId)
-                  ?.branch_name
-              }{" "}
-              Alt Şubeleri:
-            </Typography>
-          )}
-          <Box mt={2}>
-            {subBranches.length > 0 ? (
-              <ul>
-                {subBranches.map((subBranch) => (
-                  <li key={subBranch._id} style={{ marginBottom: "10px" }}>
-                    <Typography
-                      variant="body1"
-                      component="span"
-                      fontWeight="bold"
-                    >
-                      Alt Şube Adı:
-                    </Typography>
-                    <Typography variant="body1" component="span">
-                      {subBranch.name}
-                    </Typography>
-                    <Tooltip title="Sil">
-                      <IconButton
-                        onClick={() => handleDeleteSubBranch(subBranch._id)}
-                        color="error"
-                        aria-label="Sil"
-                      >
-                        <DeleteIcon />
-                      </IconButton>
-                    </Tooltip>
-                    {/* Diğer alt şube bilgilerini buraya ekleyebilirsiniz */}
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <Typography>No sub-branches found for this branch.</Typography>
             )}
           </Box>
         </Box>

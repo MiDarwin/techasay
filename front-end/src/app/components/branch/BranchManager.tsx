@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from "react";
 import BranchForm from "./BranchForm";
-import SubBranchForm from "./SubBranchForm"; // Yeni alt şube formu bileşeni
 import BranchTable from "./BranchTable";
 import Modal from "./Modal";
 import { turkishCities } from "./cities";
 import {
   createBranch,
-  createSubBranch, // Alt şube oluşturma API çağrısı
   getBranchesByCompanyId, // Güncellenmiş fonksiyonu kullan
   updateBranch,
   deleteBranch,
@@ -15,7 +13,6 @@ import {
 } from "../../utils/api";
 import AddBusinessIcon from "@mui/icons-material/AddBusiness";
 import Button from "@mui/material/Button";
-import HolidayVillageIcon from "@mui/icons-material/HolidayVillage";
 
 const BranchManager = () => {
   const [branches, setBranches] = useState([]);
@@ -27,8 +24,6 @@ const BranchManager = () => {
   const [searchFilter, setSearchFilter] = useState("");
   const [branchLoading, setBranchLoading] = useState(false);
   const [isFormVisible, setIsFormVisible] = useState(false);
-  const [isSubBranchFormVisible, setIsSubBranchFormVisible] = useState(false); // Alt şube formu durumu
-  // Yeni eklenen fonksiyon: Tüm şubeleri getir
   const fetchAllBranches = async () => {
     try {
       setBranchLoading(true); // Yüklenme durumunu göster
@@ -128,14 +123,6 @@ const BranchManager = () => {
     setCurrentBranch(null);
   };
 
-  const openSubBranchModal = () => {
-    setIsSubBranchFormVisible(true);
-  };
-
-  const closeSubBranchModal = () => {
-    setIsSubBranchFormVisible(false);
-  };
-
   useEffect(() => {
     fetchCompanies();
     fetchAllBranches();
@@ -193,16 +180,6 @@ const BranchManager = () => {
           <AddBusinessIcon className="mr-2" />
           Şube Ekle
         </Button>
-
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={openSubBranchModal} // Alt şube modalını aç
-          className="flex items-center"
-        >
-          <HolidayVillageIcon className="mr-2" />
-          Alt Şube Ekle
-        </Button>
       </div>
 
       {/* Şube Ekleme Modalı */}
@@ -213,15 +190,6 @@ const BranchManager = () => {
           isEditMode={!!currentBranch}
           onCancel={closeBranchModal}
           companies={companies}
-        />
-      </Modal>
-
-      {/* Alt Şube Ekleme Modalı */}
-      <Modal isOpen={isSubBranchFormVisible} onClose={closeSubBranchModal}>
-        <SubBranchForm
-          onCancel={closeSubBranchModal}
-          companies={companies}
-          branches={branches} // Eklenen şubeleri geçir
         />
       </Modal>
 
