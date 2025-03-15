@@ -2,7 +2,7 @@
 from fastapi import APIRouter, Depends, HTTPException,Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from schemas.branch import BranchCreate, BranchResponse, BranchUpdate
-from services.branch_service import create_branch, get_branches, update_branch, delete_branch
+from services.branch_service import create_branch, get_branches, update_branch, delete_branch, create_sub_branch
 from database import get_db
 
 router = APIRouter()
@@ -22,10 +22,10 @@ async def read_branches(
     limit: int = 10,
     city: str = Query(None),  # city opsiyonel bir query parametresi
     textinput: str = Query(None),  # textinput opsiyonel bir query parametresi
+    include_sub_branches: bool = Query(False),  # Alt şubeler dahil edilsin mi?
     db: AsyncSession = Depends(get_db)
 ):
     return await get_branches(db, company_id, skip=skip, limit=limit, city=city, textinput=textinput)
-
 
 @router.put("/branches/{branch_id}", response_model=BranchUpdate)
 async def update_branch_endpoint(branch_id: int, branch: BranchCreate, db: AsyncSession = Depends(get_db)):
@@ -53,3 +53,14 @@ async def read_all_branches(
     Şirket ID olmadan tüm şubeleri getirir. Varsayılan olarak ilk 50 şubeyi döndürür.
     """
     return await get_all_branches(db, limit=limit)
+# Alt Şube Ekleme (POST)
+@router.post("/branches/{parent_branch_id}/sub-branches", response_model=BranchResponse)
+async def create_sub_branch_endpoint(
+    parent_branch_id: int, branch: BranchCreate, db: AsyncSession = Depends(get_db)
+):
+    try:
+        created_sub_branch = await create_sub_branch(db, branch, parent_branch_id)
+        return created_sub_branch
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+

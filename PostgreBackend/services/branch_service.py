@@ -70,7 +70,7 @@ async def get_branches(db: AsyncSession, company_id: int, skip: int = 0, limit: 
             "city": branch.city,
             "phone_number": branch.phone_number,
             "company_id": branch.company_id,
-            "company_name": branch.company.name,
+            "company_name": branch.company.name if branch.company_id else None,  # Alt şubelerde company_name None
             "location_link": branch.location_link,
             "branch_note": branch.branch_note if hasattr(branch, 'branch_note') else "",
         }
@@ -101,22 +101,65 @@ async def delete_branch(db: AsyncSession, branch_id: int):
 async def get_all_branches(db: AsyncSession, limit: int = 50):
     """
     Şirket ID olmadan tüm şubeleri getirir. Varsayılan olarak ilk 50 şubeyi döndürür.
+    Alt şubeler (company_id'si None olanlar) döndürülmez.
+    Ayrıca her şube için has_sub_branches alanı eklenir.
     """
-    query = select(Branch).options(joinedload(Branch.company)).limit(limit)
+    query = select(Branch).options(joinedload(Branch.company)).filter(Branch.company_id.isnot(None)).limit(limit)
     result = await db.execute(query)
     branches = result.scalars().all()
 
-    return [
-        {
+    branch_responses = []
+    for branch in branches:
+        # Alt şubeler olup olmadığını kontrol et
+        sub_branch_query = select(Branch).filter(Branch.parent_branch_id == branch.id)
+        sub_branch_result = await db.execute(sub_branch_query)
+        has_sub_branches = sub_branch_result.scalars().first() is not None
+
+        branch_responses.append({
             "id": branch.id,
             "name": branch.branch_name,
             "address": branch.address,
             "city": branch.city,
             "phone_number": branch.phone_number,
             "company_id": branch.company_id,
-            "company_name": branch.company.name,
+            "company_name": branch.company.name if branch.company else None,
             "location_link": branch.location_link,
             "branch_note": branch.branch_note if hasattr(branch, 'branch_note') else "",
-        }
-        for branch in branches
-    ]
+            "parent_branch_id": branch.parent_branch_id,
+            "has_sub_branches": has_sub_branches  # Yeni alan eklendi
+        })
+
+    return branch_responses
+
+async def create_sub_branch(db: AsyncSession, branch: BranchCreate, parent_branch_id: int):
+    # Alt şube ekleme işlemi
+    db_branch = Branch(
+        branch_name=branch.branch_name,
+        address=branch.address,
+        city=branch.city,
+        phone_number=branch.phone_number,
+        branch_note=branch.branch_note,
+        location_link=branch.location_link,
+        parent_branch_id=parent_branch_id  # Alt şube için parent_branch_id atanır
+    )
+
+    db.add(db_branch)
+    await db.commit()
+    await db.refresh(db_branch)
+
+    # Üst şube bilgisi yüklenir
+    parent_branch_result = await db.execute(select(Branch).filter(Branch.id == parent_branch_id))
+    parent_branch = parent_branch_result.scalars().first()
+
+    return BranchResponse(
+        id=db_branch.id,
+        name=db_branch.branch_name,
+        address=db_branch.address,
+        city=db_branch.city,
+        phone_number=db_branch.phone_number,
+        parent_branch_id=db_branch.parent_branch_id,
+        branch_note=db_branch.branch_note,
+        location_link=db_branch.location_link,
+        company_id=parent_branch.company_id if parent_branch else None,  # Üst şube şirketi
+        company_name=parent_branch.company.name if parent_branch and parent_branch.company else None  # Şirket adı
+    )
