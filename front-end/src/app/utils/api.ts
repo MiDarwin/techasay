@@ -156,7 +156,7 @@ export const createSubBranch = async (subBranchData) => {
 
 export const getSubBranchesByBranchId = async (branchId) => {
   const token = localStorage.getItem("access_token"); // Token'ı localStorage'dan al
-  const response = await fetch(`${BASE_URL}/branches/sub-branches/${branchId}`, {
+  const response = await fetch(`${BASE_URL}/branches/${branchId}/sub-branches`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",

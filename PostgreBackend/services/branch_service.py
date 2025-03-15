@@ -4,7 +4,7 @@ from sqlalchemy.future import select
 from models.branch import Branch
 from models.company import Company
 from schemas import company
-from schemas.branch import BranchCreate, BranchResponse
+from schemas.branch import BranchCreate, BranchResponse,BranchUpdate
 from sqlalchemy.orm import joinedload  # Ekle
 from sqlalchemy import or_
 
@@ -81,7 +81,7 @@ async def get_branch_by_id(db: AsyncSession, branch_id: int):
     result = await db.execute(select(Branch).filter(Branch.id == branch_id))
     return result.scalars().first()
 
-async def update_branch(db: AsyncSession, branch_id: int, branch_data: BranchCreate):
+async def update_branch(db: AsyncSession, branch_id: int, branch_data: BranchUpdate):
     db_branch = await get_branch_by_id(db, branch_id)
     if db_branch:
         for key, value in branch_data.dict().items():

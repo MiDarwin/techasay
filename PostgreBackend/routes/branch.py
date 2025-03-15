@@ -29,7 +29,7 @@ async def read_branches(
     return await get_branches(db, company_id, skip=skip, limit=limit, city=city, textinput=textinput)
 
 @router.put("/branches/{branch_id}", response_model=BranchUpdate)
-async def update_branch_endpoint(branch_id: int, branch: BranchCreate, db: AsyncSession = Depends(get_db)):
+async def update_branch_endpoint(branch_id: int, branch: BranchUpdate, db: AsyncSession = Depends(get_db)):
     updated_branch = await update_branch(db, branch_id, branch)
     if not updated_branch:
         raise HTTPException(status_code=404, detail="Şube bulunamadı.")

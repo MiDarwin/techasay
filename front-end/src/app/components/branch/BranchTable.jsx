@@ -26,6 +26,8 @@ import {
   updateBranch, // Alt şube silme API çağrısı
 } from "../../utils/api"; // API'den envanter ve alt şubeleri almak için kullanılan fonksiyonlar
 import UpdateBranchModal from "./UpdateBranchModal";
+import SubBranchTable from "./SubBranchTable"; // Alt şube tablosu bileşeni
+
 const style = {
   position: "absolute",
   top: "50%",
@@ -44,6 +46,10 @@ const BranchTable = ({ branches, companies, onEdit, onDelete }) => {
   const [selectedBranchId, setSelectedBranchId] = useState(null);
   const [selectedBranch, setSelectedBranch] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [expandedRow, setExpandedRow] = useState(null); // Genişletilmiş (expanded) satırı takip etmek için
+  const [subBranches, setSubBranches] = useState([]); // Alt şube verilerini tutmak için
+  const [loading, setLoading] = useState(false); // Yükleme durumunu takip etmek için
+
   const handleOpenInventory = async (branchId) => {
     setSelectedBranchId(branchId);
     const data = await getInventoryByBranch(branchId); // API'den envanteri al
@@ -55,7 +61,35 @@ const BranchTable = ({ branches, companies, onEdit, onDelete }) => {
     setSelectedBranch(branch);
     setIsModalOpen(true);
   };
+  // Alt şubeleri yükleme fonksiyonu
+  const handleExpandClick = async (branchId) => {
+    if (expandedRow === branchId) {
+      // Eğer zaten açık olan satıra tıklanırsa, gizle
+      setExpandedRow(null);
+      setSubBranches([]);
+      return;
+    }
 
+    try {
+      setLoading(true);
+      const data = await getSubBranchesByBranchId(branchId); // Backend'den alt şubeleri al
+      setSubBranches(data); // Alt şubeleri state'e ata
+      setExpandedRow(branchId); // Genişletilmiş satırı güncelle
+      setLoading(false);
+    } catch (err) {
+      alert("Alt şubeler yüklenirken bir hata oluştu.");
+      setLoading(false);
+    }
+  };
+
+  const openLocationLink = (link) => {
+    const formattedLink =
+      link.startsWith("http://") || link.startsWith("https://")
+        ? link
+        : `http://${link}`;
+
+    window.open(formattedLink, "_blank");
+  };
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setSelectedBranch(null);
@@ -70,14 +104,6 @@ const BranchTable = ({ branches, companies, onEdit, onDelete }) => {
     } catch (error) {
       alert("Şube güncellerken bir hata oluştu.");
     }
-  };
-  const openLocationLink = (link) => {
-    const formattedLink =
-      link.startsWith("http://") || link.startsWith("https://")
-        ? link
-        : `http://${link}`;
-
-    window.open(formattedLink, "_blank");
   };
 
   const handleDeleteSubBranch = async (subBranchId) => {
@@ -122,74 +148,89 @@ const BranchTable = ({ branches, companies, onEdit, onDelete }) => {
           </TableHead>
           <TableBody>
             {branches.map((branch, index) => (
-              <TableRow
-                key={branch.id}
-                sx={{
-                  backgroundColor: index % 2 === 0 ? "#f7f9fc" : "#ffffff",
-                  "&:hover": {
-                    backgroundColor: "#e3f2fd",
-                  },
-                }}
-              >
-                <TableCell>{branch.company_name}</TableCell>
-                <TableCell>{branch.city}</TableCell>
-                <TableCell>{branch.name}</TableCell>
-                <TableCell>{branch.address}</TableCell>
-                <TableCell>{branch.phone_number}</TableCell>
-                <TableCell>{branch.branch_note || "Yok"}</TableCell>
-                <TableCell>
-                  {branch.location_link && (
-                    <Tooltip title="Konum Göster">
+              <React.Fragment key={branch.id}>
+                <TableRow
+                  key={branch.id}
+                  sx={{
+                    backgroundColor: index % 2 === 0 ? "#f7f9fc" : "#ffffff",
+                    "&:hover": {
+                      backgroundColor: "#e3f2fd",
+                    },
+                  }}
+                >
+                  <TableCell>{branch.company_name}</TableCell>
+                  <TableCell>{branch.city}</TableCell>
+                  <TableCell>{branch.name}</TableCell>
+                  <TableCell>{branch.address}</TableCell>
+                  <TableCell>{branch.phone_number}</TableCell>
+                  <TableCell>{branch.branch_note || "Yok"}</TableCell>
+                  <TableCell>
+                    {branch.location_link && (
+                      <Tooltip title="Konum Göster">
+                        <IconButton
+                          onClick={() => openLocationLink(branch.location_link)}
+                          color="primary"
+                          aria-label="Konum Göster"
+                        >
+                          <LocationOnIcon />
+                        </IconButton>
+                      </Tooltip>
+                    )}
+                    <Tooltip title="Düzenle">
                       <IconButton
-                        onClick={() => openLocationLink(branch.location_link)}
+                        onClick={() => handleEditClick(branch)}
+                        color="warning"
+                        aria-label="Düzenle"
+                      >
+                        <EditIcon />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Sil">
+                      <IconButton
+                        onClick={() => onDelete(branch.id)}
+                        color="error"
+                        aria-label="Sil"
+                      >
+                        <DeleteIcon />
+                      </IconButton>
+                    </Tooltip>
+
+                    <Tooltip title="Şube Envanterini Görüntüle">
+                      <IconButton
+                        onClick={() => handleOpenInventory(branch._id)}
                         color="primary"
-                        aria-label="Konum Göster"
+                        aria-label="Şube Envanterini Görüntüle"
                       >
-                        <LocationOnIcon />
+                        <BackpackIcon />
                       </IconButton>
                     </Tooltip>
-                  )}
-                  <Tooltip title="Düzenle">
-                    <IconButton
-                      onClick={() => handleEditClick(branch)}
-                      color="warning"
-                      aria-label="Düzenle"
-                    >
-                      <EditIcon />
-                    </IconButton>
-                  </Tooltip>
-                  <Tooltip title="Sil">
-                    <IconButton
-                      onClick={() => onDelete(branch.id)}
-                      color="error"
-                      aria-label="Sil"
-                    >
-                      <DeleteIcon />
-                    </IconButton>
-                  </Tooltip>
 
-                  <Tooltip title="Şube Envanterini Görüntüle">
-                    <IconButton
-                      onClick={() => handleOpenInventory(branch._id)}
-                      color="primary"
-                      aria-label="Şube Envanterini Görüntüle"
-                    >
-                      <BackpackIcon />
-                    </IconButton>
-                  </Tooltip>
-
-                  {branch.has_sub_branches && (
-                    <Tooltip title="Alt Şubeleri Görüntüle">
-                      <IconButton
-                        color="success"
-                        aria-label="Alt Şubeleri Görüntüle"
-                      >
-                        <HolidayVillageIcon />
-                      </IconButton>
-                    </Tooltip>
-                  )}
-                </TableCell>
-              </TableRow>
+                    {branch.has_sub_branches && (
+                      <Tooltip title="Alt Şubeleri Görüntüle">
+                        <IconButton
+                          onClick={() => handleExpandClick(branch.id)}
+                          color="success"
+                          aria-label="Alt Şubeleri Görüntüle"
+                        >
+                          <HolidayVillageIcon />
+                        </IconButton>
+                      </Tooltip>
+                    )}
+                  </TableCell>
+                </TableRow>
+                {/* Alt Şube Tablosu */}
+                {expandedRow === branch.id && (
+                  <TableRow>
+                    <TableCell colSpan={7}>
+                      {loading ? (
+                        <CircularProgress />
+                      ) : (
+                        <SubBranchTable subBranches={subBranches} />
+                      )}
+                    </TableCell>
+                  </TableRow>
+                )}
+              </React.Fragment>
             ))}
           </TableBody>
         </Table>
