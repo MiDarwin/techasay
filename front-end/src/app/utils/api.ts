@@ -132,8 +132,10 @@ export const updateInventory = (inventory_id, updateData) =>
 export const deleteInventory = (inventory_id) =>
   apiRequest(`/inventory/${inventory_id}`, "DELETE");
 
-export const getAllInventory = () => apiRequest("/inventories/", "GET");
-
+export const getAllInventory = (companyName = "") => {
+  const query = companyName ? `?company_name=${encodeURIComponent(companyName)}` : "";
+  return apiRequest(`/inventories/${query}`, "GET");
+};
 // ** Alt Şube CRUD İstekleri **
 export const createSubBranch = async (branchId, subBranchData) => {
   const response = await fetch(`${BASE_URL}/branches/${branchId}/sub-branches`, {

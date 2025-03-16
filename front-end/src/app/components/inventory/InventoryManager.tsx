@@ -75,10 +75,10 @@ const InventoryManager = () => {
     }
   };
   // Tüm Envanterleri Çekme Fonksiyonu
-  const fetchAllInventories = async () => {
+  const fetchAllInventories = async (companyName = "") => {
     try {
       setInventoriesLoading(true);
-      const data = await getAllInventory();
+      const data = await getAllInventory(companyName);
       setAllInventories(data);
       setFilteredInventories(data);
       setInventoriesLoading(false);
@@ -98,9 +98,12 @@ const InventoryManager = () => {
   // Seçilen şirket değiştiğinde şubeleri al
   useEffect(() => {
     if (selectedCompanyId) {
-      fetchBranches(selectedCompanyId);
+      const selectedCompany = companies.find(
+        (company) => company.company_id === selectedCompanyId
+      );
+      fetchAllInventories(selectedCompany?.name || "");
     } else {
-      setBranches([]); // Şirket seçilmediyse şubeleri temizle
+      fetchAllInventories();
     }
   }, [selectedCompanyId]);
   // Şube seçimi değiştiğinde envanterleri filtrele
@@ -177,8 +180,6 @@ const InventoryManager = () => {
                   ))}
                 </Select>
               </FormControl>
-
-              {/* Şube Seçimi */}
               <FormControl
                 variant="outlined"
                 margin="normal"

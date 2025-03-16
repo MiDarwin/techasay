@@ -34,8 +34,7 @@ const InventoryList = ({ inventories, onEdit, onDelete }) => {
             }}
           >
             <TableCell>Şube Adı</TableCell>
-            <TableCell>Alt Şube Adı</TableCell>{" "}
-            {/* Alt şube adı için yeni hücre */}
+            <TableCell>Alt Şube Adı</TableCell>
             <TableCell>Ürün Türü</TableCell>
             <TableCell>Ürün Modeli</TableCell>
             <TableCell>Miktar</TableCell>
@@ -48,7 +47,6 @@ const InventoryList = ({ inventories, onEdit, onDelete }) => {
             <TableRow>
               <TableCell colSpan={7} align="center">
                 {" "}
-                {/* Kolon sayısını güncelledik */}
                 <Typography>Envanter bulunamadı.</Typography>
               </TableCell>
             </TableRow>
@@ -64,8 +62,7 @@ const InventoryList = ({ inventories, onEdit, onDelete }) => {
                 }}
               >
                 <TableCell>{inventory.branch_name}</TableCell>
-                <TableCell>{inventory.sub_branch_name || "Yok"}</TableCell>{" "}
-                {/* Alt şube adı */}
+                <TableCell>{inventory.sub_branch_name || "Yok"}</TableCell>
                 <TableCell>{inventory.device_type}</TableCell>
                 <TableCell>{inventory.device_model}</TableCell>
                 <TableCell>{inventory.quantity}</TableCell>
