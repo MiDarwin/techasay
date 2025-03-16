@@ -108,6 +108,10 @@ async def update_inventory(db: AsyncSession, inventory_id: int, inventory_update
     return db_inventory
 async def get_inventory_by_branch_id(db, branch_id: int):
     # 1. Ana şubenin kendi envanteri
+    main_branch_query = select(Branch.branch_name).where(Branch.id == branch_id)
+    main_branch = await db.execute(main_branch_query)
+    main_branch_name = main_branch.scalar()
+
     main_branch_inventory_query = (
         select(Inventory.device_type, Inventory.device_model, func.sum(Inventory.quantity).label("total_quantity"))
         .where(Inventory.branch_id == branch_id)
@@ -117,37 +121,45 @@ async def get_inventory_by_branch_id(db, branch_id: int):
     main_branch_inventory_results = main_branch_inventory.all()
 
     # 2. Alt şubelerin envanterini toplama
-    sub_branches_query = select(Branch.id).where(Branch.parent_branch_id == branch_id)
+    sub_branches_query = select(Branch.id, Branch.branch_name).where(Branch.parent_branch_id == branch_id)
     sub_branches = await db.execute(sub_branches_query)
-    sub_branch_ids = [row[0] for row in sub_branches]
+    sub_branch_results = sub_branches.fetchall()
+
+    sub_branch_ids = [row[0] for row in sub_branch_results]
+    sub_branch_names = {row[0]: row[1] for row in sub_branch_results}  # Alt şube ID -> Şube adı eşleştirmesi
 
     if sub_branch_ids:
         sub_branch_inventory_query = (
-            select(Inventory.device_type, Inventory.device_model, func.sum(Inventory.quantity).label("total_quantity"))
+            select(Inventory.device_type, Inventory.device_model, Inventory.branch_id,
+                   func.sum(Inventory.quantity).label("total_quantity"))
             .where(Inventory.branch_id.in_(sub_branch_ids))
-            .group_by(Inventory.device_type, Inventory.device_model)
+            .group_by(Inventory.device_type, Inventory.device_model, Inventory.branch_id)
         )
         sub_branch_inventory = await db.execute(sub_branch_inventory_query)
-        sub_branch_inventory_results = sub_branch_inventory.all()
+        sub_branch_inventory_results = sub_branch_inventory.fetchall()
     else:
         sub_branch_inventory_results = []
 
     # 3. Ana şube ve alt şube envanterlerini birleştirme
-    inventory_dict = {}
+    inventory_list = []
 
     # Ana şube envanteri ekleniyor
     for device_type, device_model, total_quantity in main_branch_inventory_results:
-        inventory_dict[(device_type, device_model)] = total_quantity
+        inventory_list.append({
+            "branch_name": main_branch_name,
+            "device_type": device_type,
+            "device_model": device_model,
+            "quantity": total_quantity
+        })
 
     # Alt şube envanteri ekleniyor
-    for device_type, device_model, total_quantity in sub_branch_inventory_results:
-        if (device_type, device_model) in inventory_dict:
-            inventory_dict[(device_type, device_model)] += total_quantity
-        else:
-            inventory_dict[(device_type, device_model)] = total_quantity
+    for device_type, device_model, branch_id, total_quantity in sub_branch_inventory_results:
+        inventory_list.append({
+            "branch_name": sub_branch_names[branch_id],
+            "device_type": device_type,
+            "device_model": device_model,
+            "quantity": total_quantity
+        })
 
-    # Sonuçları liste olarak döndür
-    return [
-        {"device_type": device_type, "device_model": device_model, "quantity": quantity}
-        for (device_type, device_model), quantity in inventory_dict.items()
-    ]
+    # Sonuçları döndür
+    return inventory_list

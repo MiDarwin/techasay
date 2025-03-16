@@ -9,6 +9,7 @@ import {
   getAllCompanies,
   getBranchesByCompanyId,
   deleteInventory,
+  getInventoryByBranch,
 } from "../../utils/api";
 import AddIcon from "@mui/icons-material/Add";
 import {
@@ -49,14 +50,34 @@ const InventoryManager = () => {
   const fetchAllInventories = async (companyName = "", branchName = "") => {
     try {
       setInventoriesLoading(true);
-      const data = await getAllInventory(companyName, branchName);
-      setAllInventories(data);
-      setFilteredInventories(data);
-      setInventoriesLoading(false);
+
+      let allInventories = [];
+
+      // Seçilen şube bilgilerini bul
+      const selectedBranchDetails = branches.find(
+        (branch) => branch.name === branchName
+      );
+
+      if (selectedBranchDetails) {
+        if (selectedBranchDetails.has_sub_branches) {
+          // Eğer şube alt şubelere sahipse getInventoryByBranch çağır
+          allInventories = await getInventoryByBranch(selectedBranchDetails.id);
+        } else {
+          // Normal şubeler için getAllInventory çağır
+          allInventories = await getAllInventory(companyName, branchName);
+        }
+      } else {
+        // Eğer şube seçilmemişse tüm envanteri çek
+        allInventories = await getAllInventory(companyName, branchName);
+      }
+
+      setAllInventories(allInventories);
+      setFilteredInventories(allInventories);
     } catch (err) {
       setInventoriesError(
         err.message || "Envanterler alınırken bir hata oluştu."
       );
+    } finally {
       setInventoriesLoading(false);
     }
   };

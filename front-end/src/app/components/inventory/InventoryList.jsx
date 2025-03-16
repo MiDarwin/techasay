@@ -52,7 +52,7 @@ const InventoryList = ({ inventories, onEdit, onDelete }) => {
           ) : (
             inventories.map((inventory, index) => (
               <TableRow
-                key={inventory.id}
+                key={inventory.id ?? `inventory-${index}`}
                 sx={{
                   backgroundColor: index % 2 === 0 ? "#f7f9fc" : "#ffffff",
                   "&:hover": {
