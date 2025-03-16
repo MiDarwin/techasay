@@ -205,7 +205,7 @@ const BranchTable = ({ branches, companies, onEdit, onDelete }) => {
 
                     <Tooltip title="Şube Envanterini Görüntüle">
                       <IconButton
-                        onClick={() => handleOpenInventory(branch._id)}
+                        onClick={() => handleOpenInventory(branch.id)}
                         color="primary"
                         aria-label="Şube Envanterini Görüntüle"
                       >
