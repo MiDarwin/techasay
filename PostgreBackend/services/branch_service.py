@@ -7,6 +7,7 @@ from schemas import company
 from schemas.branch import BranchCreate, BranchResponse,BranchUpdate
 from sqlalchemy.orm import joinedload  # Ekle
 from sqlalchemy import or_
+from sqlalchemy.orm import selectinload
 
 
 async def create_branch(db: AsyncSession, branch: BranchCreate, company_id: int):
@@ -144,7 +145,9 @@ async def create_sub_branch(db: AsyncSession, branch: BranchCreate, parent_branc
     await db.refresh(db_branch)
 
     # Üst şube bilgisi yüklenir
-    parent_branch_result = await db.execute(select(Branch).filter(Branch.id == parent_branch_id))
+    parent_branch_result = await db.execute(
+        select(Branch).options(selectinload(Branch.company)).filter(Branch.id == parent_branch_id)
+    )
     parent_branch = parent_branch_result.scalars().first()
 
     return BranchResponse(

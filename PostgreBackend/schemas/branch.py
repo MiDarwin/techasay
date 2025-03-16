@@ -10,9 +10,9 @@ class BranchBase(BaseModel):
     location_link: Optional[str] = None  # Opsiyonel hale getirildi
 
 class BranchCreate(BranchBase):
-    company_id: Optional[int] = None  # Şube oluştururken şirket ID opsiyonel olabilir
     parent_branch_id: Optional[int] = None  # Alt şube oluşturmak için parent_branch_id ekledik
-
+    class Config:
+        from_attributes = True  # Pydantic v2 için gerekli
 class BranchResponse(BaseModel):
     id: int
     name: str  # `name` yerine `branch_name` olarak değiştirdim
