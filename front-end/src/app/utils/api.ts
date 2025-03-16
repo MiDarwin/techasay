@@ -121,10 +121,8 @@ export const createInventory = (branchId, inventoryData) =>
   apiRequest(`/branches/${branchId}/inventories`, "POST", inventoryData);
 
 export const getInventoryByBranch = (branch_id) =>
-  apiRequest(`/branches/${branch_id}/inventories`, "GET");
+  apiRequest(`/branches/${branch_id}/inventory`, "GET");
 
-export const getInventoryById = (inventory_id) =>
-  apiRequest(`/inventory/${inventory_id}`, "GET");
 export const updateInventory = (inventoryId, updateData) =>
   apiRequest(`/inventories/${inventoryId}`, "PUT", updateData);
 

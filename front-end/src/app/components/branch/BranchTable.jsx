@@ -22,13 +22,13 @@ import HolidayVillageIcon from "@mui/icons-material/HolidayVillage"; // Alt şub
 import {
   getInventoryByBranch,
   getSubBranchesByBranchId,
-  deleteSubBranch,
   updateBranch,
   createSubBranch, // Alt şube silme API çağrısı
 } from "../../utils/api"; // API'den envanter ve alt şubeleri almak için kullanılan fonksiyonlar
 import UpdateBranchModal from "./UpdateBranchModal";
 import SubBranchTable from "./SubBranchTable"; // Alt şube tablosu bileşeni
 import SubBranchForm from "./SubBranchForm"; // Alt şube ekleme formu
+import InventoryModal from "./InventoryModal"; // Envanter Modalı Component
 
 const style = {
   position: "absolute",
@@ -52,12 +52,20 @@ const BranchTable = ({ branches, companies, onEdit, onDelete }) => {
   const [subBranches, setSubBranches] = useState([]); // Alt şube verilerini tutmak için
   const [loading, setLoading] = useState(false); // Yükleme durumunu takip etmek için
   const [isSubBranchModalOpen, setIsSubBranchModalOpen] = useState(false); // Alt şube modal durumu
+  const [selectedBranchName, setSelectedBranchName] = useState(""); // Şube adı
 
-  const handleOpenInventory = async (branchId) => {
+  const handleOpenInventory = async (branchId, branchName) => {
     setSelectedBranchId(branchId);
+    setSelectedBranchName(branchName);
     const data = await getInventoryByBranch(branchId); // API'den envanteri al
     setInventory(data);
     setOpenInventory(true);
+  };
+
+  const handleCloseInventory = () => {
+    setOpenInventory(false);
+    setSelectedBranchId(null);
+    setSelectedBranchName("");
   };
 
   const handleEditClick = (branch) => {
@@ -115,7 +123,6 @@ const BranchTable = ({ branches, companies, onEdit, onDelete }) => {
     setIsModalOpen(false);
     setSelectedBranch(null);
   };
-  const handleCloseInventory = () => setOpenInventory(false);
   const handleUpdateBranch = async (branchId, updatedData) => {
     try {
       // Correct API call with branch_id in the URL
@@ -215,7 +222,7 @@ const BranchTable = ({ branches, companies, onEdit, onDelete }) => {
                     <Tooltip title="Alt Şube Ekle">
                       <IconButton
                         onClick={() => openSubBranchModal(branch)}
-                        color="primary"
+                        color="success"
                         aria-label="Alt Şube Ekle"
                       >
                         <HolidayVillageIcon />
@@ -225,7 +232,7 @@ const BranchTable = ({ branches, companies, onEdit, onDelete }) => {
                       <Tooltip title="Alt Şubeleri Görüntüle">
                         <IconButton
                           onClick={() => handleExpandClick(branch.id)}
-                          color="success"
+                          color="secondary"
                           aria-label="Alt Şubeleri Görüntüle"
                         >
                           <HolidayVillageIcon />
@@ -258,74 +265,12 @@ const BranchTable = ({ branches, companies, onEdit, onDelete }) => {
         onUpdate={handleUpdateBranch}
       />
       {/* Envanter Modal */}
-      <Modal open={openInventory} onClose={handleCloseInventory}>
-        <Box sx={style}>
-          {selectedBranchId && (
-            <Typography variant="h6" component="h2" sx={{ mb: 2 }}>
-              {
-                branches.find((branch) => branch._id === selectedBranchId)
-                  ?.branch_name
-              }{" "}
-              Envanteri:
-            </Typography>
-          )}
-          <Box mt={2}>
-            {inventory.length > 0 ? (
-              <ul>
-                {inventory.map((item) => (
-                  <li key={item.id} style={{ marginBottom: "10px" }}>
-                    <Typography
-                      variant="body1"
-                      component="span"
-                      fontWeight="bold"
-                    >
-                      Ürün Modeli:
-                    </Typography>
-                    <Typography variant="body1" component="span">
-                      {item.device_model}
-                    </Typography>
-                    <br />
-                    <Typography
-                      variant="body1"
-                      component="span"
-                      fontWeight="bold"
-                    >
-                      Ürün Türü:
-                    </Typography>
-                    <Typography variant="body1" component="span">
-                      {item.device_type}
-                    </Typography>
-                    <br />
-                    <Typography
-                      variant="body1"
-                      component="span"
-                      fontWeight="bold"
-                    >
-                      Ürün Adedi:
-                    </Typography>
-                    <Typography variant="body1" component="span">
-                      {item.quantity}
-                    </Typography>
-                    <br />
-                    <Typography
-                      variant="body1"
-                      component="span"
-                      fontWeight="bold"
-                    >
-                      Ürün Notu:
-                    </Typography>
-                    <Typography variant="body1" component="span">
-                      {item.note || "Yok"}
-                    </Typography>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <Typography>No inventory found for this branch.</Typography>
-            )}
-          </Box>
-        </Box>
-      </Modal>
+      <InventoryModal
+        isOpen={openInventory}
+        onClose={handleCloseInventory}
+        inventory={inventory}
+        branchName={selectedBranchName}
+      />
       {/* Alt Şube Ekleme Modalı */}
       {selectedBranch && (
         <Modal

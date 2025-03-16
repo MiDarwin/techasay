@@ -20,9 +20,15 @@ import {
   Button,
 } from "@mui/material";
 import UpdateSubBranchForm from "./UpdateSubBranchForm"; // Yeni modal bileşeni
-import { updateBranch, deleteBranch } from "../../utils/api"; // Silme ve güncelleme API fonksiyonları
+import {
+  updateBranch,
+  deleteBranch,
+  getInventoryByBranch,
+} from "../../utils/api"; // Silme ve güncelleme API fonksiyonları
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
+import BackpackIcon from "@mui/icons-material/Backpack"; // Envanter ikonu
+import InventoryModal from "./InventoryModal"; // Envanter Modalı Component
 
 const style = {
   position: "absolute",
@@ -41,7 +47,10 @@ const SubBranchTable = ({ subBranches, onReload }) => {
   const [selectedSubBranch, setSelectedSubBranch] = useState(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [branchToDelete, setBranchToDelete] = useState(null);
-
+  const [openInventory, setOpenInventory] = useState(false);
+  const [inventory, setInventory] = useState([]);
+  const [selectedBranchId, setSelectedBranchId] = useState(null);
+  const [selectedBranchName, setSelectedBranchName] = useState("");
   const openModal = (subBranch) => {
     setSelectedSubBranch(subBranch); // Seçilen alt şubenin bilgilerini ayarla
     setIsModalOpen(true);
@@ -83,7 +92,19 @@ const SubBranchTable = ({ subBranches, onReload }) => {
       alert("Alt şube silinirken bir hata oluştu: " + err.message);
     }
   };
+  const handleOpenInventory = async (branchId, branchName) => {
+    setSelectedBranchId(branchId);
+    setSelectedBranchName(branchName);
+    const data = await getInventoryByBranch(branchId); // API'den envanteri al
+    setInventory(data);
+    setOpenInventory(true);
+  };
 
+  const handleCloseInventory = () => {
+    setOpenInventory(false);
+    setSelectedBranchId(null);
+    setSelectedBranchName("");
+  };
   return (
     <TableContainer component={Paper} sx={{ marginTop: 2 }}>
       {/* Başlık */}
@@ -110,15 +131,22 @@ const SubBranchTable = ({ subBranches, onReload }) => {
               <TableCell>{branch.branch_note || "Bilgi Yok"}</TableCell>
               <TableCell>
                 <IconButton
+                  onClick={() => handleOpenInventory(branch.id, branch.name)}
+                  color="info"
+                  aria-label="Şube Envanterini Görüntüle"
+                >
+                  <BackpackIcon />
+                </IconButton>
+                <IconButton
                   onClick={() => openModal(branch)}
-                  color="primary"
+                  color="warning"
                   aria-label="Düzenle"
                 >
                   <EditIcon />
                 </IconButton>
                 <IconButton
                   onClick={() => openDeleteDialog(branch)}
-                  color="secondary"
+                  color="error"
                   aria-label="Sil"
                 >
                   <DeleteIcon />
@@ -128,7 +156,12 @@ const SubBranchTable = ({ subBranches, onReload }) => {
           ))}
         </TableBody>
       </Table>
-
+      <InventoryModal
+        isOpen={openInventory}
+        onClose={handleCloseInventory}
+        inventory={inventory}
+        branchName={selectedBranchName}
+      />
       {/* Güncelleme Modalı */}
       <Modal open={isModalOpen} onClose={closeModal}>
         <Box sx={style}>

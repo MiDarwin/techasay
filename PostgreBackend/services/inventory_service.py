@@ -1,5 +1,5 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, join
+from sqlalchemy import select, join, func
 from models.inventory import Inventory
 from schemas.inventory import InventoryCreate, InventoryResponse,InventoryUpdate
 from models.branch import Branch  # Branch modelini içe aktarın
@@ -106,3 +106,48 @@ async def update_inventory(db: AsyncSession, inventory_id: int, inventory_update
     await db.refresh(db_inventory)
 
     return db_inventory
+async def get_inventory_by_branch_id(db, branch_id: int):
+    # 1. Ana şubenin kendi envanteri
+    main_branch_inventory_query = (
+        select(Inventory.device_type, Inventory.device_model, func.sum(Inventory.quantity).label("total_quantity"))
+        .where(Inventory.branch_id == branch_id)
+        .group_by(Inventory.device_type, Inventory.device_model)
+    )
+    main_branch_inventory = await db.execute(main_branch_inventory_query)
+    main_branch_inventory_results = main_branch_inventory.all()
+
+    # 2. Alt şubelerin envanterini toplama
+    sub_branches_query = select(Branch.id).where(Branch.parent_branch_id == branch_id)
+    sub_branches = await db.execute(sub_branches_query)
+    sub_branch_ids = [row[0] for row in sub_branches]
+
+    if sub_branch_ids:
+        sub_branch_inventory_query = (
+            select(Inventory.device_type, Inventory.device_model, func.sum(Inventory.quantity).label("total_quantity"))
+            .where(Inventory.branch_id.in_(sub_branch_ids))
+            .group_by(Inventory.device_type, Inventory.device_model)
+        )
+        sub_branch_inventory = await db.execute(sub_branch_inventory_query)
+        sub_branch_inventory_results = sub_branch_inventory.all()
+    else:
+        sub_branch_inventory_results = []
+
+    # 3. Ana şube ve alt şube envanterlerini birleştirme
+    inventory_dict = {}
+
+    # Ana şube envanteri ekleniyor
+    for device_type, device_model, total_quantity in main_branch_inventory_results:
+        inventory_dict[(device_type, device_model)] = total_quantity
+
+    # Alt şube envanteri ekleniyor
+    for device_type, device_model, total_quantity in sub_branch_inventory_results:
+        if (device_type, device_model) in inventory_dict:
+            inventory_dict[(device_type, device_model)] += total_quantity
+        else:
+            inventory_dict[(device_type, device_model)] = total_quantity
+
+    # Sonuçları liste olarak döndür
+    return [
+        {"device_type": device_type, "device_model": device_model, "quantity": quantity}
+        for (device_type, device_model), quantity in inventory_dict.items()
+    ]

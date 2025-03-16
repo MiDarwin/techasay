@@ -62,21 +62,28 @@ async def get_branches(db: AsyncSession, company_id: int, skip: int = 0, limit: 
     query = query.offset(skip).limit(limit)
     result = await db.execute(query)
     branches = result.scalars().all()
+    branch_responses = []
+    for branch in branches:
+        # Alt şubeler olup olmadığını kontrol et
+        sub_branch_query = select(Branch).filter(Branch.parent_branch_id == branch.id)
+        sub_branch_result = await db.execute(sub_branch_query)
+        has_sub_branches = sub_branch_result.scalars().first() is not None
 
-    return [
-        {
+        branch_responses.append({
             "id": branch.id,
             "name": branch.branch_name,
             "address": branch.address,
             "city": branch.city,
             "phone_number": branch.phone_number,
             "company_id": branch.company_id,
-            "company_name": branch.company.name if branch.company_id else None,  # Alt şubelerde company_name None
+            "company_name": branch.company.name if branch.company else None,
             "location_link": branch.location_link,
             "branch_note": branch.branch_note if hasattr(branch, 'branch_note') else "",
-        }
-        for branch in branches
-    ]
+            "parent_branch_id": branch.parent_branch_id,
+            "has_sub_branches": has_sub_branches  # Yeni alan eklendi
+        })
+
+    return branch_responses
 
 async def get_branch_by_id(db: AsyncSession, branch_id: int):
     result = await db.execute(select(Branch).filter(Branch.id == branch_id))

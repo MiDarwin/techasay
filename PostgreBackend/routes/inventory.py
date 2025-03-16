@@ -2,9 +2,11 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from models.branch import Branch
 from schemas.inventory import InventoryCreate, InventoryResponse, InventoryUpdate
 from services.inventory_service import create_inventory, get_inventory_by_branch, delete_inventory, get_all_inventory, \
-    update_inventory
+    update_inventory, get_inventory_by_branch_id
 from database import get_db
 
 router = APIRouter()
@@ -57,3 +59,14 @@ async def update_inventory_endpoint(
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/branches/{branch_id}/inventory")
+async def get_branch_inventory(branch_id: int, db: AsyncSession = Depends(get_db)):
+    # Şubenin var olup olmadığını kontrol et
+    branch = await db.get(Branch, branch_id)
+    if not branch:
+        raise HTTPException(status_code=404, detail="Şube bulunamadı")
+
+    # Ana şube ve alt şubelerin envanteri
+    inventory = await get_inventory_by_branch_id(db, branch_id)
+    return inventory
