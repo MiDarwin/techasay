@@ -1,7 +1,9 @@
+from typing import Optional
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from schemas.inventory import InventoryCreate, InventoryResponse
-from services.inventory_service import create_inventory, get_inventory_by_branch, delete_inventory
+from services.inventory_service import create_inventory, get_inventory_by_branch, delete_inventory, get_all_inventory
 from database import get_db
 
 router = APIRouter()
@@ -24,3 +26,15 @@ async def delete_inventory_endpoint(inventory_id: int, db: AsyncSession = Depend
     if not deleted_inventory:
         raise HTTPException(status_code=404, detail="Envanter bulunamadı.")
     return {"detail": "Envanter başarıyla silindi."}
+@router.get("/inventories", response_model=list[InventoryResponse])
+async def get_all_inventory_endpoint(
+    limit: int = 50,
+    company_name: Optional[str] = None,  # Şirket adına göre filtreleme
+    branch_name: Optional[str] = None,  # Şube adına göre filtreleme
+    db: AsyncSession = Depends(get_db)
+):
+    try:
+        inventories = await get_all_inventory(db, limit, company_name, branch_name)
+        return inventories
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

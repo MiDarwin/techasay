@@ -13,6 +13,8 @@ class InventoryCreate(InventoryBase):
 class InventoryResponse(InventoryBase):
     id: int
     branch_id: int
+    branch_name:str
+    company_name: Optional[str] = None  # Şirket adı
 
     class Config:
         orm_mode = True
