@@ -132,9 +132,13 @@ export const updateInventory = (inventory_id, updateData) =>
 export const deleteInventory = (inventory_id) =>
   apiRequest(`/inventory/${inventory_id}`, "DELETE");
 
-export const getAllInventory = (companyName = "") => {
-  const query = companyName ? `?company_name=${encodeURIComponent(companyName)}` : "";
-  return apiRequest(`/inventories/${query}`, "GET");
+export const getAllInventory = (companyName = "", branchName = "") => {
+  const params = new URLSearchParams();
+
+  if (companyName) params.append("company_name", companyName); // Şirket adı
+  if (branchName) params.append("branch_name", branchName); // Şube adı
+
+  return apiRequest(`/inventories?${params.toString()}`, "GET");
 };
 // ** Alt Şube CRUD İstekleri **
 export const createSubBranch = async (branchId, subBranchData) => {

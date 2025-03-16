@@ -1,15 +1,15 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import InventoryList from "./InventoryList"; // Envanter Listesi Bileşeni
-import AddInventoryModal from "./AddInventoryModal"; // Envanter Ekleme Modalı
-import UpdateInventoryModal from "./UpdateInventoryModal"; // Envanter Güncelleme Modalı
+import InventoryList from "./InventoryList";
+import AddInventoryModal from "./AddInventoryModal";
+import UpdateInventoryModal from "./UpdateInventoryModal";
 import {
   getAllInventory,
   getAllCompanies,
   getBranchesByCompanyId,
   deleteInventory,
-} from "../../utils/api"; // API çağrıları
+} from "../../utils/api";
 import AddIcon from "@mui/icons-material/Add";
 import {
   Box,
@@ -20,27 +20,21 @@ import {
   Select,
   MenuItem,
   Typography,
-  TextField,
-} from "@mui/material"; // MUI bileşenleri
-import DomainAddIcon from "@mui/icons-material/DomainAdd";
+} from "@mui/material";
 
 const InventoryManager = () => {
   const [activeTab, setActiveTab] = useState("inventory");
-  const [branches, setBranches] = useState([]); // Şube listesi
+  const [branches, setBranches] = useState([]);
   const [isInventoryAddModalOpen, setIsInventoryAddModalOpen] = useState(false);
   const [selectedInventory, setSelectedInventory] = useState(null);
-  const [activeInventoryBranch, setActiveInventoryBranch] = useState(""); // "" için 'All' seçeneği
-  const [allInventories, setAllInventories] = useState([]); // Tüm envanterler
-  const [filteredInventories, setFilteredInventories] = useState([]); // Filtrelenmiş envanterler
-  const [searchTerm, setSearchTerm] = useState(""); // Arama terimi
-  const [branchesLoading, setBranchesLoading] = useState(false);
-  const [branchesError, setBranchesError] = useState("");
+  const [allInventories, setAllInventories] = useState([]);
+  const [filteredInventories, setFilteredInventories] = useState([]);
   const [inventoriesLoading, setInventoriesLoading] = useState(false);
   const [inventoriesError, setInventoriesError] = useState("");
-  const [companies, setCompanies] = useState([]); // Şirket listesi
-  const [selectedCompanyId, setSelectedCompanyId] = useState(""); // Seçilen Şirket ID'si
+  const [companies, setCompanies] = useState([]);
+  const [selectedCompanyId, setSelectedCompanyId] = useState("");
+  const [selectedBranch, setSelectedBranch] = useState("");
 
-  // Şirketleri alma
   const fetchCompanies = async () => {
     try {
       const companyData = await getAllCompanies();
@@ -52,99 +46,55 @@ const InventoryManager = () => {
     }
   };
 
-  // Şubeleri alma
-  const fetchBranches = async (companyId) => {
-    try {
-      const data = await getBranchesByCompanyId(companyId);
-      setBranches(data);
-    } catch (err) {
-      console.error(err); // Hata mesajını kontrol edin
-      setInventoriesError(err.message || "Şubeler alınırken bir hata oluştu.");
-    }
-  };
-  // Envanteri silme fonksiyonu
-  const handleInventoryDelete = async (inventoryId) => {
-    try {
-      await deleteInventory(inventoryId); // Envanteri sil
-      handleInventoryDeleted(); // Silme işleminden sonra envanterleri güncelle
-    } catch (err) {
-      // Hata durumunda bir mesaj göstermek için hata yakalayın
-      setInventoriesError(
-        err.response?.data?.detail || "Envanter silinirken bir hata oluştu."
-      );
-    }
-  };
-  // Tüm Envanterleri Çekme Fonksiyonu
-  const fetchAllInventories = async (companyName = "") => {
+  const fetchAllInventories = async (companyName = "", branchName = "") => {
     try {
       setInventoriesLoading(true);
-      const data = await getAllInventory(companyName);
+      const data = await getAllInventory(companyName, branchName);
       setAllInventories(data);
       setFilteredInventories(data);
       setInventoriesLoading(false);
     } catch (err) {
       setInventoriesError(
-        err.response?.data?.detail || "Envanterler alınırken bir hata oluştu."
+        err.message || "Envanterler alınırken bir hata oluştu."
       );
       setInventoriesLoading(false);
     }
   };
 
-  // İlk açılışta şubeleri ve tüm envanterleri yükle
   useEffect(() => {
     fetchCompanies();
     fetchAllInventories();
   }, []);
-  // Seçilen şirket değiştiğinde şubeleri al
+
   useEffect(() => {
     if (selectedCompanyId) {
       const selectedCompany = companies.find(
         (company) => company.company_id === selectedCompanyId
       );
       fetchAllInventories(selectedCompany?.name || "");
+      fetchBranches(selectedCompanyId);
     } else {
+      setBranches([]);
       fetchAllInventories();
     }
   }, [selectedCompanyId]);
-  // Şube seçimi değiştiğinde envanterleri filtrele
+
   useEffect(() => {
-    if (activeInventoryBranch === "") {
-      setFilteredInventories(allInventories);
-    } else {
-      const filtered = allInventories.filter(
-        (inventory) => inventory.branch_id === activeInventoryBranch
+    if (selectedCompanyId && selectedBranch) {
+      const selectedCompany = companies.find(
+        (company) => company.company_id === selectedCompanyId
       );
-      setFilteredInventories(filtered);
+      fetchAllInventories(selectedCompany?.name || "", selectedBranch);
     }
-  }, [activeInventoryBranch, allInventories]);
+  }, [selectedBranch]);
 
-  // Arama terimi ile filtreleme
-  useEffect(() => {
-    const filtered = allInventories.filter((inventory) =>
-      inventory.device_type.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-    setFilteredInventories(filtered);
-  }, [searchTerm, allInventories]);
-
-  const openInventoryAddModal = () => {
-    setIsInventoryAddModalOpen(true);
-  };
-
-  const closeInventoryAddModal = () => {
-    setIsInventoryAddModalOpen(false);
-  };
-
-  const handleInventoryAdded = () => {
-    fetchAllInventories();
-  };
-
-  const handleInventoryUpdated = () => {
-    fetchAllInventories();
-    setSelectedInventory(null);
-  };
-
-  const handleInventoryDeleted = () => {
-    fetchAllInventories();
+  const fetchBranches = async (companyId) => {
+    try {
+      const branchData = await getBranchesByCompanyId(companyId);
+      setBranches(branchData);
+    } catch (err) {
+      console.error("Şubeler alınırken hata oluştu:", err);
+    }
   };
 
   return (
@@ -152,20 +102,18 @@ const InventoryManager = () => {
       <main>
         {activeTab === "inventory" && (
           <Box sx={{ padding: 2 }}>
-            {/* Filtreleme ve Ekleme Alanı */}
             <div className="flex items-center justify-between mb-4 p-2 rounded-lg shadow-lg bg-white border border-gray-300">
-              {/* Şirket Seçimi */}
               <FormControl
                 variant="outlined"
                 margin="normal"
-                sx={{ minWidth: 150 }} // Genişliği küçült
+                sx={{ minWidth: 150 }}
               >
                 <InputLabel>Şirket Seçin</InputLabel>
                 <Select
                   value={selectedCompanyId}
                   onChange={(e) => setSelectedCompanyId(e.target.value)}
                   label="Şirket Seçin"
-                  sx={{ height: "40px" }} // Select bileşeninin yüksekliği
+                  sx={{ height: "40px" }}
                 >
                   <MenuItem value="">
                     <em>Tüm Şirketler</em>
@@ -180,43 +128,41 @@ const InventoryManager = () => {
                   ))}
                 </Select>
               </FormControl>
+
               <FormControl
                 variant="outlined"
                 margin="normal"
-                sx={{ minWidth: 150 }} // Genişliği küçült
+                sx={{ minWidth: 150 }}
               >
                 <InputLabel>Şube Seçin</InputLabel>
                 <Select
-                  value={activeInventoryBranch}
-                  onChange={(e) => setActiveInventoryBranch(e.target.value)}
+                  value={selectedBranch}
+                  onChange={(e) => setSelectedBranch(e.target.value)}
                   label="Şube Seçin"
-                  sx={{ height: "40px" }} // Select bileşeninin yüksekliği
+                  sx={{ height: "40px" }}
+                  disabled={!selectedCompanyId || branches.length === 0}
                 >
                   <MenuItem value="">
                     <em>Tüm Şubeler</em>
                   </MenuItem>
                   {branches.map((branch) => (
-                    <MenuItem key={branch._id} value={branch._id}>
-                      {branch.branch_name}
+                    <MenuItem key={branch.id} value={branch.name}>
+                      {branch.name}
                     </MenuItem>
                   ))}
                 </Select>
               </FormControl>
 
-              {/* Ekle Butonu */}
               <Button
                 variant="contained"
                 color="success"
-                onClick={openInventoryAddModal}
-                className="flex items-center"
-                size="small" // Buton boyutunu küçült
+                size="small"
+                onClick={() => setIsInventoryAddModalOpen(true)}
               >
-                <AddIcon className="mr-1" /> {/* İkonu ekle */}
-                Ekle
+                <AddIcon className="mr-1" /> Ekle
               </Button>
             </div>
 
-            {/* Envanter Listesi */}
             <div>
               {inventoriesLoading ? (
                 <CircularProgress />
@@ -226,26 +172,31 @@ const InventoryManager = () => {
                 <InventoryList
                   inventories={filteredInventories}
                   onEdit={setSelectedInventory}
-                  onDelete={handleInventoryDelete}
+                  onDelete={async (id) => {
+                    await deleteInventory(id);
+                    fetchAllInventories(selectedCompanyId, selectedBranch);
+                  }}
                 />
               )}
             </div>
 
-            {/* Envanter Ekleme Modalı */}
             {isInventoryAddModalOpen && (
               <AddInventoryModal
                 branches={branches}
-                onClose={closeInventoryAddModal}
-                onInventoryAdded={handleInventoryAdded}
+                onClose={() => setIsInventoryAddModalOpen(false)}
+                onInventoryAdded={() =>
+                  fetchAllInventories(selectedCompanyId, selectedBranch)
+                }
               />
             )}
 
-            {/* Envanter Güncelleme Modalı */}
             {selectedInventory && (
               <UpdateInventoryModal
                 inventory={selectedInventory}
                 onClose={() => setSelectedInventory(null)}
-                onInventoryUpdated={handleInventoryUpdated}
+                onInventoryUpdated={() =>
+                  fetchAllInventories(selectedCompanyId, selectedBranch)
+                }
               />
             )}
           </Box>
