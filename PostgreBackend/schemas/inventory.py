@@ -7,13 +7,19 @@ class InventoryBase(BaseModel):
     quantity: int = Field(..., gt=0, description="Miktar sıfırdan büyük olmalıdır.")  # 0'dan büyük kontrolü
     specs: Optional[str] = None
 
-class InventoryCreate(InventoryBase):
-    branch_id: int
+class InventoryCreate(BaseModel):
+    device_type: str
+    device_model: str
+    quantity: int
+    specs: Optional[str] = None
+
+    class Config:
+        orm_mode = True
 
 class InventoryResponse(InventoryBase):
     id: int
     branch_id: int
-    branch_name:str
+    branch_name:Optional[str] = None
     company_name: Optional[str] = None  # Şirket adı
 
     class Config:

@@ -6,13 +6,13 @@ from models.branch import Branch  # Branch modelini içe aktarın
 from models.company import Company
 from typing import Optional  # Bunu ekleyin
 
-async def create_inventory(db: AsyncSession, inventory: InventoryCreate):
+async def create_inventory(db: AsyncSession, branch_id: int, inventory: InventoryCreate):
     db_inventory = Inventory(
         device_type=inventory.device_type,
         device_model=inventory.device_model,
         quantity=inventory.quantity,
         specs=inventory.specs,
-        branch_id=inventory.branch_id
+        branch_id=branch_id  # URL'den alınan branch_id
     )
     db.add(db_inventory)
     await db.commit()

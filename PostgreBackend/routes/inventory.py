@@ -9,9 +9,13 @@ from database import get_db
 router = APIRouter()
 
 @router.post("/branches/{branch_id}/inventories", response_model=InventoryResponse)
-async def create_inventory_endpoint(branch_id: int, inventory: InventoryCreate, db: AsyncSession = Depends(get_db)):
+async def create_inventory_endpoint(
+    branch_id: int,
+    inventory: InventoryCreate,
+    db: AsyncSession = Depends(get_db)
+):
     try:
-        new_inventory = await create_inventory(db, inventory)
+        new_inventory = await create_inventory(db, branch_id, inventory)
         return new_inventory
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
