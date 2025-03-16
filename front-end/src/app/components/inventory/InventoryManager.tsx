@@ -87,7 +87,22 @@ const InventoryManager = () => {
       fetchAllInventories(selectedCompany?.name || "", selectedBranch);
     }
   }, [selectedBranch]);
-
+  const handleDeleteInventory = async (inventoryId) => {
+    if (window.confirm("Bu envanteri silmek istediğinizden emin misiniz?")) {
+      try {
+        await deleteInventory(inventoryId); // API çağrısı
+        alert("Envanter başarıyla silindi!");
+        fetchAllInventories(
+          companies.find((company) => company.company_id === selectedCompanyId)
+            ?.name || "",
+          selectedBranch
+        ); // Listeyi yenile
+      } catch (err) {
+        console.error("Envanter silinirken bir hata oluştu:", err);
+        alert("Envanter silinirken bir hata oluştu.");
+      }
+    }
+  };
   const fetchBranches = async (companyId) => {
     try {
       const branchData = await getBranchesByCompanyId(companyId);
@@ -190,20 +205,23 @@ const InventoryManager = () => {
                 <InventoryList
                   inventories={filteredInventories}
                   onEdit={setSelectedInventory}
-                  onDelete={async (id) => {
-                    await deleteInventory(id);
-                    fetchAllInventories(selectedCompanyId, selectedBranch);
-                  }}
+                  onDelete={handleDeleteInventory}
                 />
               )}
             </div>
 
             {selectedInventory && (
               <UpdateInventoryModal
-                inventory={selectedInventory}
+                open={!!selectedInventory}
                 onClose={() => setSelectedInventory(null)}
+                inventory={selectedInventory}
                 onInventoryUpdated={() =>
-                  fetchAllInventories(selectedCompanyId, selectedBranch)
+                  fetchAllInventories(
+                    companies.find(
+                      (company) => company.company_id === selectedCompanyId
+                    )?.name || "",
+                    selectedBranch
+                  )
                 }
               />
             )}

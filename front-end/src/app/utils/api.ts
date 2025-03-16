@@ -125,12 +125,11 @@ export const getInventoryByBranch = (branch_id) =>
 
 export const getInventoryById = (inventory_id) =>
   apiRequest(`/inventory/${inventory_id}`, "GET");
+export const updateInventory = (inventoryId, updateData) =>
+  apiRequest(`/inventories/${inventoryId}`, "PUT", updateData);
 
-export const updateInventory = (inventory_id, updateData) =>
-  apiRequest(`/inventory/${inventory_id}`, "PUT", updateData);
-
-export const deleteInventory = (inventory_id) =>
-  apiRequest(`/inventory/${inventory_id}`, "DELETE");
+export const deleteInventory = (inventoryId) =>
+  apiRequest(`/inventories/${inventoryId}`, "DELETE");
 
 export const getAllInventory = (companyName = "", branchName = "") => {
   const params = new URLSearchParams();

@@ -1,87 +1,102 @@
+"use client";
+
 import React, { useState } from "react";
+import { Box, Button, Modal, TextField, Typography } from "@mui/material";
 import { updateInventory } from "../../utils/api";
-import {
-  Button,
-  TextField,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-} from "@mui/material";
 
-const UpdateInventoryModal = ({ inventory, onClose, onInventoryUpdated }) => {
-  const [deviceType, setDeviceType] = useState(inventory.device_type);
-  const [deviceModel, setDeviceModel] = useState(inventory.device_model);
-  const [quantity, setQuantity] = useState(inventory.quantity);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState("");
+const UpdateInventoryModal = ({
+  open,
+  onClose,
+  inventory,
+  onInventoryUpdated,
+}) => {
+  const [deviceType, setDeviceType] = useState(inventory.device_type || "");
+  const [deviceModel, setDeviceModel] = useState(inventory.device_model || "");
+  const [quantity, setQuantity] = useState(inventory.quantity || 1);
+  const [specs, setSpecs] = useState(inventory.specs || "");
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const updateData = {
-      device_type: deviceType,
-      device_model: deviceModel,
-      quantity: parseInt(quantity, 10),
-    };
-
+  // Formu gönder
+  const handleSubmit = async () => {
     try {
-      setIsSubmitting(true);
-      await updateInventory(inventory.id, updateData);
-      onInventoryUpdated();
-      onClose();
-    } catch (error) {
-      console.error("Envanter güncellenirken hata oluştu:", error);
-      setError("Envanteri güncellerken bir hata oluştu.");
-    } finally {
-      setIsSubmitting(false);
+      const updateData = {
+        device_type: deviceType,
+        device_model: deviceModel,
+        quantity,
+        specs, // Opsiyonel alan
+      };
+
+      await updateInventory(inventory.id, updateData); // API çağrısı
+      alert("Envanter başarıyla güncellendi!");
+      onInventoryUpdated(); // Güncelleme işleminden sonra listeyi yenile
+      onClose(); // Modalı kapat
+    } catch (err) {
+      console.error("Envanter güncellenirken hata oluştu:", err);
+      alert("Envanter güncellenirken bir hata oluştu.");
     }
   };
 
   return (
-    <Dialog open onClose={onClose}>
-      <DialogTitle>Envanteri Güncelle</DialogTitle>
-      <DialogContent>
+    <Modal open={open} onClose={onClose}>
+      <Box
+        sx={{
+          position: "absolute",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          width: 400,
+          bgcolor: "background.paper",
+          boxShadow: 24,
+          p: 4,
+          borderRadius: 2,
+        }}
+      >
+        <Typography variant="h6" component="h2" mb={2}>
+          Envanteri Güncelle
+        </Typography>
+
+        {/* Form Alanları */}
         <TextField
-          label="Ürün Türü"
+          fullWidth
+          margin="normal"
+          label="Cihaz Türü"
           value={deviceType}
           onChange={(e) => setDeviceType(e.target.value)}
-          required
-          fullWidth
-          margin="normal"
         />
         <TextField
-          label="Ürün Modeli"
+          fullWidth
+          margin="normal"
+          label="Cihaz Modeli"
           value={deviceModel}
           onChange={(e) => setDeviceModel(e.target.value)}
-          required
-          fullWidth
-          margin="normal"
         />
         <TextField
-          label="Miktar"
-          type="number"
-          value={quantity}
-          onChange={(e) => setQuantity(e.target.value)}
-          required
           fullWidth
           margin="normal"
+          label="Adet"
+          type="number"
+          value={quantity}
+          onChange={(e) => setQuantity(Number(e.target.value))}
         />
-        {error && <p className="text-red-500 mb-4">{error}</p>}
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose} color="primary">
-          İptal
-        </Button>
+        <TextField
+          fullWidth
+          margin="normal"
+          label="Özellikler"
+          value={specs}
+          onChange={(e) => setSpecs(e.target.value)}
+        />
+
+        {/* Gönder Butonu */}
         <Button
-          type="submit"
+          fullWidth
+          variant="contained"
+          color="primary"
+          sx={{ mt: 2 }}
           onClick={handleSubmit}
-          color="success"
-          disabled={isSubmitting}
         >
-          {isSubmitting ? "Güncelleniyor..." : "Güncelle"}
+          Güncelle
         </Button>
-      </DialogActions>
-    </Dialog>
+      </Box>
+    </Modal>
   );
 };
 
