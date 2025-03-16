@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, join
 from models.inventory import Inventory
-from schemas.inventory import InventoryCreate, InventoryResponse
+from schemas.inventory import InventoryCreate, InventoryResponse,InventoryUpdate
 from models.branch import Branch  # Branch modelini içe aktarın
 from models.company import Company
 from typing import Optional  # Bunu ekleyin
@@ -88,3 +88,21 @@ async def get_all_inventory(db: AsyncSession, limit: int = 50, company_name: Opt
         )
         for row in rows
     ]
+async def update_inventory(db: AsyncSession, inventory_id: int, inventory_update: InventoryUpdate):
+    # Envanteri veritabanından getir
+    result = await db.execute(select(Inventory).filter(Inventory.id == inventory_id))
+    db_inventory = result.scalar_one_or_none()
+
+    if not db_inventory:
+        raise ValueError("Envanter bulunamadı.")  # Eğer envanter yoksa hata döndür
+
+    # Gelen alanları güncelle
+    for key, value in inventory_update.dict(exclude_unset=True).items():
+        setattr(db_inventory, key, value)
+
+    # Veritabanına güncellemeyi uygula
+    db.add(db_inventory)
+    await db.commit()
+    await db.refresh(db_inventory)
+
+    return db_inventory

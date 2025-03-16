@@ -2,8 +2,9 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
-from schemas.inventory import InventoryCreate, InventoryResponse
-from services.inventory_service import create_inventory, get_inventory_by_branch, delete_inventory, get_all_inventory
+from schemas.inventory import InventoryCreate, InventoryResponse, InventoryUpdate
+from services.inventory_service import create_inventory, get_inventory_by_branch, delete_inventory, get_all_inventory, \
+    update_inventory
 from database import get_db
 
 router = APIRouter()
@@ -40,5 +41,19 @@ async def get_all_inventory_endpoint(
     try:
         inventories = await get_all_inventory(db, limit, company_name, branch_name)
         return inventories
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.put("/inventories/{inventory_id}", response_model=InventoryResponse)
+async def update_inventory_endpoint(
+    inventory_id: int,
+    inventory_update: InventoryUpdate,
+    db: AsyncSession = Depends(get_db)
+):
+    try:
+        updated_inventory = await update_inventory(db, inventory_id, inventory_update)
+        return updated_inventory
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

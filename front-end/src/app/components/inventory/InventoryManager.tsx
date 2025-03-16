@@ -25,7 +25,6 @@ import {
 const InventoryManager = () => {
   const [activeTab, setActiveTab] = useState("inventory");
   const [branches, setBranches] = useState([]);
-  const [isInventoryAddModalOpen, setIsInventoryAddModalOpen] = useState(false);
   const [selectedInventory, setSelectedInventory] = useState(null);
   const [allInventories, setAllInventories] = useState([]);
   const [filteredInventories, setFilteredInventories] = useState([]);
@@ -34,6 +33,7 @@ const InventoryManager = () => {
   const [companies, setCompanies] = useState([]);
   const [selectedCompanyId, setSelectedCompanyId] = useState("");
   const [selectedBranch, setSelectedBranch] = useState("");
+  const [isInventoryAddModalOpen, setIsInventoryAddModalOpen] = useState(false);
 
   const fetchCompanies = async () => {
     try {
@@ -152,15 +152,33 @@ const InventoryManager = () => {
                   ))}
                 </Select>
               </FormControl>
-
               <Button
                 variant="contained"
                 color="success"
-                size="small"
                 onClick={() => setIsInventoryAddModalOpen(true)}
+                className="flex items-center"
+                size="small"
               >
-                <AddIcon className="mr-1" /> Ekle
+                <AddIcon className="mr-1" />
+                Envanter Ekle
               </Button>
+              {isInventoryAddModalOpen && (
+                <AddInventoryModal
+                  open={isInventoryAddModalOpen}
+                  onClose={() => setIsInventoryAddModalOpen(false)}
+                  companies={companies}
+                  selectedCompanyId={selectedCompanyId}
+                  selectedBranchName={selectedBranch} // Şube adını gönderiyoruz
+                  onInventoryAdded={() =>
+                    fetchAllInventories(
+                      companies.find(
+                        (company) => company.company_id === selectedCompanyId
+                      )?.name || "",
+                      selectedBranch
+                    )
+                  }
+                />
+              )}
             </div>
 
             <div>
@@ -179,16 +197,6 @@ const InventoryManager = () => {
                 />
               )}
             </div>
-
-            {isInventoryAddModalOpen && (
-              <AddInventoryModal
-                branches={branches}
-                onClose={() => setIsInventoryAddModalOpen(false)}
-                onInventoryAdded={() =>
-                  fetchAllInventories(selectedCompanyId, selectedBranch)
-                }
-              />
-            )}
 
             {selectedInventory && (
               <UpdateInventoryModal

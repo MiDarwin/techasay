@@ -117,8 +117,8 @@ export const deleteBranch = (branchId) => {
 };
 
 // ** Envanter CRUD İstekleri **
-export const createInventory = (inventoryData) =>
-  apiRequest("/inventory/", "POST", inventoryData);
+export const createInventory = (branchId, inventoryData) =>
+  apiRequest(`/branches/${branchId}/inventories`, "POST", inventoryData);
 
 export const getInventoryByBranch = (branch_id) =>
   apiRequest(`/inventory/branch/${branch_id}`, "GET");

@@ -25,3 +25,11 @@ class InventoryResponse(InventoryBase):
     class Config:
         orm_mode = True
         from_attributes = True  # Pydantic v2 için gerekli
+class InventoryUpdate(BaseModel):
+    device_type: Optional[str] = None
+    device_model: Optional[str] = None
+    quantity: Optional[int] = None
+    specs: Optional[str] = None
+
+    class Config:
+        orm_mode = True
