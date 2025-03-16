@@ -135,23 +135,22 @@ export const deleteInventory = (inventory_id) =>
 export const getAllInventory = () => apiRequest("/inventory/", "GET");
 
 // ** Alt Şube CRUD İstekleri **
-export const createSubBranch = async (subBranchData) => {
-  const token = localStorage.getItem("access_token"); // Token'ı localStorage'dan al
-  const response = await fetch(`${BASE_URL}/branches/sub-branches`, {
+export const createSubBranch = async (branchId, subBranchData) => {
+  const response = await fetch(`${BASE_URL}/branches/${branchId}/sub-branches`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${token}` // Token'ı Authorization header'ına ekle
+      "Authorization": `Bearer ${localStorage.getItem("access_token")}`,
     },
-    body: JSON.stringify(subBranchData), // Body'yi JSON formatına çevir
+    body: JSON.stringify(subBranchData),
   });
 
   if (!response.ok) {
-    const error = await response.json(); // Hata mesajını al
-    throw new Error(error.detail || "Alt şube eklenirken bir hata oluştu."); // Hata mesajını döndür
+    const error = await response.json();
+    throw new Error(error.detail || "Alt şube eklenirken bir hata oluştu.");
   }
 
-  return response.json(); // Başarılı ise yanıtı döndür
+  return response.json();
 };
 
 export const getSubBranchesByBranchId = async (branchId) => {

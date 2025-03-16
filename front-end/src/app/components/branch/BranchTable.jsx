@@ -23,10 +23,12 @@ import {
   getInventoryByBranch,
   getSubBranchesByBranchId,
   deleteSubBranch,
-  updateBranch, // Alt şube silme API çağrısı
+  updateBranch,
+  createSubBranch, // Alt şube silme API çağrısı
 } from "../../utils/api"; // API'den envanter ve alt şubeleri almak için kullanılan fonksiyonlar
 import UpdateBranchModal from "./UpdateBranchModal";
 import SubBranchTable from "./SubBranchTable"; // Alt şube tablosu bileşeni
+import SubBranchForm from "./SubBranchForm"; // Alt şube ekleme formu
 
 const style = {
   position: "absolute",
@@ -49,6 +51,7 @@ const BranchTable = ({ branches, companies, onEdit, onDelete }) => {
   const [expandedRow, setExpandedRow] = useState(null); // Genişletilmiş (expanded) satırı takip etmek için
   const [subBranches, setSubBranches] = useState([]); // Alt şube verilerini tutmak için
   const [loading, setLoading] = useState(false); // Yükleme durumunu takip etmek için
+  const [isSubBranchModalOpen, setIsSubBranchModalOpen] = useState(false); // Alt şube modal durumu
 
   const handleOpenInventory = async (branchId) => {
     setSelectedBranchId(branchId);
@@ -81,7 +84,25 @@ const BranchTable = ({ branches, companies, onEdit, onDelete }) => {
       setLoading(false);
     }
   };
+  const handleAddSubBranch = async (subBranchData) => {
+    try {
+      await createSubBranch(selectedBranch.id, subBranchData); // API çağrısı (branchId ile)
+      alert("Alt şube başarıyla eklendi!");
+      setIsSubBranchModalOpen(false); // Modalı kapat
+    } catch (err) {
+      alert("Alt şube eklenirken bir hata oluştu: " + err.message);
+    }
+  };
 
+  const openSubBranchModal = (branch) => {
+    setSelectedBranch(branch);
+    setIsSubBranchModalOpen(true);
+  };
+
+  const closeSubBranchModal = () => {
+    setIsSubBranchModalOpen(false);
+    setSelectedBranch(null);
+  };
   const openLocationLink = (link) => {
     const formattedLink =
       link.startsWith("http://") || link.startsWith("https://")
@@ -204,7 +225,15 @@ const BranchTable = ({ branches, companies, onEdit, onDelete }) => {
                         <BackpackIcon />
                       </IconButton>
                     </Tooltip>
-
+                    <Tooltip title="Alt Şube Ekle">
+                      <IconButton
+                        onClick={() => openSubBranchModal(branch)}
+                        color="primary"
+                        aria-label="Alt Şube Ekle"
+                      >
+                        <HolidayVillageIcon />
+                      </IconButton>
+                    </Tooltip>
                     {branch.has_sub_branches && (
                       <Tooltip title="Alt Şubeleri Görüntüle">
                         <IconButton
@@ -310,6 +339,22 @@ const BranchTable = ({ branches, companies, onEdit, onDelete }) => {
           </Box>
         </Box>
       </Modal>
+      {/* Alt Şube Ekleme Modalı */}
+      {selectedBranch && (
+        <Modal
+          open={isSubBranchModalOpen}
+          onClose={closeSubBranchModal}
+          aria-labelledby="sub-branch-modal-title"
+        >
+          <Box sx={style}>
+            <SubBranchForm
+              parentBranch={selectedBranch}
+              onSubmit={handleAddSubBranch}
+              onCancel={closeSubBranchModal}
+            />
+          </Box>
+        </Modal>
+      )}
     </>
   );
 };

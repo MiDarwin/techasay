@@ -25,11 +25,7 @@ const SubBranchTable = ({ subBranches }) => {
           <TableRow>
             <TableCell>ID</TableCell>
             <TableCell>Şube Adı</TableCell>
-            <TableCell>Adres</TableCell>
-            <TableCell>Şehir</TableCell>
-            <TableCell>Telefon Numarası</TableCell>
             <TableCell>Şube Notu</TableCell>
-            <TableCell>Konum Linki</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -38,23 +34,7 @@ const SubBranchTable = ({ subBranches }) => {
             <TableRow key={branch.id}>
               <TableCell>{branch.id}</TableCell>
               <TableCell>{branch.name}</TableCell>
-              <TableCell>{branch.address || "Bilgi Yok"}</TableCell>
-              <TableCell>{branch.city || "Bilgi Yok"}</TableCell>
-              <TableCell>{branch.phone_number || "Bilgi Yok"}</TableCell>
               <TableCell>{branch.branch_note || "Bilgi Yok"}</TableCell>
-              <TableCell>
-                {branch.location_link ? (
-                  <a
-                    href={branch.location_link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Linke Git
-                  </a>
-                ) : (
-                  "Bilgi Yok"
-                )}
-              </TableCell>
             </TableRow>
           ))}
         </TableBody>
@@ -68,12 +48,8 @@ SubBranchTable.propTypes = {
   subBranches: PropTypes.arrayOf(
     PropTypes.shape({
       id: PropTypes.number.isRequired,
-      name: PropTypes.string.isRequired,
-      address: PropTypes.string,
-      city: PropTypes.string,
-      phone_number: PropTypes.string,
+      branch_name: PropTypes.string.isRequired,
       branch_note: PropTypes.string,
-      location_link: PropTypes.string,
     })
   ).isRequired,
 };
