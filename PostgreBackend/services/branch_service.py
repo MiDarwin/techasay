@@ -85,7 +85,8 @@ async def get_branch_by_id(db: AsyncSession, branch_id: int):
 async def update_branch(db: AsyncSession, branch_id: int, branch_data: BranchUpdate):
     db_branch = await get_branch_by_id(db, branch_id)
     if db_branch:
-        for key, value in branch_data.dict().items():
+        # Sadece gönderilen (set edilmiş) alanları al
+        for key, value in branch_data.dict(exclude_unset=True).items():
             setattr(db_branch, key, value)
         await db.commit()
         await db.refresh(db_branch)
