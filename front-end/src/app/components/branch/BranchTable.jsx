@@ -127,19 +127,6 @@ const BranchTable = ({ branches, companies, onEdit, onDelete }) => {
     }
   };
 
-  const handleDeleteSubBranch = async (subBranchId) => {
-    if (window.confirm("Bu alt şubeyi silmek istediğinize emin misiniz?")) {
-      try {
-        await deleteSubBranch(subBranchId);
-        // Alt şube silindikten sonra alt şubeleri tekrar al
-        const data = await getSubBranchesByBranchId(selectedBranchId);
-        setSubBranches(data);
-      } catch (err) {
-        alert(err.detail || "Alt şube silinirken bir hata oluştu.");
-      }
-    }
-  };
-
   return (
     <>
       <TableContainer
