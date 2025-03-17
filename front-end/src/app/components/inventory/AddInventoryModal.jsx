@@ -120,6 +120,13 @@ const AddInventoryModal = ({
     }
     setSelectedSubBranchId(""); // Şube değiştiğinde alt şube seçimini sıfırla
   }, [branchId]);
+  const deviceModelsByType = {
+    Modbus: ["MB12", "MB13", "MB14"],
+    Router: ["RT100", "RT200", "RT300"],
+    Anten: ["ANT01", "ANT02", "ANT03"],
+    "Güçlendirilmiş Anten": ["ANTX01", "ANTX02", "ANTX03"],
+    "Ethernet Kablosu": ["Cat 5", "Cat 6", "Cat 7"],
+  };
   return (
     <Modal open={open} onClose={onClose}>
       <Box
@@ -232,11 +239,15 @@ const AddInventoryModal = ({
           </FormControl>
         )}
         {/* Cihaz Türü Seçimi */}
+        {/* Cihaz Türü Seçimi */}
         <FormControl fullWidth margin="normal">
           <InputLabel sx={{ color: "#6B7280" }}>Cihaz Türü</InputLabel>
           <Select
             value={deviceType}
-            onChange={(e) => setDeviceType(e.target.value)}
+            onChange={(e) => {
+              setDeviceType(e.target.value); // Cihaz türünü güncelle
+              setDeviceModel(""); // Cihaz türü değiştiğinde modeli sıfırla
+            }}
             sx={{
               "& .MuiOutlinedInput-root": {
                 "& fieldset": {
@@ -251,32 +262,42 @@ const AddInventoryModal = ({
             <MenuItem value="">
               <em>Cihaz Türü Seçin</em>
             </MenuItem>
-            <MenuItem value="Modbus">Modbus</MenuItem>
-            <MenuItem value="Router">Router</MenuItem>
-            <MenuItem value="Anten">Anten</MenuItem>
-            <MenuItem value="Güçlendirilmiş Anten">
-              Güçlendirilmiş Anten
-            </MenuItem>
-            <MenuItem value="Ethernet Kablosu">Ethernet Kablosu</MenuItem>
+            {Object.keys(deviceModelsByType).map((type) => (
+              <MenuItem key={type} value={type}>
+                {type}
+              </MenuItem>
+            ))}
           </Select>
         </FormControl>
-        <TextField
-          fullWidth
-          margin="normal"
-          label="Cihaz Modeli"
-          value={deviceModel}
-          onChange={(e) => setDeviceModel(e.target.value)}
-          sx={{
-            "& .MuiOutlinedInput-root": {
-              "& fieldset": {
-                borderColor: "#A5B68D",
+
+        {/* Cihaz Modeli Seçimi */}
+        <FormControl fullWidth margin="normal" disabled={!deviceType}>
+          <InputLabel sx={{ color: "#6B7280" }}>Cihaz Modeli</InputLabel>
+          <Select
+            value={deviceModel}
+            onChange={(e) => setDeviceModel(e.target.value)}
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                "& fieldset": {
+                  borderColor: "#A5B68D",
+                },
+                "&:hover fieldset": {
+                  borderColor: "#8FA781",
+                },
               },
-              "&:hover fieldset": {
-                borderColor: "#8FA781",
-              },
-            },
-          }}
-        />
+            }}
+          >
+            <MenuItem value="">
+              <em>Cihaz Modeli Seçin</em>
+            </MenuItem>
+            {deviceType &&
+              deviceModelsByType[deviceType].map((model) => (
+                <MenuItem key={model} value={model}>
+                  {model}
+                </MenuItem>
+              ))}
+          </Select>
+        </FormControl>
         <TextField
           fullWidth
           margin="normal"

@@ -160,10 +160,10 @@ const InventoryManager = () => {
         {activeTab === "inventory" && (
           <Box sx={{ padding: 2 }}>
             <div
-              className="flex items-center justify-between mb-4 p-2 rounded-lg shadow-md border"
+              className="flex items-center justify-between mb-4 p-2 rounded-lg shadow-md "
               style={{
                 backgroundColor: "#F8F1E4", // Arka plan rengi
-                boxShadow: "0px 2px 10px rgba(0, 0, 0)", // Hafif gölge efekti
+                boxShadow: "0px 1px 1px rgba(0, 0, 0)", // Hafif gölge efekti
                 borderColor: "#A5B68D", // Çerçeve rengi
                 height: "auto", // Daha az yükseklik
               }}
@@ -185,6 +185,7 @@ const InventoryManager = () => {
                       height: "40px",
                       backgroundColor: "#F8F1E4", // Arka plan rengi
                       borderWidth: "2px", // Çerçeve kalınlığı
+                      padding: 1,
                       borderColor: "#A5B68D", // Çerçeve rengi
                       "& .MuiOutlinedInput-notchedOutline": {
                         borderColor: "#A5B68D", // Varsayılan çerçeve rengi
