@@ -37,7 +37,7 @@ const style = {
   transform: "translate(-50%, -50%)",
   width: 400,
   bgcolor: "background.paper",
-  border: "2px solid #1976d2",
+  border: "2px solidrgb(23, 42, 62)",
   boxShadow: 24,
   p: 4,
 };
@@ -106,43 +106,85 @@ const SubBranchTable = ({ subBranches, onReload }) => {
     setSelectedBranchName("");
   };
   return (
-    <TableContainer component={Paper} sx={{ marginTop: 2 }}>
+    <TableContainer
+      component={Paper}
+      sx={{
+        marginTop: 2,
+        borderRadius: "10px", // Köşeleri yuvarlatma
+        boxShadow: "0px 4px 10px rgba(0, 0, 0.2)", // Hafif gölge
+      }}
+    >
       {/* Tablo */}
       <Table>
         <TableHead>
-          <TableRow>
-            <TableCell>ID</TableCell>
-            <TableCell>Şube Adı</TableCell>
-            <TableCell>Şube Notu</TableCell>
-            <TableCell sx={{ textAlign: "center", paddingRight: "25px" }}>
+          <TableRow sx={{ backgroundColor: "#A5B68D" }}>
+            {" "}
+            {/* Başlık arka plan rengi */}
+            <TableCell sx={{ color: "#FFFFFF", fontWeight: "bold" }}>
+              ID
+            </TableCell>
+            <TableCell sx={{ color: "#FFFFFF", fontWeight: "bold" }}>
+              Şube Adı
+            </TableCell>
+            <TableCell sx={{ color: "#FFFFFF", fontWeight: "bold" }}>
+              Şube Notu
+            </TableCell>
+            <TableCell
+              sx={{
+                color: "#FFFFFF",
+                fontWeight: "bold",
+                textAlign: "center",
+                paddingRight: "25px",
+              }}
+            >
               İşlemler
             </TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
           {subBranches.map((branch) => (
-            <TableRow key={branch.id}>
+            <TableRow
+              key={branch.id}
+              sx={{
+                "&:nth-of-type(odd)": { backgroundColor: "#F8F1E4" }, // Alternatif satır rengi
+                "&:nth-of-type(even)": { backgroundColor: "#FFFFFF" },
+              }}
+            >
               <TableCell>{branch.id}</TableCell>
               <TableCell>{branch.name}</TableCell>
               <TableCell>{branch.branch_note || "Bilgi Yok"}</TableCell>
-              <TableCell sx={{ textAlign: "center", paddingRight: "20px" }}>
+              <TableCell
+                sx={{
+                  textAlign: "center",
+                  paddingRight: "20px",
+                }}
+              >
                 <IconButton
                   onClick={() => handleOpenInventory(branch.id, branch.name)}
-                  color="info"
+                  sx={{
+                    color: "#6B7280", // Envanter ikonu rengi
+                    "&:hover": { color: "#8FA781" }, // Hover rengi
+                  }}
                   aria-label="Şube Envanterini Görüntüle"
                 >
                   <BackpackIcon />
                 </IconButton>
                 <IconButton
                   onClick={() => openModal(branch)}
-                  color="warning"
+                  sx={{
+                    color: "#B17F59", // Düzenle ikonu rengi
+                    "&:hover": { color: "#8FA781" }, // Hover rengi
+                  }}
                   aria-label="Düzenle"
                 >
                   <EditIcon />
                 </IconButton>
                 <IconButton
                   onClick={() => openDeleteDialog(branch)}
-                  color="error"
+                  sx={{
+                    color: "#E57373", // Sil ikonu rengi
+                    "&:hover": { color: "#D32F2F" }, // Hover rengi
+                  }}
                   aria-label="Sil"
                 >
                   <DeleteIcon />
@@ -160,7 +202,14 @@ const SubBranchTable = ({ subBranches, onReload }) => {
       />
       {/* Güncelleme Modalı */}
       <Modal open={isModalOpen} onClose={closeModal}>
-        <Box sx={style}>
+        <Box
+          sx={{
+            ...style,
+            backgroundColor: "#F8F1E4", // Modal arka plan rengi
+            borderRadius: "10px", // Köşeleri yuvarlatma
+            boxShadow: "0px 4px 10px rgba(0, 0, 0.2)", // Hafif gölge
+          }}
+        >
           {selectedSubBranch && (
             <UpdateSubBranchForm
               initialData={{
@@ -181,7 +230,12 @@ const SubBranchTable = ({ subBranches, onReload }) => {
         aria-labelledby="alert-dialog-title"
         aria-describedby="alert-dialog-description"
       >
-        <DialogTitle id="alert-dialog-title">Alt Şubeyi Sil</DialogTitle>
+        <DialogTitle
+          id="alert-dialog-title"
+          sx={{ color: "#A5B68D", fontWeight: "bold" }}
+        >
+          Alt Şubeyi Sil
+        </DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
             {branchToDelete
@@ -190,10 +244,25 @@ const SubBranchTable = ({ subBranches, onReload }) => {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={closeDeleteDialog} color="primary">
+          <Button
+            onClick={closeDeleteDialog}
+            sx={{
+              color: "#FFFFFF",
+              backgroundColor: "#B17F59",
+              "&:hover": { backgroundColor: "#8FA781" },
+            }}
+          >
             İptal
           </Button>
-          <Button onClick={handleDeleteSubBranch} color="secondary" autoFocus>
+          <Button
+            onClick={handleDeleteSubBranch}
+            sx={{
+              color: "#FFFFFF",
+              backgroundColor: "#E57373",
+              "&:hover": { backgroundColor: "#D32F2F" },
+            }}
+            autoFocus
+          >
             Sil
           </Button>
         </DialogActions>

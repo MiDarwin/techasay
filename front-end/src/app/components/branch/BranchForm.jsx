@@ -74,19 +74,30 @@ const BranchForm = ({
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 p-6 rounded-md shadow-md">
-      <h2 className="text-xl font-bold mb-4 text-indigo-600 dark:text-indigo-400">
+    <div
+      className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg transition-all duration-300 transform hover:shadow-2xl"
+      style={{ backgroundColor: "#F8F1E4" }}
+    >
+      <h2
+        className="text-2xl font-bold mb-6"
+        style={{ color: "#A5B68D", textAlign: "center" }}
+      >
         {isEditMode ? "Şubeyi Güncelle" : "Yeni Şube Ekle"}
       </h2>
       {error && (
-        <div className="bg-red-500 text-white p-2 rounded mb-4">{error}</div>
+        <div
+          className="bg-red-500 text-white p-2 rounded mb-4 shadow-md"
+          style={{ fontWeight: "bold" }}
+        >
+          {error}
+        </div>
       )}
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label
               htmlFor="companyId"
-              className="block text-gray-700 dark:text-gray-200 mb-2"
+              className="block text-gray-700 dark:text-gray-200 mb-2 font-medium"
             >
               Şirket Seçin
             </label>
@@ -94,8 +105,8 @@ const BranchForm = ({
               id="companyId"
               value={companyId}
               onChange={(e) => setCompanyId(e.target.value)}
-              className="w-full px-3 py-2 border rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600 
-                         text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              className="w-full px-4 py-3 border rounded-lg bg-gray-50 dark:bg-gray-700 dark:border-gray-600 
+                         text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
               required
             >
               <option value="" disabled>
@@ -111,7 +122,7 @@ const BranchForm = ({
           <div>
             <label
               htmlFor="branchName"
-              className="block text-gray-700 dark:text-gray-200 mb-2"
+              className="block text-gray-700 dark:text-gray-200 mb-2 font-medium"
             >
               Şube Adı
             </label>
@@ -120,8 +131,8 @@ const BranchForm = ({
               type="text"
               value={branchName}
               onChange={(e) => setBranchName(e.target.value)}
-              className="w-full px-3 py-2 border rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600 
-                         text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              className="w-full px-4 py-3 border rounded-lg bg-gray-50 dark:bg-gray-700 dark:border-gray-600 
+                         text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
               placeholder="Şube Adı Girin"
               required
             />
@@ -129,7 +140,7 @@ const BranchForm = ({
           <div>
             <label
               htmlFor="address"
-              className="block text-gray-700 dark:text-gray-200 mb-2"
+              className="block text-gray-700 dark:text-gray-200 mb-2 font-medium"
             >
               Adres
             </label>
@@ -138,8 +149,8 @@ const BranchForm = ({
               type="text"
               value={address}
               onChange={(e) => setAddress(e.target.value)}
-              className="w-full px-3 py-2 border rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600 
-                         text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              className="w-full px-4 py-3 border rounded-lg bg-gray-50 dark:bg-gray-700 dark:border-gray-600 
+                         text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
               placeholder="Adres Girin"
               required
             />
@@ -147,7 +158,7 @@ const BranchForm = ({
           <div>
             <label
               htmlFor="city"
-              className="block text-gray-700 dark:text-gray-200 mb-2"
+              className="block text-gray-700 dark:text-gray-200 mb-2 font-medium"
             >
               Şehir
             </label>
@@ -155,8 +166,8 @@ const BranchForm = ({
               id="city"
               value={city}
               onChange={(e) => setCity(e.target.value)}
-              className="w-full px-3 py-2 border rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600 
-                         text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              className="w-full px-4 py-3 border rounded-lg bg-gray-50 dark:bg-gray-700 dark:border-gray-600 
+                         text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
               required
             >
               <option value="" disabled>
@@ -172,7 +183,7 @@ const BranchForm = ({
           <div>
             <label
               htmlFor="phoneNumber"
-              className="block text-gray-700 dark:text-gray-200 mb-2"
+              className="block text-gray-700 dark:text-gray-200 mb-2 font-medium"
             >
               Telefon Numarası
             </label>
@@ -181,8 +192,8 @@ const BranchForm = ({
               type="text"
               value={phoneNumber}
               onChange={(e) => setPhoneNumber(e.target.value)}
-              className="w-full px-3 py-2 border rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600 
-                         text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              className="w-full px-4 py-3 border rounded-lg bg-gray-50 dark:bg-gray-700 dark:border-gray-600 
+                         text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
               placeholder="Telefon Numarası Girin"
               required
             />
@@ -193,7 +204,7 @@ const BranchForm = ({
         <div>
           <label
             htmlFor="branchNote"
-            className="block text-gray-700 dark:text-gray-200 mb-2"
+            className="block text-gray-700 dark:text-gray-200 mb-2 font-medium"
           >
             Şube Notu (Opsiyonel)
           </label>
@@ -201,8 +212,8 @@ const BranchForm = ({
             id="branchNote"
             value={branchNote}
             onChange={(e) => setBranchNote(e.target.value)}
-            className="w-full px-3 py-2 border rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600 
-                       text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+            className="w-full px-4 py-3 border rounded-lg bg-gray-50 dark:bg-gray-700 dark:border-gray-600 
+                       text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             placeholder="Şube Notu Girin"
           />
         </div>
@@ -210,7 +221,7 @@ const BranchForm = ({
         <div>
           <label
             htmlFor="locationLink"
-            className="block text-gray-700 dark:text-gray-200 mb-2"
+            className="block text-gray-700 dark:text-gray-200 mb-2 font-medium"
           >
             Şube Konum Linki (Opsiyonel)
           </label>
@@ -219,26 +230,32 @@ const BranchForm = ({
             type="text"
             value={locationLink}
             onChange={(e) => setLocationLink(e.target.value)}
-            className="w-full px-3 py-2 border rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600 
-                       text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+            className="w-full px-4 py-3 border rounded-lg bg-gray-50 dark:bg-gray-700 dark:border-gray-600 
+                       text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             placeholder="Şube Konum Linki Girin"
           />
         </div>
 
         {/* Form Düğmeleri */}
-        <div className="flex justify-between">
+        <div className="flex justify-between mt-6">
           {isEditMode && (
             <button
               type="button"
               onClick={onCancel}
-              className="bg-gray-500 text-white py-2 px-4 rounded-md hover:bg-gray-600 transition duration-200"
+              className="bg-gray-500 text-white py-3 px-6 rounded-lg shadow-md hover:bg-gray-600 transition-all duration-300 transform hover:scale-105"
             >
               İptal
             </button>
           )}
           <button
             type="submit"
-            className="bg-indigo-500 text-white py-2 px-4 rounded-md hover:bg-indigo-600 transition duration-200"
+            className="py-3 px-6 rounded-lg shadow-md transition-all duration-300 transform hover:scale-105"
+            style={{
+              backgroundColor: "#A5B68D",
+              color: "#FFFFFF",
+            }}
+            onMouseEnter={(e) => (e.target.style.backgroundColor = "#8FA781")} // Hover rengi
+            onMouseLeave={(e) => (e.target.style.backgroundColor = "#A5B68D")} // Normal renk
           >
             {isEditMode ? "Güncelle" : "Ekle"}
           </button>

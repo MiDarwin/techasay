@@ -16,7 +16,7 @@ const style = {
   transform: "translate(-50%, -50%)",
   width: 500,
   bgcolor: "background.paper",
-  border: "2px solid #1976d2",
+  border: "2px solidrgb(19, 35, 51)",
   boxShadow: 24,
   p: 4,
 };
@@ -74,8 +74,25 @@ const UpdateBranchModal = ({ open, onClose, branchData, onUpdate }) => {
 
   return (
     <Modal open={open} onClose={onClose}>
-      <Box sx={style}>
-        <Typography variant="h6" component="h2" sx={{ mb: 2 }}>
+      <Box
+        sx={{
+          ...style,
+          backgroundColor: "#F8F1E4", // Arka plan rengi
+          borderRadius: "10px", // Köşeleri yuvarlatma
+          boxShadow: "0px 4px 10px rgba(0, 0, 0.2)", // Gölge efekti
+          padding: "20px",
+        }}
+      >
+        <Typography
+          variant="h6"
+          component="h2"
+          sx={{
+            mb: 2,
+            color: "#A5B68D", // Başlık rengi
+            textAlign: "center", // Ortalanmış başlık
+            fontWeight: "bold",
+          }}
+        >
           Şube Güncelle
         </Typography>
         <form>
@@ -87,6 +104,16 @@ const UpdateBranchModal = ({ open, onClose, branchData, onUpdate }) => {
             fullWidth
             margin="normal"
             required
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                "& fieldset": {
+                  borderColor: "#A5B68D", // Border rengi
+                },
+                "&:hover fieldset": {
+                  borderColor: "#8FA781", // Hover border rengi
+                },
+              },
+            }}
           />
           <TextField
             label="Adres"
@@ -96,6 +123,16 @@ const UpdateBranchModal = ({ open, onClose, branchData, onUpdate }) => {
             fullWidth
             margin="normal"
             required
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                "& fieldset": {
+                  borderColor: "#A5B68D",
+                },
+                "&:hover fieldset": {
+                  borderColor: "#8FA781",
+                },
+              },
+            }}
           />
           <TextField
             label="Şehir"
@@ -106,6 +143,16 @@ const UpdateBranchModal = ({ open, onClose, branchData, onUpdate }) => {
             fullWidth
             margin="normal"
             required
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                "& fieldset": {
+                  borderColor: "#A5B68D",
+                },
+                "&:hover fieldset": {
+                  borderColor: "#8FA781",
+                },
+              },
+            }}
           >
             {[
               "Adana",
@@ -129,6 +176,16 @@ const UpdateBranchModal = ({ open, onClose, branchData, onUpdate }) => {
             fullWidth
             margin="normal"
             required
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                "& fieldset": {
+                  borderColor: "#A5B68D",
+                },
+                "&:hover fieldset": {
+                  borderColor: "#8FA781",
+                },
+              },
+            }}
           />
           <TextField
             label="Şube Notu"
@@ -137,6 +194,16 @@ const UpdateBranchModal = ({ open, onClose, branchData, onUpdate }) => {
             onChange={handleChange}
             fullWidth
             margin="normal"
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                "& fieldset": {
+                  borderColor: "#A5B68D",
+                },
+                "&:hover fieldset": {
+                  borderColor: "#8FA781",
+                },
+              },
+            }}
           />
           <TextField
             label="Konum Linki"
@@ -145,17 +212,44 @@ const UpdateBranchModal = ({ open, onClose, branchData, onUpdate }) => {
             onChange={handleChange}
             fullWidth
             margin="normal"
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                "& fieldset": {
+                  borderColor: "#A5B68D",
+                },
+                "&:hover fieldset": {
+                  borderColor: "#8FA781",
+                },
+              },
+            }}
           />
           <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 2 }}>
             <Button
               variant="outlined"
-              color="error"
               onClick={onClose}
-              sx={{ mr: 1 }}
+              sx={{
+                color: "#A5B68D",
+                borderColor: "#A5B68D",
+                "&:hover": {
+                  borderColor: "#8FA781",
+                  backgroundColor: "#F0EFE6",
+                },
+                mr: 1,
+              }}
             >
               İptal
             </Button>
-            <Button variant="contained" color="primary" onClick={handleSubmit}>
+            <Button
+              variant="contained"
+              onClick={handleSubmit}
+              sx={{
+                backgroundColor: "#A5B68D",
+                color: "#FFFFFF",
+                "&:hover": {
+                  backgroundColor: "#8FA781",
+                },
+              }}
+            >
               Güncelle
             </Button>
           </Box>
