@@ -109,7 +109,10 @@ const CompanyForm = ({
         darkMode ? "bg-gray-800 bg-opacity-50" : "bg-gray-100"
       }`}
     >
-      <h2 className="text-2xl font-medium mb-4 text-indigo-600">
+      <h2
+        className="text-2xl font-medium mb-4 text-indigo-500"
+        style={{ color: "#B17F59" }}
+      >
         {isEditMode ? "Şirketi Güncelle" : "Şirket Ekle"}
       </h2>
       <div className="mb-4">
@@ -189,7 +192,8 @@ const CompanyForm = ({
       <div className="flex space-x-4">
         <button
           type="submit"
-          className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded"
+          className="bg-indigo-500 hover:bg-indigo-600 text-white px-6 py-3 rounded-lg shadow-md transition-all duration-300 transform hover:scale-105"
+          style={{ backgroundColor: "#A5B68D", color: "#FFFFFF" }}
         >
           {isEditMode ? "Güncelle" : "Ekle"}
         </button>
@@ -197,7 +201,8 @@ const CompanyForm = ({
           <button
             type="button"
             onClick={onCancel}
-            className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded"
+            className="bg-gray-700 hover:bg-gray-800 text-white px-6 py-3 rounded-lg shadow-md transition-all duration-300 transform hover:scale-105"
+            style={{ backgroundColor: "#B17F59", color: "#FFFFFF" }}
           >
             İptal
           </button>

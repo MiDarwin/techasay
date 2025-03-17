@@ -85,7 +85,7 @@ const HomePage = () => {
 
       <main
         style={{
-          backgroundColor: "#f5f5f5",
+          backgroundColor: "#EDE8DC",
           padding: "20px",
           minHeight: "100vh",
         }}

@@ -107,11 +107,6 @@ const SubBranchTable = ({ subBranches, onReload }) => {
   };
   return (
     <TableContainer component={Paper} sx={{ marginTop: 2 }}>
-      {/* Başlık */}
-      <Typography variant="h6" align="center" sx={{ padding: 2 }}>
-        Alt Şube Detayları
-      </Typography>
-
       {/* Tablo */}
       <Table>
         <TableHead>
@@ -119,17 +114,18 @@ const SubBranchTable = ({ subBranches, onReload }) => {
             <TableCell>ID</TableCell>
             <TableCell>Şube Adı</TableCell>
             <TableCell>Şube Notu</TableCell>
-            <TableCell>İşlemler</TableCell>
+            <TableCell sx={{ textAlign: "center", paddingRight: "25px" }}>
+              İşlemler
+            </TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
-          {/* Alt şubeler verilerini satır olarak render et */}
           {subBranches.map((branch) => (
             <TableRow key={branch.id}>
               <TableCell>{branch.id}</TableCell>
               <TableCell>{branch.name}</TableCell>
               <TableCell>{branch.branch_note || "Bilgi Yok"}</TableCell>
-              <TableCell>
+              <TableCell sx={{ textAlign: "center", paddingRight: "20px" }}>
                 <IconButton
                   onClick={() => handleOpenInventory(branch.id, branch.name)}
                   color="info"

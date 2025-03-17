@@ -23,7 +23,7 @@ const CompanyTable = ({ companies, onEdit, onDelete }) => {
         <TableHead>
           <TableRow
             sx={{
-              backgroundColor: "#1976d2",
+              backgroundColor: "#B17F59",
               color: "#ffffff",
               "& th": {
                 fontWeight: "bold",
@@ -41,9 +41,9 @@ const CompanyTable = ({ companies, onEdit, onDelete }) => {
             <TableRow
               key={company.company_id}
               sx={{
-                backgroundColor: index % 2 === 0 ? "#f7f9fc" : "#ffffff",
+                backgroundColor: index % 2 === 0 ? "#EDE8DC" : "#C1CFA1",
                 "&:hover": {
-                  backgroundColor: "#e3f2fd",
+                  backgroundColor: "#A5B68D",
                 },
               }}
             >
