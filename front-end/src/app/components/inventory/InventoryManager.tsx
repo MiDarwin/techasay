@@ -62,6 +62,7 @@ const InventoryManager = () => {
         if (selectedBranchDetails.has_sub_branches) {
           // Eğer şube alt şubelere sahipse getInventoryByBranch çağır
           allInventories = await getInventoryByBranch(selectedBranchDetails.id);
+          console.log("Filtered Inventories:", filteredInventories);
         } else {
           // Normal şubeler için getAllInventory çağır
           allInventories = await getAllInventory(companyName, branchName);
@@ -109,6 +110,11 @@ const InventoryManager = () => {
     }
   }, [selectedBranch]);
   const handleDeleteInventory = async (inventoryId) => {
+    if (!inventoryId) {
+      console.error("Silme işlemi için geçersiz envanter ID'si:", inventoryId);
+      alert("Silme işlemi sırasında bir hata oluştu. Lütfen tekrar deneyin.");
+      return;
+    }
     if (window.confirm("Bu envanteri silmek istediğinizden emin misiniz?")) {
       try {
         await deleteInventory(inventoryId); // API çağrısı

@@ -98,7 +98,10 @@ const AddInventoryModal = ({
         specs, // specs opsiyonel olduğu için boş gönderilebilir
       };
 
-      await createInventory(branchId, inventoryData);
+      // Eğer alt şube seçilmişse onun id'sini kullan, aksi halde ana şube id'sini kullan
+      const targetBranchId = selectedSubBranchId || branchId;
+
+      await createInventory(targetBranchId, inventoryData);
       alert("Envanter başarıyla eklendi!");
       onInventoryAdded(); // Envanter eklendikten sonra listeyi güncelle
       onClose(); // Modalı kapat

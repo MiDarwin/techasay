@@ -79,16 +79,14 @@ const InventoryList = ({ inventories, onEdit, onDelete }) => {
                   {inventory.quantity}
                 </TableCell>
                 <TableCell sx={{ textAlign: "center" }}>
-                  {inventory.note}
+                  {inventory.specs}
                 </TableCell>
                 <TableCell sx={{ textAlign: "center" }}>
                   <Tooltip title="Düzenle">
                     <IconButton
                       onClick={() => onEdit(inventory)}
-                      sx={{
-                        color: "#B17F59", // Düzenle ikonu rengi
-                        "&:hover": { color: "#8FA781" }, // Hover rengi
-                      }}
+                      color="warning"
+                      aria-label="Düzenle"
                     >
                       <EditIcon />
                     </IconButton>
@@ -96,10 +94,7 @@ const InventoryList = ({ inventories, onEdit, onDelete }) => {
                   <Tooltip title="Sil">
                     <IconButton
                       onClick={() => onDelete(inventory.id)}
-                      sx={{
-                        color: "#E57373", // Sil ikonu rengi
-                        "&:hover": { color: "#D32F2F" }, // Hover rengi
-                      }}
+                      color="error"
                     >
                       <NoBackpackIcon />
                     </IconButton>
