@@ -144,7 +144,7 @@ const BranchTable = ({ branches, companies, onEdit, onDelete }) => {
           <TableHead>
             <TableRow
               sx={{
-                backgroundColor: "#B17F59",
+                backgroundColor: "#bf8f6b",
                 color: "#ffffff",
                 "& th": {
                   fontWeight: "bold",

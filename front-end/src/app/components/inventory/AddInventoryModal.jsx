@@ -12,7 +12,11 @@ import {
   Typography,
   Modal,
 } from "@mui/material";
-import { createInventory, getBranchesByCompanyId } from "../../utils/api";
+import {
+  createInventory,
+  getBranchesByCompanyId,
+  getSubBranchesByBranchId,
+} from "../../utils/api";
 
 const AddInventoryModal = ({
   open,
@@ -29,7 +33,39 @@ const AddInventoryModal = ({
   const [deviceModel, setDeviceModel] = useState("");
   const [quantity, setQuantity] = useState(1); // Default olarak 1
   const [specs, setSpecs] = useState("");
+  const [note, setNote] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState("");
+  const [subBranches, setSubBranches] = useState([]); // Alt şubeleri tutmak için state
+  const [hasSubBranches, setHasSubBranches] = useState("");
+  const [selectedSubBranchId, setSelectedSubBranchId] = useState(""); // Seçilen alt şube ID'si
 
+  useEffect(() => {
+    const fetchSubBranches = async () => {
+      if (branchId) {
+        try {
+          const data = await getSubBranchesByBranchId(branchId);
+          setSubBranches(data);
+        } catch (error) {
+          console.error("Alt şubeler alınırken hata oluştu:", error);
+        }
+      } else {
+        setSubBranches([]); // Şube seçilmediğinde alt şubeleri sıfırla
+      }
+    };
+
+    fetchSubBranches();
+  }, [branchId]); // branchId değiştiğinde alt şubeleri çek
+  // Alt şubeleri alma
+  const fetchSubBranches = async (branchId) => {
+    try {
+      const data = await getSubBranchesByBranchId(branchId);
+      setSubBranches(data);
+      setHasSubBranches(data.length > 0); // Eğer alt şube varsa, true yap
+    } catch (error) {
+      console.error("Alt şubeler alınırken hata oluştu:", error);
+    }
+  };
   // Şubeleri alma
   const fetchBranches = async (companyId) => {
     try {
@@ -71,7 +107,16 @@ const AddInventoryModal = ({
       alert("Envanter eklenirken bir hata oluştu.");
     }
   };
-
+  // Şube değiştiğinde alt şubeleri kontrol et
+  useEffect(() => {
+    if (branchId) {
+      fetchSubBranches(branchId);
+    } else {
+      setSubBranches([]);
+      setHasSubBranches(false);
+    }
+    setSelectedSubBranchId(""); // Şube değiştiğinde alt şube seçimini sıfırla
+  }, [branchId]);
   return (
     <Modal open={open} onClose={onClose}>
       <Box
@@ -164,7 +209,25 @@ const AddInventoryModal = ({
             ))}
           </Select>
         </FormControl>
-
+        {/* Alt Şube Seçimi */}
+        {hasSubBranches && (
+          <FormControl fullWidth margin="normal">
+            <InputLabel sx={{ color: "#6B7280" }}>Alt Şube Seçin</InputLabel>
+            <Select
+              value={selectedSubBranchId}
+              onChange={(e) => setSelectedSubBranchId(e.target.value)}
+            >
+              <MenuItem value="">
+                <em>Alt Şube Seçin</em>
+              </MenuItem>
+              {subBranches.map((subBranch) => (
+                <MenuItem key={subBranch.id} value={subBranch.id}>
+                  {subBranch.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        )}
         {/* Envanter Bilgileri */}
         <TextField
           fullWidth

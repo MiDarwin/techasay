@@ -29,9 +29,9 @@ const InventoryList = ({ inventories, onEdit, onDelete }) => {
         <TableHead>
           <TableRow
             sx={{
-              backgroundColor: "#B17F59", // Başlık arka plan rengi
+              backgroundColor: "#bf8f6b", // Başlık arka plan rengi
               "& th": {
-                color: "#FFFFFF", // Başlık metin rengi
+                color: "#black", // Başlık metin rengi
                 fontWeight: "bold",
                 fontSize: "1.1rem",
                 textAlign: "center", // Başlık metinleri ortalanır
