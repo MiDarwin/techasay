@@ -14,7 +14,14 @@ const UpdateSubBranchForm = ({ initialData, onSubmit, onCancel }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSubmit(formData); // Form verilerini gönder
+
+    // Backend'e uygun formatta veri gönder
+    const payload = {
+      branch_name: formData.name, // "name" frontend'de kullanılıyor, backend'e "branch_name" olarak gönderiyoruz
+      branch_note: formData.branch_note,
+    };
+
+    onSubmit(payload); // Backend'e uygun formatta gönderiyoruz
   };
 
   return (

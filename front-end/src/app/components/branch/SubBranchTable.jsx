@@ -76,7 +76,6 @@ const SubBranchTable = ({ subBranches, onReload }) => {
       await updateBranch(selectedSubBranch.id, updatedData); // Güncelleme API çağrısı
       alert("Alt şube başarıyla güncellendi!");
       closeModal();
-      onReload(); // Tabloyu yeniden yükle
     } catch (err) {
       alert("Alt şube güncellenirken bir hata oluştu: " + err.message);
     }
@@ -114,12 +113,9 @@ const SubBranchTable = ({ subBranches, onReload }) => {
         boxShadow: "0px 4px 10px rgba(0, 0, 0.2)", // Hafif gölge
       }}
     >
-      {/* Tablo */}
       <Table>
         <TableHead>
           <TableRow sx={{ backgroundColor: "#A5B68D" }}>
-            {" "}
-            {/* Başlık arka plan rengi */}
             <TableCell sx={{ color: "#FFFFFF", fontWeight: "bold" }}>
               ID
             </TableCell>
@@ -200,7 +196,7 @@ const SubBranchTable = ({ subBranches, onReload }) => {
         inventory={inventory}
         branchName={selectedBranchName}
       />
-      {/* Güncelleme Modalı */}
+
       <Modal open={isModalOpen} onClose={closeModal}>
         <Box
           sx={{
@@ -222,8 +218,6 @@ const SubBranchTable = ({ subBranches, onReload }) => {
           )}
         </Box>
       </Modal>
-
-      {/* Silme Onay Diyaloğu */}
       <Dialog
         open={isDeleteDialogOpen}
         onClose={closeDeleteDialog}

@@ -43,14 +43,26 @@ const UpdateInventoryModal = ({
           top: "50%",
           left: "50%",
           transform: "translate(-50%, -50%)",
-          width: 400,
-          bgcolor: "background.paper",
-          boxShadow: 24,
+          width: "fit-content", // İçeriğe göre genişlik
+          maxWidth: "90vw", // Ekranın %90'ını aşmasın
+          maxHeight: "90vh", // Ekranın %90'ını aşmasın
+          bgcolor: "#F8F1E4", // Arka plan rengi
+          boxShadow: "0px 4px 10px rgba(0, 0, 0.2)", // Hafif gölge efekti
           p: 4,
-          borderRadius: 2,
+          borderRadius: "10px", // Köşeleri yuvarlatma
+          overflow: "auto", // İçerik taşması durumunda kaydırma çubuğu
         }}
       >
-        <Typography variant="h6" component="h2" mb={2}>
+        <Typography
+          variant="h6"
+          component="h2"
+          mb={2}
+          sx={{
+            color: "#A5B68D", // Başlık rengi
+            textAlign: "center", // Ortalanmış başlık
+            fontWeight: "bold",
+          }}
+        >
           Envanteri Güncelle
         </Typography>
 
@@ -61,6 +73,16 @@ const UpdateInventoryModal = ({
           label="Cihaz Türü"
           value={deviceType}
           onChange={(e) => setDeviceType(e.target.value)}
+          sx={{
+            "& .MuiOutlinedInput-root": {
+              "& fieldset": {
+                borderColor: "#A5B68D", // Çerçeve rengi
+              },
+              "&:hover fieldset": {
+                borderColor: "#8FA781", // Hover çerçeve rengi
+              },
+            },
+          }}
         />
         <TextField
           fullWidth
@@ -68,6 +90,16 @@ const UpdateInventoryModal = ({
           label="Cihaz Modeli"
           value={deviceModel}
           onChange={(e) => setDeviceModel(e.target.value)}
+          sx={{
+            "& .MuiOutlinedInput-root": {
+              "& fieldset": {
+                borderColor: "#A5B68D",
+              },
+              "&:hover fieldset": {
+                borderColor: "#8FA781",
+              },
+            },
+          }}
         />
         <TextField
           fullWidth
@@ -76,6 +108,16 @@ const UpdateInventoryModal = ({
           type="number"
           value={quantity}
           onChange={(e) => setQuantity(Number(e.target.value))}
+          sx={{
+            "& .MuiOutlinedInput-root": {
+              "& fieldset": {
+                borderColor: "#A5B68D",
+              },
+              "&:hover fieldset": {
+                borderColor: "#8FA781",
+              },
+            },
+          }}
         />
         <TextField
           fullWidth
@@ -83,15 +125,31 @@ const UpdateInventoryModal = ({
           label="Özellikler"
           value={specs}
           onChange={(e) => setSpecs(e.target.value)}
+          sx={{
+            "& .MuiOutlinedInput-root": {
+              "& fieldset": {
+                borderColor: "#A5B68D",
+              },
+              "&:hover fieldset": {
+                borderColor: "#8FA781",
+              },
+            },
+          }}
         />
 
         {/* Gönder Butonu */}
         <Button
           fullWidth
           variant="contained"
-          color="primary"
-          sx={{ mt: 2 }}
           onClick={handleSubmit}
+          sx={{
+            mt: 2,
+            backgroundColor: "#A5B68D", // Buton arka plan rengi
+            color: "#FFFFFF", // Buton metin rengi
+            "&:hover": {
+              backgroundColor: "#8FA781", // Hover rengi
+            },
+          }}
         >
           Güncelle
         </Button>

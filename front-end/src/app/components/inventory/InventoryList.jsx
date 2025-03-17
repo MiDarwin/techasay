@@ -19,17 +19,22 @@ const InventoryList = ({ inventories, onEdit, onDelete }) => {
   return (
     <TableContainer
       component={Paper}
-      sx={{ borderRadius: "8px", boxShadow: 3 }}
+      sx={{
+        borderRadius: "10px", // Köşeleri yuvarlat
+        boxShadow: "0px 4px 10px rgba(0, 0, 0.2)", // Hafif gölge
+        overflow: "hidden", // Taşmaları önle
+      }}
     >
       <Table>
         <TableHead>
           <TableRow
             sx={{
-              backgroundColor: "#1976d2",
-              color: "#ffffff",
+              backgroundColor: "#B17F59", // Başlık arka plan rengi
               "& th": {
+                color: "#FFFFFF", // Başlık metin rengi
                 fontWeight: "bold",
                 fontSize: "1.1rem",
+                textAlign: "center", // Başlık metinleri ortalanır
               },
             }}
           >
@@ -44,9 +49,10 @@ const InventoryList = ({ inventories, onEdit, onDelete }) => {
         <TableBody>
           {inventories.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={7} align="center">
-                {" "}
-                <Typography>Envanter bulunamadı.</Typography>
+              <TableCell colSpan={6} align="center">
+                <Typography sx={{ color: "#6B7280" }}>
+                  Envanter bulunamadı.
+                </Typography>
               </TableCell>
             </TableRow>
           ) : (
@@ -54,22 +60,35 @@ const InventoryList = ({ inventories, onEdit, onDelete }) => {
               <TableRow
                 key={inventory.id ?? `inventory-${index}`}
                 sx={{
-                  backgroundColor: index % 2 === 0 ? "#f7f9fc" : "#ffffff",
+                  backgroundColor: index % 2 === 0 ? "#EDE8DC" : "#C1CFA1", // Alternatif satır renkleri
                   "&:hover": {
-                    backgroundColor: "#e3f2fd",
+                    backgroundColor: "#A5B68D", // Hover rengi
                   },
                 }}
               >
-                <TableCell>{inventory.branch_name}</TableCell>
-                <TableCell>{inventory.device_type}</TableCell>
-                <TableCell>{inventory.device_model}</TableCell>
-                <TableCell>{inventory.quantity}</TableCell>
-                <TableCell>{inventory.note}</TableCell>
-                <TableCell>
+                <TableCell sx={{ textAlign: "center" }}>
+                  {inventory.branch_name}
+                </TableCell>
+                <TableCell sx={{ textAlign: "center" }}>
+                  {inventory.device_type}
+                </TableCell>
+                <TableCell sx={{ textAlign: "center" }}>
+                  {inventory.device_model}
+                </TableCell>
+                <TableCell sx={{ textAlign: "center" }}>
+                  {inventory.quantity}
+                </TableCell>
+                <TableCell sx={{ textAlign: "center" }}>
+                  {inventory.note}
+                </TableCell>
+                <TableCell sx={{ textAlign: "center" }}>
                   <Tooltip title="Düzenle">
                     <IconButton
                       onClick={() => onEdit(inventory)}
-                      color="warning"
+                      sx={{
+                        color: "#B17F59", // Düzenle ikonu rengi
+                        "&:hover": { color: "#8FA781" }, // Hover rengi
+                      }}
                     >
                       <EditIcon />
                     </IconButton>
@@ -77,7 +96,10 @@ const InventoryList = ({ inventories, onEdit, onDelete }) => {
                   <Tooltip title="Sil">
                     <IconButton
                       onClick={() => onDelete(inventory.id)}
-                      color="error"
+                      sx={{
+                        color: "#E57373", // Sil ikonu rengi
+                        "&:hover": { color: "#D32F2F" }, // Hover rengi
+                      }}
                     >
                       <NoBackpackIcon />
                     </IconButton>

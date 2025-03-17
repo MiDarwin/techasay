@@ -138,62 +138,78 @@ const InventoryManager = () => {
       <main>
         {activeTab === "inventory" && (
           <Box sx={{ padding: 2 }}>
-            <div className="flex items-center justify-between mb-4 p-2 rounded-lg shadow-lg bg-white border border-gray-300">
-              <FormControl
-                variant="outlined"
-                margin="normal"
-                sx={{ minWidth: 150 }}
-              >
-                <InputLabel>Şirket Seçin</InputLabel>
-                <Select
-                  value={selectedCompanyId}
-                  onChange={(e) => setSelectedCompanyId(e.target.value)}
-                  label="Şirket Seçin"
-                  sx={{ height: "40px" }}
+            <div
+              className="flex items-center justify-between mb-4 p-2 rounded-lg shadow-md border"
+              style={{
+                backgroundColor: "#F8F1E4", // Arka plan rengi
+                boxShadow: "0px 4px 10px rgba(0, 0, 0.2)", // Hafif gölge efekti
+                borderColor: "#A5B68D", // Çerçeve rengi
+                height: "auto", // Daha az yükseklik
+              }}
+            >
+              {/* Şirket ve Şube Seçimi */}
+              <div className="flex items-center gap-4">
+                {/* Şirket Seçimi */}
+                <FormControl
+                  variant="outlined"
+                  margin="normal"
+                  sx={{ minWidth: 150 }}
                 >
-                  <MenuItem value="">
-                    <em>Tüm Şirketler</em>
-                  </MenuItem>
-                  {companies.map((company) => (
-                    <MenuItem
-                      key={company.company_id}
-                      value={company.company_id}
-                    >
-                      {company.name}
+                  <InputLabel>Şirket Seçin</InputLabel>
+                  <Select
+                    value={selectedCompanyId}
+                    onChange={(e) => setSelectedCompanyId(e.target.value)}
+                    label="Şirket Seçin"
+                    sx={{ height: "40px" }}
+                  >
+                    <MenuItem value="">
+                      <em>Tüm Şirketler</em>
                     </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+                    {companies.map((company) => (
+                      <MenuItem
+                        key={company.company_id}
+                        value={company.company_id}
+                      >
+                        {company.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
 
-              <FormControl
-                variant="outlined"
-                margin="normal"
-                sx={{ minWidth: 150 }}
-              >
-                <InputLabel>Şube Seçin</InputLabel>
-                <Select
-                  value={selectedBranch}
-                  onChange={(e) => setSelectedBranch(e.target.value)}
-                  label="Şube Seçin"
-                  sx={{ height: "40px" }}
-                  disabled={!selectedCompanyId || branches.length === 0}
+                {/* Şube Seçimi */}
+                <FormControl
+                  variant="outlined"
+                  margin="normal"
+                  sx={{ minWidth: 150 }}
                 >
-                  <MenuItem value="">
-                    <em>Tüm Şubeler</em>
-                  </MenuItem>
-                  {branches.map((branch) => (
-                    <MenuItem key={branch.id} value={branch.name}>
-                      {branch.name}
+                  <InputLabel>Şube Seçin</InputLabel>
+                  <Select
+                    value={selectedBranch}
+                    onChange={(e) => setSelectedBranch(e.target.value)}
+                    label="Şube Seçin"
+                    sx={{ height: "40px" }}
+                    disabled={!selectedCompanyId || branches.length === 0}
+                  >
+                    <MenuItem value="">
+                      <em>Tüm Şubeler</em>
                     </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+                    {branches.map((branch) => (
+                      <MenuItem key={branch.id} value={branch.name}>
+                        {branch.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </div>
+
+              {/* Envanter Ekle Butonu */}
               <Button
                 variant="contained"
                 color="success"
                 onClick={() => setIsInventoryAddModalOpen(true)}
                 className="flex items-center"
                 size="small"
+                sx={{ height: "40px", ml: "auto" }} // Butonu en sağa almak için margin-left: auto
               >
                 <AddIcon className="mr-1" />
                 Envanter Ekle
@@ -217,6 +233,7 @@ const InventoryManager = () => {
               )}
             </div>
 
+            {/* Envanter Listesi ve Yüklenme Durumu */}
             <div>
               {inventoriesLoading ? (
                 <CircularProgress />
@@ -231,6 +248,7 @@ const InventoryManager = () => {
               )}
             </div>
 
+            {/* Envanter Güncelle Modal */}
             {selectedInventory && (
               <UpdateInventoryModal
                 open={!!selectedInventory}
