@@ -43,7 +43,7 @@ const CompanyTable = ({ companies, onEdit, onDelete }) => {
               sx={{
                 backgroundColor: index % 2 === 0 ? "#EDE8DC" : "#C1CFA1",
                 "&:hover": {
-                  backgroundColor: "#A5B68D",
+                  backgroundColor: "#dfedbe",
                 },
               }}
             >

@@ -124,6 +124,21 @@ const InventoryManager = () => {
       }
     }
   };
+  useEffect(() => {
+    if (selectedBranch === "") {
+      // Şube seçimi "Tüm Şubeler" olduğunda sadece şirkete göre filtreleme yap
+      const selectedCompany = companies.find(
+        (company) => company.company_id === selectedCompanyId
+      );
+      fetchAllInventories(selectedCompany?.name || "");
+    } else if (selectedCompanyId && selectedBranch) {
+      // Belirli bir şube seçildiğinde filtreleme yap
+      const selectedCompany = companies.find(
+        (company) => company.company_id === selectedCompanyId
+      );
+      fetchAllInventories(selectedCompany?.name || "", selectedBranch);
+    }
+  }, [selectedBranch]);
   const fetchBranches = async (companyId) => {
     try {
       const branchData = await getBranchesByCompanyId(companyId);
