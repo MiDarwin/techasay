@@ -130,13 +130,24 @@ const BranchManager = () => {
 
   return (
     <div className="flex flex-col">
-      <div className="flex items-center mb-4 p-4 rounded-lg shadow-lg bg-white border border-gray-300">
+      <div
+        className="flex items-center mb-4 p-4 rounded-lg shadow-lg border border-gray-300"
+        style={{
+          backgroundColor: "#F8F1E4", // Arka plan rengini değiştirdik
+        }}
+      >
+        {" "}
         <form className="flex items-center flex-grow mr-4">
           <select
             id="companyFilter"
             value={companyFilter}
             onChange={(e) => setCompanyFilter(e.target.value)}
             className="border p-2 mr-2 rounded-lg"
+            style={{
+              backgroundColor: "#F8F1E4",
+              borderWidth: "1px", // Çizgi kalınlığını arttırdık
+              borderColor: "#A5B68D",
+            }}
           >
             <option value="">Tüm Şirketler</option>
             {companies.map((company) => (
@@ -150,6 +161,11 @@ const BranchManager = () => {
             value={cityFilter}
             onChange={(e) => setCityFilter(e.target.value)}
             className="border p-2 mr-2 rounded-lg"
+            style={{
+              backgroundColor: "#F8F1E4",
+              borderWidth: "1px", // Çizgi kalınlığını arttırdık
+              borderColor: "#A5B68D", // Çizgi rengi
+            }}
           >
             <option value="">Tüm Şehirler</option>
             {turkishCities.map((city) => (
@@ -165,9 +181,13 @@ const BranchManager = () => {
             value={searchFilter}
             onChange={(e) => setSearchFilter(e.target.value)}
             className="border p-2 mr-2 rounded-lg"
+            style={{
+              backgroundColor: "#F8F1E4",
+              borderWidth: "1px", // Çizgi kalınlığını arttırdık
+              borderColor: "#A5B68D",
+            }}
           />
         </form>
-
         <Button
           variant="contained"
           color="success"

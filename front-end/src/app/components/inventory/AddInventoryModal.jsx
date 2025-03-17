@@ -231,24 +231,35 @@ const AddInventoryModal = ({
             </Select>
           </FormControl>
         )}
-        {/* Envanter Bilgileri */}
-        <TextField
-          fullWidth
-          margin="normal"
-          label="Cihaz Türü"
-          value={deviceType}
-          onChange={(e) => setDeviceType(e.target.value)}
-          sx={{
-            "& .MuiOutlinedInput-root": {
-              "& fieldset": {
-                borderColor: "#A5B68D",
+        {/* Cihaz Türü Seçimi */}
+        <FormControl fullWidth margin="normal">
+          <InputLabel sx={{ color: "#6B7280" }}>Cihaz Türü</InputLabel>
+          <Select
+            value={deviceType}
+            onChange={(e) => setDeviceType(e.target.value)}
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                "& fieldset": {
+                  borderColor: "#A5B68D",
+                },
+                "&:hover fieldset": {
+                  borderColor: "#8FA781",
+                },
               },
-              "&:hover fieldset": {
-                borderColor: "#8FA781",
-              },
-            },
-          }}
-        />
+            }}
+          >
+            <MenuItem value="">
+              <em>Cihaz Türü Seçin</em>
+            </MenuItem>
+            <MenuItem value="Modbus">Modbus</MenuItem>
+            <MenuItem value="Router">Router</MenuItem>
+            <MenuItem value="Anten">Anten</MenuItem>
+            <MenuItem value="Güçlendirilmiş Anten">
+              Güçlendirilmiş Anten
+            </MenuItem>
+            <MenuItem value="Ethernet Kablosu">Ethernet Kablosu</MenuItem>
+          </Select>
+        </FormControl>
         <TextField
           fullWidth
           margin="normal"

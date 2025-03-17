@@ -85,22 +85,36 @@ const CompanyManager = () => {
 
   return (
     <div className="flex flex-col">
-      <div className="flex items-center justify-between mb-4 p-4 rounded-lg shadow-lg bg-white border border-gray-300">
-        {/* Arama Çubuğu */}
+      <div
+        className="flex items-center justify-between mb-4 p-4 rounded-lg shadow-lg border border-gray-300"
+        style={{
+          backgroundColor: "#F8F1E4", // Arka plan rengi
+        }}
+      >
         <TextField
           variant="outlined"
           placeholder="Şirket Ara..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="mr-4"
-          InputProps={{
-            style: {
-              height: "40px", // Arama çubuğu yüksekliği
-              borderColor: "black", // Normal durumdaki kenar rengi
-              width: "200px", // Yatay genişlik
+          sx={{
+            height: "40px", // Arama çubuğu yüksekliği
+            width: "200px", // Yatay genişlik
+            "& .MuiOutlinedInput-root": {
+              "& fieldset": {
+                borderColor: "#A5B68D", // Varsayılan kenar rengi
+              },
+              "&:hover fieldset": {
+                borderColor: "#A5B68D", // Hover durumu için kenar rengi
+              },
+              "&.Mui-focused fieldset": {
+                borderColor: "#A5B68D", // Odaklandığında (focus) kenar rengi
+              },
             },
-            onFocus: (e) => (e.target.style.borderColor = "black"), // Odaklandığında kenar rengi
-            onBlur: (e) => (e.target.style.borderColor = "black"), // Odaktan çıktığında kenar rengi
+            "& .MuiInputBase-input": {
+              height: "40px", // İçerik yüksekliği
+              padding: "2px", // İçerik dolgu
+            },
           }}
         />
 

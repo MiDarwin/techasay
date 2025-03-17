@@ -163,7 +163,7 @@ const InventoryManager = () => {
               className="flex items-center justify-between mb-4 p-2 rounded-lg shadow-md border"
               style={{
                 backgroundColor: "#F8F1E4", // Arka plan rengi
-                boxShadow: "0px 4px 10px rgba(0, 0, 0.2)", // Hafif gölge efekti
+                boxShadow: "0px 2px 10px rgba(0, 0, 0)", // Hafif gölge efekti
                 borderColor: "#A5B68D", // Çerçeve rengi
                 height: "auto", // Daha az yükseklik
               }}
@@ -181,7 +181,21 @@ const InventoryManager = () => {
                     value={selectedCompanyId}
                     onChange={(e) => setSelectedCompanyId(e.target.value)}
                     label="Şirket Seçin"
-                    sx={{ height: "40px" }}
+                    sx={{
+                      height: "40px",
+                      backgroundColor: "#F8F1E4", // Arka plan rengi
+                      borderWidth: "2px", // Çerçeve kalınlığı
+                      borderColor: "#A5B68D", // Çerçeve rengi
+                      "& .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "#A5B68D", // Varsayılan çerçeve rengi
+                      },
+                      "&:hover .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "#8FA781", // Hover durumunda çerçeve rengi
+                      },
+                      "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "#6B7280", // Odaklandığında çerçeve rengi
+                      },
+                    }}
                   >
                     <MenuItem value="">
                       <em>Tüm Şirketler</em>
@@ -208,7 +222,21 @@ const InventoryManager = () => {
                     value={selectedBranch}
                     onChange={(e) => setSelectedBranch(e.target.value)}
                     label="Şube Seçin"
-                    sx={{ height: "40px" }}
+                    sx={{
+                      height: "40px",
+                      backgroundColor: "#F8F1E4", // Arka plan rengi
+                      borderWidth: "2px", // Çerçeve kalınlığı
+                      borderColor: "#A5B68D", // Çerçeve rengi
+                      "& .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "#f5f5f5", // Varsayılan çerçeve rengi
+                      },
+                      "&:hover .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "#8FA781", // Hover durumunda çerçeve rengi
+                      },
+                      "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "#6B7280", // Odaklandığında çerçeve rengi
+                      },
+                    }}
                     disabled={!selectedCompanyId || branches.length === 0}
                   >
                     <MenuItem value="">
