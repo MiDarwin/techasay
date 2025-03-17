@@ -58,7 +58,7 @@ const BranchTable = ({ branches, companies, onEdit, onDelete }) => {
   const handleOpenInventory = async (branchId, branchName) => {
     setSelectedBranchId(branchId);
     setSelectedBranchName(branchName);
-    const data = await getInventoryByBranch(branchId); // API'den envanteri al
+    const data = await getcombinedinventoryByBranch(branchId); // API'den envanteri al
     setInventory(data);
     setOpenInventory(true);
   };
@@ -245,7 +245,12 @@ const BranchTable = ({ branches, companies, onEdit, onDelete }) => {
                 {/* Alt Şube Tablosu */}
                 {expandedRow === branch.id && (
                   <TableRow>
-                    <TableCell colSpan={7}>
+                    <TableCell
+                      colSpan={7}
+                      sx={{
+                        backgroundColor: "#EDE8DC", // Alt şube tablosu için arka plan rengi
+                      }}
+                    >
                       {loading ? (
                         <CircularProgress />
                       ) : (

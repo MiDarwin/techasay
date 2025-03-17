@@ -62,7 +62,7 @@ const InventoryList = ({ inventories, onEdit, onDelete }) => {
                 sx={{
                   backgroundColor: index % 2 === 0 ? "#EDE8DC" : "#C1CFA1", // Alternatif satır renkleri
                   "&:hover": {
-                    backgroundColor: "#A5B68D", // Hover rengi
+                    backgroundColor: "#dfedbe", // Hover rengi
                   },
                 }}
               >

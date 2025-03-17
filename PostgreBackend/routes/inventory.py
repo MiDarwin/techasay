@@ -74,6 +74,6 @@ async def get_branch_inventory(branch_id: int, db: AsyncSession = Depends(get_db
 async def get_combined_inventory(branch_id: int, db: AsyncSession = Depends(get_db)):
     try:
         inventory = await get_combined_inventory_by_branch_id(db, branch_id)
-        return {"branch_id": branch_id, "combined_inventory": inventory}
+        return inventory
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

@@ -212,7 +212,7 @@ async def get_combined_inventory_by_branch_id(db: AsyncSession, branch_id: int):
             }
         else:
             combined_inventory[key]["quantity"] += total_quantity
-            combined_inventory[key]["branch_name"] += f", {main_branch_name}"
+            combined_inventory[key]["branch_name"] += f",{main_branch_name}"
 
     # Alt şube envanteri ekleniyor
     for device_type, device_model, branch_id, total_quantity in sub_branch_inventory_results:
@@ -226,7 +226,7 @@ async def get_combined_inventory_by_branch_id(db: AsyncSession, branch_id: int):
             }
         else:
             combined_inventory[key]["quantity"] += total_quantity
-            combined_inventory[key]["branch_name"] += f", {sub_branch_names[branch_id]}"
+            combined_inventory[key]["branch_name"] += f",{sub_branch_names[branch_id]}"
 
     # Sonuçları listeye dönüştür
     inventory_list = list(combined_inventory.values())
