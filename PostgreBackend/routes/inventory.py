@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from models.branch import Branch
 from schemas.inventory import InventoryCreate, InventoryResponse, InventoryUpdate
 from services.inventory_service import create_inventory, get_inventory_by_branch, delete_inventory, get_all_inventory, \
-    update_inventory, get_inventory_by_branch_id
+    update_inventory, get_inventory_by_branch_id, get_combined_inventory_by_branch_id
 from database import get_db
 
 router = APIRouter()
@@ -70,3 +70,10 @@ async def get_branch_inventory(branch_id: int, db: AsyncSession = Depends(get_db
     # Ana şube ve alt şubelerin envanteri
     inventory = await get_inventory_by_branch_id(db, branch_id)
     return inventory
+@router.get("/branches/{branch_id}/combined-inventory")
+async def get_combined_inventory(branch_id: int, db: AsyncSession = Depends(get_db)):
+    try:
+        inventory = await get_combined_inventory_by_branch_id(db, branch_id)
+        return {"branch_id": branch_id, "combined_inventory": inventory}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

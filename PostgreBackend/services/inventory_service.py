@@ -163,3 +163,71 @@ async def get_inventory_by_branch_id(db, branch_id: int):
 
     # Sonuçları döndür
     return inventory_list
+async def get_combined_inventory_by_branch_id(db: AsyncSession, branch_id: int):
+    # 1. Ana şubenin kendi envanteri
+    main_branch_query = select(Branch.branch_name).where(Branch.id == branch_id)
+    main_branch = await db.execute(main_branch_query)
+    main_branch_name = main_branch.scalar()
+
+    main_branch_inventory_query = (
+        select(Inventory.device_type, Inventory.device_model, func.sum(Inventory.quantity).label("total_quantity"))
+        .where(Inventory.branch_id == branch_id)
+        .group_by(Inventory.device_type, Inventory.device_model)
+    )
+    main_branch_inventory = await db.execute(main_branch_inventory_query)
+    main_branch_inventory_results = main_branch_inventory.all()
+
+    # 2. Alt şubelerin envanterini toplama
+    sub_branches_query = select(Branch.id, Branch.branch_name).where(Branch.parent_branch_id == branch_id)
+    sub_branches = await db.execute(sub_branches_query)
+    sub_branch_results = sub_branches.fetchall()
+
+    sub_branch_ids = [row[0] for row in sub_branch_results]
+    sub_branch_names = {row[0]: row[1] for row in sub_branch_results}  # Alt şube ID -> Şube adı eşleştirmesi
+
+    if sub_branch_ids:
+        sub_branch_inventory_query = (
+            select(Inventory.device_type, Inventory.device_model, Inventory.branch_id,
+                   func.sum(Inventory.quantity).label("total_quantity"))
+            .where(Inventory.branch_id.in_(sub_branch_ids))
+            .group_by(Inventory.device_type, Inventory.device_model, Inventory.branch_id)
+        )
+        sub_branch_inventory = await db.execute(sub_branch_inventory_query)
+        sub_branch_inventory_results = sub_branch_inventory.fetchall()
+    else:
+        sub_branch_inventory_results = []
+
+    # 3. Ana şube ve alt şube envanterlerini birleştirme
+    combined_inventory = {}
+
+    # Ana şube envanteri ekleniyor
+    for device_type, device_model, total_quantity in main_branch_inventory_results:
+        key = (device_type, device_model)
+        if key not in combined_inventory:
+            combined_inventory[key] = {
+                "branch_name": main_branch_name,
+                "device_type": device_type,
+                "device_model": device_model,
+                "quantity": total_quantity
+            }
+        else:
+            combined_inventory[key]["quantity"] += total_quantity
+            combined_inventory[key]["branch_name"] += f", {main_branch_name}"
+
+    # Alt şube envanteri ekleniyor
+    for device_type, device_model, branch_id, total_quantity in sub_branch_inventory_results:
+        key = (device_type, device_model)
+        if key not in combined_inventory:
+            combined_inventory[key] = {
+                "branch_name": sub_branch_names[branch_id],
+                "device_type": device_type,
+                "device_model": device_model,
+                "quantity": total_quantity
+            }
+        else:
+            combined_inventory[key]["quantity"] += total_quantity
+            combined_inventory[key]["branch_name"] += f", {sub_branch_names[branch_id]}"
+
+    # Sonuçları listeye dönüştür
+    inventory_list = list(combined_inventory.values())
+    return inventory_list

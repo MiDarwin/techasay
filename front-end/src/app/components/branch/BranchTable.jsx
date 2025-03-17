@@ -21,6 +21,7 @@ import LocationOnIcon from "@mui/icons-material/LocationOn"; // Konum ikonu
 import HolidayVillageIcon from "@mui/icons-material/HolidayVillage"; // Alt şube ikonu
 import {
   getInventoryByBranch,
+  getcombinedinventoryByBranch,
   getSubBranchesByBranchId,
   updateBranch,
   createSubBranch, // Alt şube silme API çağrısı
