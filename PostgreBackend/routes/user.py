@@ -5,7 +5,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from dependencies import get_current_user
 from models.user import User
 from schemas.user import UserCreate, UserResponse,UserLogin
-from services.user_service import create_user, login_user,get_user_by_id
+from services.permissions_service import has_permission
+from services.user_service import create_user, login_user, get_user_by_id, get_all_users_with_permissions
 from database import get_db
 
 router = APIRouter()
@@ -35,3 +36,15 @@ async def read_users_me(current_user: User = Depends(get_current_user)):
         phone_number=current_user.phone_number
 
     )
+@router.get("/users/with-permissions")
+async def get_users_with_permissions(
+    current_user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    # Kullanıcının "permission_management" izni olup olmadığını kontrol et
+    if not await has_permission(db, current_user.id, "permission_management"):
+        raise HTTPException(status_code=403, detail="Bu işlemi gerçekleştirmek için gerekli izne sahip değilsiniz.")
+
+    # Eğer izin varsa, tüm kullanıcıları ve izinlerini getir
+    users_with_permissions = await get_all_users_with_permissions(db)
+    return users_with_permissions

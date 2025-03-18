@@ -17,3 +17,13 @@ async def get_permissions_by_user_id(db: AsyncSession, user_id: int):
     if permission_record:
         return permission_record.permissions  # İzinleri dizi olarak döndür
     return []
+# services/permission_service.py
+async def has_permission(db: AsyncSession, user_id: int, required_permission: str) -> bool:
+    """
+    Belirtilen kullanıcının bir izne sahip olup olmadığını kontrol eder.
+    """
+    result = await db.execute(select(Permission).filter(Permission.user_id == user_id))
+    permission_record = result.scalars().first()
+    if permission_record and required_permission in permission_record.permissions:
+        return True
+    return False

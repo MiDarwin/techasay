@@ -1,6 +1,8 @@
 # services/user_service.py
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+
+from models.permissions import Permission
 from models.user import User
 from schemas.user import UserCreate
 from utils.bearerToken import create_access_token
@@ -54,3 +56,18 @@ async def login_user(db: AsyncSession, email: str, password: str):
 async def get_user_by_id(db: AsyncSession, user_id: int):
     result = await db.execute(select(User).filter(User.id == user_id))
     return result.scalars().first()  # İlk sonucu döndür
+async def get_all_users_with_permissions(db: AsyncSession):
+    """
+    Tüm kullanıcıların isim, soyisim, e-posta ve izin bilgilerini getirir.
+    """
+    result = await db.execute(select(User, Permission).join(Permission, User.id == Permission.user_id))
+    users_with_permissions = []
+    for user, permission in result.all():
+        users_with_permissions.append({
+            "id": user.id,
+            "name": user.name,
+            "surname": user.surname,
+            "email": user.email,
+            "permissions": permission.permissions if permission else []
+        })
+    return users_with_permissions
