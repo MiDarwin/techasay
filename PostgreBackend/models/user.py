@@ -1,5 +1,7 @@
 # models/user.py
 from sqlalchemy import Column, Integer, String
+from sqlalchemy.orm import relationship
+
 from database import Base
 import bcrypt
 
@@ -12,6 +14,9 @@ class User(Base):
     email = Column(String, unique=True)
     phone_number = Column(String)
     password = Column(String)  # Şifre burada saklanacak
+
+    permissions = relationship("Permission", back_populates="user", cascade="all, delete-orphan")
+
 
     def set_password(self, password: str):
         """ Şifreyi hash'leyip saklar. """

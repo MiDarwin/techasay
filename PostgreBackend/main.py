@@ -5,6 +5,7 @@ from routes.company import router as company_router
 from fastapi.middleware.cors import CORSMiddleware
 from routes.branch import router as branch_router
 from routes.inventory import router as inventory_router
+from routes.permissions import router as permissions_router
 app = FastAPI()
 
 @app.on_event("startup")
@@ -12,6 +13,8 @@ async def startup():
     await init_db()
 
 app.include_router(user_router, prefix="/user", tags=["User"])
+app.include_router(permissions_router, prefix="/permissions", tags=["permissions"])
+
 app.include_router(company_router)
 app.include_router(branch_router)
 app.include_router(inventory_router)
