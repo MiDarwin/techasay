@@ -8,6 +8,7 @@ class BranchBase(BaseModel):
     phone_number: Optional[str] = None  # Opsiyonel hale getirildi
     branch_note: Optional[str] = None  # Opsiyonel hale getirildi
     location_link: Optional[str] = None  # Opsiyonel hale getirildi
+    phone_number_2: Optional[str] = None  # Opsiyonel hale getirildi
 
 class BranchCreate(BranchBase):
     parent_branch_id: Optional[int] = None  # Alt şube oluşturmak için parent_branch_id ekledik

@@ -1,4 +1,6 @@
 # services/branch_service.py
+from typing import Optional
+
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from models.branch import Branch
@@ -18,7 +20,8 @@ async def create_branch(db: AsyncSession, branch: BranchCreate, company_id: int)
         phone_number=branch.phone_number,
         branch_note=branch.branch_note,
         location_link=branch.location_link,
-        company_id=company_id
+        company_id=company_id,
+        phone_number_2=branch.phone_number_2
     )
 
     db.add(db_branch)
@@ -107,12 +110,22 @@ async def delete_branch(db: AsyncSession, branch_id: int):
         await db.commit()
         return db_branch
     return None
-async def get_all_branches(db: AsyncSession, limit: int = 50):
+async def get_all_branches(db: AsyncSession, limit: int = 50, city: Optional[str] = None):
+    # Sorguyu oluştur
+    query = select(Branch).options(joinedload(Branch.company)).filter(Branch.company_id.isnot(None))
 
-    query = select(Branch).options(joinedload(Branch.company)).filter(Branch.company_id.isnot(None)).limit(limit)
+    # Eğer city parametresi verilmişse, sorguya şehir filtresi ekle
+    if city:
+        query = query.filter(Branch.city == city)
+
+    # Limiti uygula
+    query = query.limit(limit)
+
+    # Sorguyu çalıştır
     result = await db.execute(query)
     branches = result.scalars().all()
 
+    # Şube yanıtlarını oluştur
     branch_responses = []
     for branch in branches:
         # Alt şubeler olup olmadığını kontrol et

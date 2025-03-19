@@ -11,9 +11,12 @@ class Branch(Base):
     branch_name = Column(String, index=True)
     address = Column(String, index=True)
     city = Column(String, index=True)
+    district = Column(String, index=True)
     phone_number = Column(String, index=True)
     branch_note = Column(String, index=True)
     location_link = Column(String, index=True)
+    phone_number_2 = Column(String, index=True)
+
 
     company_id = Column(Integer, ForeignKey("companies.company_id"))
     company = relationship("Company", back_populates="branches")

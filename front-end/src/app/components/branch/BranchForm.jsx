@@ -16,6 +16,9 @@ const BranchForm = ({
   const [phoneNumber, setPhoneNumber] = useState(
     initialData.phone_number || ""
   );
+  const [phoneNumber2, setPhoneNumber2] = useState(
+    initialData.phone_number_2 || ""
+  );
   const [branchNote, setBranchNote] = useState(initialData.branch_note || "");
   const [locationLink, setLocationLink] = useState(
     initialData.location_link || ""
@@ -31,12 +34,13 @@ const BranchForm = ({
     setPhoneNumber(initialData.phone_number || "");
     setBranchNote(initialData.branch_note || "");
     setLocationLink(initialData.location_link || "");
+    setPhoneNumber2(initialData.phone_number_2 || "");
     setError("");
   }, [initialData]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!companyId || !branchName || !address || !city || !phoneNumber) {
+    if (!companyId || !branchName || !address || !city) {
       setError("Lütfen tüm alanları doldurun.");
       return;
     }
@@ -66,6 +70,7 @@ const BranchForm = ({
         phone_number: normalizedPhoneNumber,
         branch_note: branchNote,
         location_link: locationLink,
+        phone_number_2: phoneNumber2, // Doğru isimlendirme
       });
       // Formu sıfırla
     } catch (submissionError) {
@@ -198,6 +203,23 @@ const BranchForm = ({
               required
             />
           </div>
+          <div>
+            <label
+              htmlFor="phoneNumber2"
+              className="block text-gray-700 dark:text-gray-200 mb-2 font-medium"
+            >
+              Yedek Telefon Numarası
+            </label>
+            <input
+              id="phoneNumber2"
+              type="text"
+              value={phoneNumber2}
+              onChange={(e) => setPhoneNumber2(e.target.value)}
+              className="w-full px-4 py-3 border rounded-lg bg-gray-50 dark:bg-gray-700 dark:border-gray-600 
+               text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              placeholder="Telefon Numarası Girin"
+            />
+          </div>
         </div>
 
         {/* Şube Notu ve Konum Linki */}
@@ -281,6 +303,7 @@ BranchForm.propTypes = {
     phone_number: PropTypes.string,
     branch_note: PropTypes.string,
     location_link: PropTypes.string,
+    phone_number_2: PropTypes.string,
   }),
   isEditMode: PropTypes.bool,
   onCancel: PropTypes.func,

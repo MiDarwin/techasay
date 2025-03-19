@@ -57,9 +57,11 @@ export const deleteCompany = (company_id) =>
 // Şube CRUD İstekleri
 export const createBranch = (companyId, branchData) => 
   apiRequest(`/companies/${companyId}/branches`, "POST", branchData);
-export const getAllBranches = async (limit = 50) => {
+export const getAllBranches = async (limit = 50, city = null) => {
   const token = localStorage.getItem("access_token"); // Token'ı localStorage'dan al
-  const response = await fetch(`${BASE_URL}/branches?limit=${limit}`, {
+  const url = `${BASE_URL}/branches?limit=${limit}${city ? `&city=${city}` : ""}`;
+  
+  const response = await fetch(url, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
@@ -68,10 +70,10 @@ export const getAllBranches = async (limit = 50) => {
   });
 
   if (!response.ok) {
-    throw new Error("Tüm şubeler alınırken bir hata oluştu.");
+    throw new Error("Şubeler alınırken bir hata oluştu.");
   }
 
-  return await response.json(); // JSON formatında dönen veriyi çöz
+  return await response.json();
 };
 
 export const getBranchById = (branch_id) =>
