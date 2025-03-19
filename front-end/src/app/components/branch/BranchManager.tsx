@@ -20,6 +20,8 @@ const BranchManager = () => {
   const [currentBranch, setCurrentBranch] = useState(null);
   const [companies, setCompanies] = useState([]);
   const [cityFilter, setCityFilter] = useState("");
+  const [districtFilter, setDistrictFilter] = useState(""); // İlçe filtresi
+  const [availableDistricts, setAvailableDistricts] = useState<string[]>([]);
   const [companyFilter, setCompanyFilter] = useState("");
   const [searchFilter, setSearchFilter] = useState("");
   const [branchLoading, setBranchLoading] = useState(false);
@@ -35,16 +37,26 @@ const BranchManager = () => {
       setBranchLoading(false);
     }
   };
-  const fetchBranches = async (city = "", search = "", company = "") => {
+  const fetchBranches = async (
+    city = "",
+    districtFilter = "",
+    search = "",
+    company = ""
+  ) => {
     try {
       setBranchLoading(true);
-
+      console.log("Seçilen İlçe:", districtFilter);
       if (!company) {
         // Eğer companyFilter boşsa tüm şubeleri getir
         await fetchAllBranches();
       } else {
         // Eğer companyFilter doluysa şirket bazlı şubeleri getir
-        const data = await getBranchesByCompanyId(company, city, search);
+        const data = await getBranchesByCompanyId(
+          company,
+          city,
+          districtFilter,
+          search
+        );
         setBranches(data); // Gelen şube verilerini state'e ata
       }
 
@@ -58,11 +70,11 @@ const BranchManager = () => {
   // useEffect, filtrelerdeki değişiklikleri izler ve API çağrısını tetikler
   useEffect(() => {
     if (!companyFilter) {
-      fetchAllBranches(); // Tüm şubeleri getir
+      fetchAllBranches();
     } else {
-      fetchBranches(cityFilter, searchFilter, companyFilter); // Filtreye göre şubeleri getir
+      fetchBranches(cityFilter, districtFilter, searchFilter, companyFilter);
     }
-  }, [cityFilter, searchFilter, companyFilter]);
+  }, [cityFilter, districtFilter, searchFilter, companyFilter]);
 
   const fetchCompanies = async () => {
     try {
@@ -72,7 +84,17 @@ const BranchManager = () => {
       console.error("Şirketler alınırken bir hata oluştu:", err);
     }
   };
+  const handleCityChange = (e) => {
+    const selectedCity = e.target.value;
+    setCityFilter(selectedCity);
+    setDistrictFilter(""); // İl değiştiğinde ilçe filtresini sıfırla
+    setAvailableDistricts(turkishCities[selectedCity] || []); // Seçilen ilin ilçelerini getir
+  };
 
+  const handleDistrictChange = (e) => {
+    const selectedDistrict = e.target.value;
+    setDistrictFilter(selectedDistrict);
+  };
   const handleAddBranch = async (branchData) => {
     try {
       const companyId = branchData.company_id; // Şirket ID'sini almak
@@ -159,18 +181,37 @@ const BranchManager = () => {
           <select
             id="cityFilter"
             value={cityFilter}
-            onChange={(e) => setCityFilter(e.target.value)}
+            onChange={handleCityChange}
             className="border p-2 mr-2 rounded-lg"
             style={{
               backgroundColor: "#F8F1E4",
-              borderWidth: "1px", // Çizgi kalınlığını arttırdık
-              borderColor: "#A5B68D", // Çizgi rengi
+              borderWidth: "1px",
+              borderColor: "#A5B68D",
             }}
           >
             <option value="">Tüm Şehirler</option>
-            {Object.keys(turkishCities).map((city, index) => (
+            {Object.keys(turkishCities).map((city) => (
               <option key={city} value={city}>
                 {city}
+              </option>
+            ))}
+          </select>
+          <select
+            id="districtFilter"
+            value={districtFilter}
+            onChange={handleDistrictChange}
+            className="border p-2 mr-2 rounded-lg"
+            style={{
+              backgroundColor: "#F8F1E4",
+              borderWidth: "1px",
+              borderColor: "#A5B68D",
+            }}
+            disabled={!availableDistricts.length}
+          >
+            <option value="">Tüm İlçeler</option>
+            {availableDistricts.map((district, index) => (
+              <option key={index} value={district}>
+                {district}
               </option>
             ))}
           </select>

@@ -79,12 +79,13 @@ export const getAllBranches = async (limit = 50, city = null) => {
 export const getBranchById = (branch_id) =>
   apiRequest(`/branches/${branch_id}`, "GET");
 
-export const getBranchesByCompanyId = async (companyId, city = "", search = "") => {
+export const getBranchesByCompanyId = async (companyId, city = "",districtFilter ="", search = "") => {
   const token = localStorage.getItem("access_token"); // Token'ı localStorage'dan al
   const params = new URLSearchParams(); // Query parametrelerini oluşturmak için URLSearchParams kullanılır
 
   if (city) params.append("city", city); // Eğer city varsa ekle
   if (search) params.append("textinput", search); // Eğer search varsa ekle
+  if (districtFilter) params.append("district",districtFilter);
 
   const response = await fetch(`${BASE_URL}/companies/${companyId}/branches?${params.toString()}`, {
     method: "GET",

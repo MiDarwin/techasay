@@ -48,18 +48,20 @@ async def create_branch(db: AsyncSession, branch: BranchCreate, company_id: int)
 
 
 async def get_branches(db: AsyncSession, company_id: int, skip: int = 0, limit: int = 10, city: str = None,
-                       textinput: str = None):
+                       district: str = None,textinput: str = None):
     query = select(Branch).options(joinedload(Branch.company)).filter(Branch.company_id == company_id)
 
     if city:  # Eğer city parametresi varsa, city'e göre filtrele
         query = query.filter(Branch.city.ilike(f"%{city}%"))
-
+    if district:  # Eğer district parametresi varsa, district'e göre filtrele
+        query = query.filter(Branch.district.ilike(f"%{district}%"))
     if textinput:  # Eğer textinput varsa, name, address, city ve phone_number'da arama yap
         query = query.filter(
             or_(
                 Branch.branch_name.ilike(f"%{textinput}%"),
                 Branch.address.ilike(f"%{textinput}%"),
                 Branch.city.ilike(f"%{textinput}%"),
+                Branch.district.ilike(f"%{textinput}%"),  # İlçe içinde de aramayı dahil ettik
                 Branch.phone_number.ilike(f"%{textinput}%")
             )
         )
@@ -79,6 +81,7 @@ async def get_branches(db: AsyncSession, company_id: int, skip: int = 0, limit: 
             "name": branch.branch_name,
             "address": branch.address,
             "city": branch.city,
+            "district": branch.district,  # İlçe bilgisi ekleniyor
             "phone_number": branch.phone_number,
             "company_id": branch.company_id,
             "company_name": branch.company.name if branch.company else None,

@@ -24,11 +24,12 @@ async def read_branches(
     skip: int = 0,
     limit: int = 10,
     city: str = Query(None),  # city opsiyonel bir query parametresi
+    district: str = Query(None),
     textinput: str = Query(None),  # textinput opsiyonel bir query parametresi
     include_sub_branches: bool = Query(False),  # Alt şubeler dahil edilsin mi?
     db: AsyncSession = Depends(get_db)
 ):
-    return await get_branches(db, company_id, skip=skip, limit=limit, city=city, textinput=textinput)
+    return await get_branches(db, company_id, skip=skip, limit=limit, city=city,district=district, textinput=textinput)
 
 @router.put("/branches/{branch_id}", response_model=BranchUpdate)
 async def update_branch_endpoint(branch_id: int, branch: BranchUpdate, db: AsyncSession = Depends(get_db)):
