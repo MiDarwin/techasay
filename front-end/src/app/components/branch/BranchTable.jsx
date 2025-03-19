@@ -155,9 +155,10 @@ const BranchTable = ({ branches, companies, onEdit, onDelete }) => {
             >
               <TableCell>Şirket Adı</TableCell>
               <TableCell>Şehir</TableCell>
+              <TableCell>İlçe</TableCell>
               <TableCell>Şube Adı</TableCell>
               <TableCell>Adres</TableCell>
-              <TableCell>Telefon Numarası</TableCell>
+              <TableCell>Telefon Numarası / Yedek Telefon</TableCell>
               <TableCell>Şube Notu</TableCell>
               <TableCell>İşlemler</TableCell>
             </TableRow>
@@ -176,9 +177,15 @@ const BranchTable = ({ branches, companies, onEdit, onDelete }) => {
                 >
                   <TableCell>{branch.company_name}</TableCell>
                   <TableCell>{branch.city}</TableCell>
+                  <TableCell>{branch.district || "Yok"}</TableCell>
                   <TableCell>{branch.name}</TableCell>
                   <TableCell>{branch.address}</TableCell>
-                  <TableCell>{branch.phone_number}</TableCell>
+                  <TableCell>
+                    {branch.phone_number}
+                    {branch.phone_number_2
+                      ? ` / ${branch.phone_number_2}` // Eğer yedek telefon numarası varsa, "/" ile ekle
+                      : ""}
+                  </TableCell>
                   <TableCell>{branch.branch_note || "Yok"}</TableCell>
                   <TableCell>
                     {branch.location_link && (

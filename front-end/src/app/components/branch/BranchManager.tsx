@@ -168,7 +168,7 @@ const BranchManager = () => {
             }}
           >
             <option value="">Tüm Şehirler</option>
-            {turkishCities.map((city) => (
+            {Object.keys(turkishCities).map((city, index) => (
               <option key={city} value={city}>
                 {city}
               </option>

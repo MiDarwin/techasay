@@ -17,6 +17,7 @@ async def create_branch(db: AsyncSession, branch: BranchCreate, company_id: int)
         branch_name=branch.branch_name,
         address=branch.address,
         city=branch.city,
+        district=branch.district,
         phone_number=branch.phone_number,
         branch_note=branch.branch_note,
         location_link=branch.location_link,
@@ -37,6 +38,7 @@ async def create_branch(db: AsyncSession, branch: BranchCreate, company_id: int)
         name=db_branch.branch_name,
         address=db_branch.address,
         city=db_branch.city,
+        district=db_branch.district,
         phone_number=db_branch.phone_number,
         company_id=db_branch.company_id,
         company_name=company.name if company else "",  # Şirket adı varsa
@@ -83,6 +85,7 @@ async def get_branches(db: AsyncSession, company_id: int, skip: int = 0, limit: 
             "location_link": branch.location_link,
             "branch_note": branch.branch_note if hasattr(branch, 'branch_note') else "",
             "parent_branch_id": branch.parent_branch_id,
+            "phone_number_2": branch.phone_number_2,
             "has_sub_branches": has_sub_branches  # Yeni alan eklendi
         })
 
@@ -138,10 +141,12 @@ async def get_all_branches(db: AsyncSession, limit: int = 50, city: Optional[str
             "name": branch.branch_name,
             "address": branch.address,
             "city": branch.city,
+            "district": branch.district,
             "phone_number": branch.phone_number,
             "company_id": branch.company_id,
             "company_name": branch.company.name if branch.company else None,
             "location_link": branch.location_link,
+            "phone_number_2": branch.phone_number_2,
             "branch_note": branch.branch_note if hasattr(branch, 'branch_note') else "",
             "parent_branch_id": branch.parent_branch_id,
             "has_sub_branches": has_sub_branches  # Yeni alan eklendi

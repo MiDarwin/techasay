@@ -5,6 +5,7 @@ class BranchBase(BaseModel):
     branch_name: str
     address: Optional[str] = None  # Opsiyonel hale getirildi
     city: Optional[str] = None  # Opsiyonel hale getirildi
+    district: Optional[str] = None  # Opsiyonel hale getirildi
     phone_number: Optional[str] = None  # Opsiyonel hale getirildi
     branch_note: Optional[str] = None  # Opsiyonel hale getirildi
     location_link: Optional[str] = None  # Opsiyonel hale getirildi
@@ -19,11 +20,13 @@ class BranchResponse(BaseModel):
     name: str  # `name` yerine `branch_name` olarak değiştirdim
     address: Optional[str] = None
     city: Optional[str] = None
+    district:Optional[str] = None
     phone_number: Optional[str] = None
     company_id: Optional[int] = None
     company_name: Optional[str] = None  # Şirket adı opsiyonel
     branch_note: Optional[str] = None
     location_link: Optional[str] = None
+    phone_number_2: Optional[str] = None
     parent_branch_id: Optional[int] = None  # Üst şube ilişkisi için
     has_sub_branches: Optional[bool] = None  # Alt şubelerinin olup olmadığını gösteren alan
 
@@ -36,6 +39,8 @@ class BranchUpdate(BaseModel):
     address: Optional[str] = None
     city: Optional[str] = None
     phone_number: Optional[str] = None
+    phone_number_2: Optional[str] = None
+    district:Optional[str] = None
     branch_note: Optional[str] = None
     location_link: Optional[str] = None
     parent_branch_id: Optional[int] = None  # Alt şube ilişkisi güncellenebilir
