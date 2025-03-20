@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from routes.branch import router as branch_router
 from routes.inventory import router as inventory_router
 from routes.permissions import router as permissions_router
+from routes.inventoryHelper import router as inventory_helper_router
 app = FastAPI()
 
 @app.on_event("startup")
@@ -18,6 +19,7 @@ app.include_router(permissions_router, prefix="/permissions", tags=["permissions
 app.include_router(company_router)
 app.include_router(branch_router)
 app.include_router(inventory_router)
+app.include_router(inventory_helper_router)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # Güvenlik için sadece belirli frontend domainlerini ekleyebilirsiniz
