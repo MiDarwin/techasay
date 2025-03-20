@@ -315,6 +315,7 @@ BranchTable.propTypes = {
       phone_number: PropTypes.string.isRequired,
       location_link: PropTypes.string,
       branch_note: PropTypes.string,
+      phone_number_2: PropTypes.string,
       sub_branch: PropTypes.array, // Alt şube durumu
     })
   ).isRequired,

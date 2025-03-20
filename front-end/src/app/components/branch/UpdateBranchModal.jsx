@@ -8,6 +8,7 @@ import {
   Typography,
   MenuItem,
 } from "@mui/material";
+import { turkishCities } from "./cities";
 
 const style = {
   position: "absolute",
@@ -30,6 +31,7 @@ const UpdateBranchModal = ({ open, onClose, branchData, onUpdate }) => {
     phone_number: "",
     branch_note: "",
     location_link: "",
+    phone_number_2: "",
   });
 
   useEffect(() => {
@@ -41,6 +43,7 @@ const UpdateBranchModal = ({ open, onClose, branchData, onUpdate }) => {
         address: branchData.address || "",
         city: branchData.city || "",
         phone_number: branchData.phone_number || "",
+        phone_number_2: branchData.phone_number_2 || "", // Burada phone_number_2 ekleniyor
         branch_note: branchData.branch_note || "",
         location_link: branchData.location_link || "",
       });
@@ -65,6 +68,7 @@ const UpdateBranchModal = ({ open, onClose, branchData, onUpdate }) => {
         phone_number: formData.phone_number,
         branch_note: formData.branch_note,
         location_link: formData.location_link,
+        phone_number_2: formData.phone_number_2,
       });
       onClose(); // Modalı kapat
     } catch (error) {
@@ -188,6 +192,26 @@ const UpdateBranchModal = ({ open, onClose, branchData, onUpdate }) => {
             }}
           />
           <TextField
+            label="Yedek Telefon Numarası"
+            name="phone_number_2"
+            value={formData.phone_number_2}
+            onChange={handleChange}
+            fullWidth
+            margin="normal"
+            required
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                "& fieldset": {
+                  borderColor: "#A5B68D",
+                },
+                "&:hover fieldset": {
+                  borderColor: "#8FA781",
+                },
+              },
+            }}
+          />
+
+          <TextField
             label="Şube Notu"
             name="branch_note"
             value={formData.branch_note}
@@ -270,6 +294,7 @@ UpdateBranchModal.propTypes = {
     phone_number: PropTypes.string,
     branch_note: PropTypes.string,
     location_link: PropTypes.string,
+    phone_number_2: PropTypes.string,
   }), // Düzenlenecek şube verisi
   onUpdate: PropTypes.func.isRequired, // Güncelleme API çağrısı
 };
