@@ -110,9 +110,10 @@ const BranchManager = () => {
   const handleUpdateBranch = async (branch) => {
     try {
       await updateBranch(branch.id, branch); // ID kullanarak güncelle
-      fetchBranches();
+      fetchBranches(cityFilter, searchFilter, companyFilter);
       setBranchError("");
       closeBranchModal();
+      alert("Şube başarıyla güncellendi."); // Başarı mesajı
     } catch (err) {
       setBranchError(err.detail || "Şube güncellenirken bir hata oluştu.");
     }
@@ -268,6 +269,8 @@ const BranchManager = () => {
         }, {})}
         onEdit={openBranchEditModal}
         onDelete={handleDeleteBranch}
+        fetchBranches={fetchBranches} // Şubeleri yeniden yükleme fonksiyonu
+        handleUpdateBranch={handleUpdateBranch}
       />
     </div>
   );

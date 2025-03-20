@@ -128,6 +128,7 @@ const BranchTable = ({ branches, companies, onEdit, onDelete }) => {
     try {
       // Correct API call with branch_id in the URL
       await updateBranch(branchId, updatedData);
+      fetchBranches(cityFilter, districtFilter, searchFilter, companyFilter); // Şubeleri yeniden yükle
       alert("Şube başarıyla güncellendi.");
       // Tabloyu yeniden yükleyin veya güncellenen veriyi tabloya yansıtın
     } catch (error) {

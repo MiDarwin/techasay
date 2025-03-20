@@ -21,13 +21,15 @@ const style = {
   boxShadow: 24,
   p: 4,
 };
-
 const UpdateBranchModal = ({ open, onClose, branchData, onUpdate }) => {
+  const [districts, setDistricts] = useState([]);
+
   const [formData, setFormData] = useState({
     id: "",
     name: "",
     address: "",
     city: "",
+    district: "",
     phone_number: "",
     branch_note: "",
     location_link: "",
@@ -42,14 +44,26 @@ const UpdateBranchModal = ({ open, onClose, branchData, onUpdate }) => {
         name: branchData.name || "",
         address: branchData.address || "",
         city: branchData.city || "",
+        district: branchData.district || "",
         phone_number: branchData.phone_number || "",
         phone_number_2: branchData.phone_number_2 || "", // Burada phone_number_2 ekleniyor
         branch_note: branchData.branch_note || "",
         location_link: branchData.location_link || "",
       });
+      // Şehir varsa, ilgili ilçeleri güncelle
+      if (branchData.city) {
+        setDistricts(turkishCities[branchData.city] || []);
+      }
     }
   }, [branchData]);
-
+  const handleCityChange = (selectedCity) => {
+    setFormData((prevData) => ({
+      ...prevData,
+      city: selectedCity,
+      district: "", // İlçe seçimini sıfırla
+    }));
+    setDistricts(turkishCities[selectedCity] || []); // Şehre göre ilçeleri güncelle
+  };
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({
@@ -65,6 +79,7 @@ const UpdateBranchModal = ({ open, onClose, branchData, onUpdate }) => {
         branch_name: formData.name,
         address: formData.address,
         city: formData.city,
+        district: formData.district,
         phone_number: formData.phone_number,
         branch_note: formData.branch_note,
         location_link: formData.location_link,
@@ -142,33 +157,31 @@ const UpdateBranchModal = ({ open, onClose, branchData, onUpdate }) => {
             label="Şehir"
             name="city"
             value={formData.city}
+            onChange={(e) => handleCityChange(e.target.value)}
+            select
+            fullWidth
+            margin="normal"
+            required
+          >
+            {Object.keys(turkishCities).map((cityName) => (
+              <MenuItem key={cityName} value={cityName}>
+                {cityName}
+              </MenuItem>
+            ))}
+          </TextField>
+          <TextField
+            label="İlçe"
+            name="district"
+            value={formData.district}
             onChange={handleChange}
             select
             fullWidth
             margin="normal"
             required
-            sx={{
-              "& .MuiOutlinedInput-root": {
-                "& fieldset": {
-                  borderColor: "#A5B68D",
-                },
-                "&:hover fieldset": {
-                  borderColor: "#8FA781",
-                },
-              },
-            }}
           >
-            {[
-              "Adana",
-              "Ankara",
-              "İstanbul",
-              "İzmir",
-              "Antalya",
-              "Bursa",
-              "Konya",
-            ].map((city) => (
-              <MenuItem key={city} value={city}>
-                {city}
+            {districts.map((districtName) => (
+              <MenuItem key={districtName} value={districtName}>
+                {districtName}
               </MenuItem>
             ))}
           </TextField>
