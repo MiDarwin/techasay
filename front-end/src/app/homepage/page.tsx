@@ -9,14 +9,18 @@ import InventoryManager from "../components/inventory/InventoryManager";
 import CompanyIcon from "@mui/icons-material/Business"; // Şirket ikonu
 import StoreIcon from "@mui/icons-material/Store"; // Şube ikonu
 import BackpackIcon from "@mui/icons-material/Backpack"; // Envanter ikonu
-
+import SettingsIcon from "@mui/icons-material/Settings"; // Çark simgesi (Ayarlar)
+import { useRouter } from "next/navigation";
 const HomePage = () => {
   const [activeTab, setActiveTab] = useState("branch");
+  const router = useRouter(); // Router instance
 
   const handleTabChange = (tab) => {
     setActiveTab(tab);
   };
-
+  const navigateToSettings = () => {
+    router.push("/settings"); // "settings" sayfasına yönlendir
+  };
   // Aktif sekme için uygun ikonu döndür
   const getActiveIcon = () => {
     switch (activeTab) {
@@ -80,6 +84,17 @@ const HomePage = () => {
               Envanter
             </Link>
           </Breadcrumbs>
+        </Box>
+        <Box>
+          <SettingsIcon
+            sx={{
+              fontSize: "30px", // İkon boyutu
+              color: "#A5B68D", // İkon rengi
+              cursor: "pointer", // İmleç göstergesi
+              "&:hover": { color: "#8FA781" }, // Hover rengi
+            }}
+            onClick={navigateToSettings} // Settings sayfasına yönlendirme
+          />
         </Box>
       </header>
 

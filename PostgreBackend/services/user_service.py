@@ -1,7 +1,6 @@
 # services/user_service.py
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-
 from models.permissions import Permission
 from models.user import User
 from schemas.user import UserCreate
