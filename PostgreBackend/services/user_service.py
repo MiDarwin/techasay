@@ -34,6 +34,16 @@ async def verify_user_password(db: AsyncSession, email: str, password: str):
         return True
     return False
 
+async def update_user_password(db: AsyncSession, user_id: int, email: str, old_password: str, new_password: str):
+    user = await get_user_by_id(db, user_id)
+    if not user or user.email != email or not user.verify_password(old_password):
+        raise ValueError("Eski şifre veya e-posta hatalı.")
+
+    user.set_password(new_password)  # Yeni şifreyi ayarla
+    db.add(user)  # Güncelleme için kullanıcıyı ekle
+    await db.commit()  # Değişiklikleri kaydet
+    await db.refresh(user)  # Güncellenmiş kullanıcıyı getir
+    return user
 
 async def login_user(db: AsyncSession, email: str, password: str):
     user = await get_user_by_email(db, email)

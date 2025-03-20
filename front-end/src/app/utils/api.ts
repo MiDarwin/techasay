@@ -1,3 +1,5 @@
+import { headers } from "next/headers";
+
 const BASE_URL = "http://127.0.1:8000";
 
 export async function apiRequest(
@@ -10,7 +12,7 @@ export async function apiRequest(
 
   const accessToken = token || localStorage.getItem("access_token");
   if (accessToken) {
-    headers["Authorization"] = `Bearer ${accessToken}`;
+    headers["Authorization"] = `${accessToken}`;
   }
 
   const isFormData = body instanceof FormData;
@@ -36,7 +38,35 @@ export async function apiRequest(
   // Diğer durumlarda JSON'u parse et
   return await response.json();
 }
+// Kullanıcı CRUD İstekleri
 
+// Kullanıcı oluşturma (kayıt)
+export const registerUser = (userData) =>
+  apiRequest("/register", "POST", userData);
+
+// Kullanıcı giriş yapma (login)
+export const loginUser = (email, password) =>
+  apiRequest("/login", "POST", { email, password });
+
+// Mevcut kullanıcı bilgilerini alma
+export const getCurrentUser = () => {
+  const token = localStorage.getItem("access_token"); // localStorage'dan token al
+  if (!token) {
+    throw new Error("Erişim tokenı bulunamadı. Lütfen giriş yapın.");
+  }
+  return apiRequest("/user/users/me", "GET", null, token); // Token'ı apiRequest'e gönder
+};
+// Kullanıcı şifresini güncelleme
+export const updateUserPassword = (email, oldPassword, newPassword) =>
+  apiRequest("/users/update-password", "PUT", {
+    email,
+    old_password: oldPassword,
+    new_password: newPassword,
+  });
+
+// Tüm kullanıcıları ve izinlerini alma
+export const getUsersWithPermissions = () =>
+  apiRequest("/users/with-permissions", "GET");
 // Şirket CRUD İstekleri
 export const createCompany = (companyData) =>
   apiRequest("/companies/", "POST", companyData);

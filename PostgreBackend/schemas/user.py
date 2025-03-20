@@ -1,4 +1,6 @@
 # schemas/user.py
+from typing import Optional
+
 from pydantic import BaseModel, EmailStr
 
 class UserCreate(BaseModel):
@@ -18,8 +20,13 @@ class UserResponse(BaseModel):
     surname: str
     email: str
     phone_number: str
-    access_token: str
-    token_type: str
+    access_token: Optional[str] = None
+    token_type: Optional[str] = None
 
     class Config:
         orm_mode = True
+
+class UserUpdatePassword(BaseModel):
+    email: EmailStr
+    old_password: str
+    new_password: str

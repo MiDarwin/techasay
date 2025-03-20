@@ -4,9 +4,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from dependencies import get_current_user
 from models.user import User
-from schemas.user import UserCreate, UserResponse,UserLogin
+from schemas.user import UserCreate, UserResponse,UserLogin,UserUpdatePassword
 from services.permissions_service import has_permission
-from services.user_service import create_user, login_user, get_user_by_id, get_all_users_with_permissions
+from services.user_service import create_user, login_user, get_user_by_id, get_all_users_with_permissions, \
+    update_user_password
 from database import get_db
 
 router = APIRouter()
@@ -33,9 +34,21 @@ async def read_users_me(current_user: User = Depends(get_current_user)):
         name=current_user.name,
         surname=current_user.surname,
         email=current_user.email,
-        phone_number=current_user.phone_number
-
+        phone_number=current_user.phone_number,
     )
+@router.put("/users/update-password")
+async def update_password(
+    user_data: UserUpdatePassword,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    try:
+        updated_user = await update_user_password(
+            db, current_user.id, user_data.email, user_data.old_password, user_data.new_password
+        )
+        return {"message": "Şifre başarıyla güncellendi."}
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 @router.get("/users/with-permissions")
 async def get_users_with_permissions(
     current_user=Depends(get_current_user),
