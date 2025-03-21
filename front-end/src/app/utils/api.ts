@@ -76,7 +76,7 @@ export const getAllUsersPermissions = async () => {
   if (!token) {
     throw new Error("Erişim tokenı bulunamadı. Lütfen giriş yapın.");
   }
-  return apiRequest("/user/permissions", "GET", null, token); // Tüm kullanıcıları getiren API
+  return apiRequest("/permissions/permissionss", "GET", null, token); // Tüm kullanıcıları getiren API
 };
 // Kullanıcının yetkilerini getirme
 export const getUserPermissions = (searchValue = "") => {

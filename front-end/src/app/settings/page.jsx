@@ -6,7 +6,7 @@ import Switch from "@mui/material/Switch"; // Switch bileşeni
 import ExitToAppIcon from "@mui/icons-material/ExitToApp"; // Çıkış simgesi
 
 import settingsStyles from "../styles/settingsStyles"; // Stil dosyasını içe aktar
-import { getCurrentUser, getUserPermissions } from "../utils/api"; // API fonksiyonlarını içe aktar
+import { getCurrentUser, getAllUsersPermissions } from "../utils/api"; // API fonksiyonlarını içe aktar
 import { useRouter } from "next/navigation"; // Router kullanımı için
 
 const SettingsPage = () => {
@@ -22,7 +22,7 @@ const SettingsPage = () => {
     const fetchData = async () => {
       try {
         const userData = await getCurrentUser(); // API çağrısı (kullanıcı bilgileri)
-        const userPermissions = await getUserPermissions(); // API çağrısı (yetkiler)
+        const userPermissions = await getAllUsersPermissions(); // API çağrısı (yetkiler)
         setUser(userData); // Kullanıcı verilerini kaydet
         setPermissions(userPermissions); // Kullanıcı yetkilerini kaydet
       } catch (error) {
