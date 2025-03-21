@@ -35,7 +35,10 @@ const SettingsPage = () => {
 
     fetchData();
   }, []);
-
+  // Admin Paneline gitme fonksiyonu
+  const goToAdminPanel = () => {
+    router.push("/adminpanel"); // Admin Panel sayfasına yönlendir
+  };
   if (loading) {
     return <p style={settingsStyles.description}>Yükleniyor...</p>;
   }
@@ -79,6 +82,14 @@ const SettingsPage = () => {
           <div style={settingsStyles.iconWrapper}>
             <EditIcon style={settingsStyles.editIcon} />
             <span style={settingsStyles.tooltip}>Şifre Değiştir</span>
+          </div>
+          <div style={settingsStyles.adminPanel}>
+            <button
+              style={settingsStyles.adminPanelButton}
+              onClick={goToAdminPanel}
+            >
+              Admin Panel
+            </button>
           </div>
         </div>
 

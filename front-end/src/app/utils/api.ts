@@ -63,14 +63,28 @@ export const updateUserPassword = (email, oldPassword, newPassword) =>
     old_password: oldPassword,
     new_password: newPassword,
   });
-
+// Tüm kullanıcıları getirme
+export const getAllUsers = async () => {
+  const token = localStorage.getItem("access_token"); // Token'ı localStorage'dan al
+  if (!token) {
+    throw new Error("Erişim tokenı bulunamadı. Lütfen giriş yapın.");
+  }
+  return apiRequest("/user/users/with-permissions", "GET", null, token); // Tüm kullanıcıları getiren API
+};
+export const getAllUsersPermissions = async () => {
+  const token = localStorage.getItem("access_token"); // Token'ı localStorage'dan al
+  if (!token) {
+    throw new Error("Erişim tokenı bulunamadı. Lütfen giriş yapın.");
+  }
+  return apiRequest("/user/permissions", "GET", null, token); // Tüm kullanıcıları getiren API
+};
 // Kullanıcının yetkilerini getirme
 export const getUserPermissions = () => {
   const token = localStorage.getItem("access_token"); // Token'ı localStorage'dan al
   if (!token) {
     throw new Error("Erişim tokenı bulunamadı. Lütfen giriş yapın.");
   }
-  return apiRequest("/permissions/permissions", "GET", null, token); // Yetki API'sine istek
+  return apiRequest("/user/users/with-permissions", "GET", null, token); // Yetki API'sine istek
 };
 // Şirket CRUD İstekleri
 export const createCompany = (companyData) =>

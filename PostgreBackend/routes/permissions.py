@@ -19,7 +19,7 @@ async def add_permissions(
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-@router.get("/permissions", response_model=list[str])
+@router.get("/permissionss", response_model=list[str])
 async def get_permissions(
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
