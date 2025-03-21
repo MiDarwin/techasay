@@ -12,3 +12,5 @@ class PermissionResponse(BaseModel):
 
     class Config:
         orm_mode = True
+class PermissionUpdate(BaseModel):
+            permissions: List[str]  # Güncellenmek istenen izinler listesi

@@ -1,4 +1,5 @@
 # services/user_service.py
+from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from models.permissions import Permission
@@ -102,3 +103,44 @@ async def get_all_users_with_permissions(db: AsyncSession, search: str = None, l
         })
 
     return users_with_permissions
+async def update_user_permissions(db: AsyncSession, user_id: int, new_permissions: list):
+    """
+    Bir kullanıcının izinlerini günceller.
+    :param db: Veritabanı oturumu
+    :param user_id: İzinleri güncellenecek kullanıcının ID'si
+    :param new_permissions: Güncellenmek istenen izinlerin listesi
+    :return: Güncellenen kullanıcı izinleri
+    """
+    # Kullanıcıyı getir
+    result = await db.execute(select(User).where(User.id == user_id))
+    user = result.scalar_one_or_none()
+
+    if not user:
+        raise HTTPException(status_code=404, detail="Kullanıcı bulunamadı.")
+
+    # Kullanıcının mevcut izinlerini getir
+    result = await db.execute(select(Permission).where(Permission.user_id == user_id))
+    existing_permission = result.scalar_one_or_none()
+
+    if existing_permission:
+        # Mevcut izinleri güncelle
+        existing_permission.permissions = new_permissions
+    else:
+        # Kullanıcı için yeni bir izin kaydı oluştur
+        new_permission = Permission(
+            user_id=user_id,
+            permissions=new_permissions
+        )
+        db.add(new_permission)
+
+    # Değişiklikleri kaydet
+    await db.commit()
+    await db.refresh(user)
+
+    return {
+        "id": user.id,
+        "name": user.name,
+        "surname": user.surname,
+        "email": user.email,
+        "permissions": new_permissions
+    }

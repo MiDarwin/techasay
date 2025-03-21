@@ -5,10 +5,11 @@ from typing import Optional
 from models.permissions import Permission
 from dependencies import get_current_user
 from models.user import User
+from schemas.permissions import PermissionUpdate
 from schemas.user import UserCreate, UserResponse,UserLogin,UserUpdatePassword
 from services.permissions_service import has_permission
 from services.user_service import create_user, login_user, get_user_by_id, get_all_users_with_permissions, \
-    update_user_password
+    update_user_password, update_user_permissions
 from database import get_db
 
 router = APIRouter()
@@ -68,3 +69,23 @@ async def get_users_with_permissions(
     # Kullanıcıları ve izinlerini getir
     users_with_permissions = await get_all_users_with_permissions(db, search=search, limit=50)
     return users_with_permissions
+@router.put("/users/{user_id}/permissions", response_model=dict)
+async def update_permissions(
+    user_id: int,
+    permission_data: PermissionUpdate,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Kullanıcının izinlerini günceller.
+    :param user_id: İzinleri güncellenecek kullanıcı ID'si
+    :param permission_data: Güncellenmek istenen izinlerin listesi
+    :param db: Veritabanı oturumu
+    :return: Güncellenen kullanıcı izinleri
+    """
+    try:
+        updated_user = await update_user_permissions(db, user_id, permission_data.permissions)
+        return {"message": "Kullanıcı izinleri başarıyla güncellendi.", "user": updated_user}
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Bir hata oluştu.")

@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState, useCallback } from "react";
 import adminPanelStyles from "../styles/adminPanelStyles"; // Stil dosyasını içe aktar
-import { getUserPermissions } from "../utils/api"; // Tüm kullanıcıları getiren API fonksiyonu
+import { getUserPermissions, updateUserPermissions } from "../utils/api"; // API fonksiyonları
 
 const AdminPanelPage = () => {
   const [users, setUsers] = useState([]); // Kullanıcı verilerini tutmak için state
@@ -38,6 +38,36 @@ const AdminPanelPage = () => {
     fetchUsers(value); // Yeni arama değeriyle kullanıcıları getir
   };
 
+  // Kullanıcı izinlerini güncelleyen fonksiyon
+  const handlePermissionChange = async (userId, permission, isEnabled) => {
+    try {
+      // İlgili kullanıcıyı bul
+      const user = users.find((u) => u.id === userId);
+      if (!user) return;
+
+      // Kullanıcının izinlerini güncelle
+      const updatedPermissions = isEnabled
+        ? [...user.permissions, permission] // İzin ekle
+        : user.permissions.filter((perm) => perm !== permission); // İzni çıkar
+
+      // Backend'e PUT isteği gönder
+      await updateUserPermissions(userId, updatedPermissions);
+
+      // Kullanıcı state'ini güncelle
+      setUsers((prevUsers) =>
+        prevUsers.map((u) =>
+          u.id === userId ? { ...u, permissions: updatedPermissions } : u
+        )
+      );
+    } catch (error) {
+      console.error(
+        "Kullanıcı izinleri güncellenirken bir hata oluştu:",
+        error
+      );
+      alert("Kullanıcı izinleri güncellenirken bir hata oluştu.");
+    }
+  };
+
   return (
     <div style={adminPanelStyles.container}>
       <h1 style={adminPanelStyles.title}>Admin Panel</h1>
@@ -61,6 +91,7 @@ const AdminPanelPage = () => {
               <th style={adminPanelStyles.tableHeader}>ID</th>
               <th style={adminPanelStyles.tableHeader}>İsim</th>
               <th style={adminPanelStyles.tableHeader}>Soyisim</th>
+              <th style={adminPanelStyles.tableHeader}>Email</th>
               <th style={adminPanelStyles.tableHeader}>Yetkiler</th>
             </tr>
           </thead>
@@ -70,17 +101,26 @@ const AdminPanelPage = () => {
                 <td style={adminPanelStyles.tableCell}>{user.id}</td>
                 <td style={adminPanelStyles.tableCell}>{user.name}</td>
                 <td style={adminPanelStyles.tableCell}>{user.surname}</td>
+                <td style={adminPanelStyles.tableCell}>{user.email}</td>
                 <td style={adminPanelStyles.tableCell}>
-                  {user.permissions.map((permission, index) => (
-                    <button
-                      key={`${user.id}-${permission}-${index}`}
-                      style={{
-                        ...adminPanelStyles.permissionButton,
-                        backgroundColor: "#4CAF50", // Varsayılan olarak yeşil
-                      }}
+                  {["read", "write", "delete"].map((permission) => (
+                    <label
+                      key={`${user.id}-${permission}`}
+                      style={{ marginRight: "10px" }}
                     >
+                      <input
+                        type="checkbox"
+                        checked={user.permissions.includes(permission)} // İzin aktifse işaretli
+                        onChange={(e) =>
+                          handlePermissionChange(
+                            user.id,
+                            permission,
+                            e.target.checked
+                          )
+                        }
+                      />
                       {permission.toUpperCase()}
-                    </button>
+                    </label>
                   ))}
                 </td>
               </tr>

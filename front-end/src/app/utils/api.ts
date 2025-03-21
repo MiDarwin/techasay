@@ -88,6 +88,19 @@ export const getUserPermissions = (searchValue = "") => {
   const queryParam = searchValue ? `?search=${searchValue}` : ""; // Arama parametresi ekle
   return apiRequest(`/user/users/with-permissions${queryParam}`, "GET", null, token); // Yetki API'sine istek
 };
+export const updateUserPermissions = (userId, permissions) => {
+  const token = localStorage.getItem("access_token"); // Token'ı localStorage'dan al
+  if (!token) {
+    throw new Error("Erişim tokenı bulunamadı. Lütfen giriş yapın.");
+  }
+
+  return apiRequest(
+    `/user/users/${userId}/permissions`, // API endpoint
+    "PUT", // HTTP yöntemi
+    { permissions }, // Gövde (body)
+    token // Authorization token
+  );
+};
 // Şirket CRUD İstekleri
 export const createCompany = (companyData) =>
   apiRequest("/companies/", "POST", companyData);
