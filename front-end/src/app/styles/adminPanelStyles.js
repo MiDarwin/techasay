@@ -18,6 +18,14 @@ const adminPanelStyles = {
     textAlign: "center",
     marginBottom: "20px",
   },
+  searchInput: {
+    width: "80%",
+    padding: "10px",
+    marginBottom: "20px",
+    fontSize: "1rem",
+    border: "1px solid #ddd",
+    borderRadius: "5px",
+  },
   table: {
     width: "80%",
     borderCollapse: "collapse",
@@ -39,13 +47,14 @@ const adminPanelStyles = {
     border: "1px solid #ddd",
   },
   permissionButton: {
-    fontSize: "0.9rem",
+    fontSize: "0.8rem",
     color: "#FFF",
-    padding: "5px",
+    padding: "5px 10px",
     margin: "5px",
     borderRadius: "5px",
     border: "none",
     cursor: "pointer",
+    backgroundColor: "#4CAF50", // Varsayılan yeşil renk
   },
 };
 

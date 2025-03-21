@@ -1,7 +1,8 @@
 # routes/user.py
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException,Query
 from sqlalchemy.ext.asyncio import AsyncSession
-
+from typing import Optional
+from models.permissions import Permission
 from dependencies import get_current_user
 from models.user import User
 from schemas.user import UserCreate, UserResponse,UserLogin,UserUpdatePassword
@@ -51,13 +52,19 @@ async def update_password(
         raise HTTPException(status_code=400, detail=str(e))
 @router.get("/users/with-permissions")
 async def get_users_with_permissions(
+    search: Optional[str] = Query(None, description="Arama yapacağınız kelime (isteğe bağlı)"),
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    # Kullanıcının "permission_management" izni olup olmadığını kontrol et
+    """
+    Kullanıcıları ve izinlerini getirir.
+    - Eğer 'search' parametresi verilirse, belirtilen alanlarda arama yapar.
+    - Eğer 'search' parametresi verilmezse, ilk 50 kullanıcıyı döner.
+    """
+    # Kullanıcının gerekli izne sahip olup olmadığını kontrol et
     if not await has_permission(db, current_user.id, "permission_management"):
         raise HTTPException(status_code=403, detail="Bu işlemi gerçekleştirmek için gerekli izne sahip değilsiniz.")
 
-    # Eğer izin varsa, tüm kullanıcıları ve izinlerini getir
-    users_with_permissions = await get_all_users_with_permissions(db)
+    # Kullanıcıları ve izinlerini getir
+    users_with_permissions = await get_all_users_with_permissions(db, search=search, limit=50)
     return users_with_permissions

@@ -79,12 +79,14 @@ export const getAllUsersPermissions = async () => {
   return apiRequest("/user/permissions", "GET", null, token); // Tüm kullanıcıları getiren API
 };
 // Kullanıcının yetkilerini getirme
-export const getUserPermissions = () => {
+export const getUserPermissions = (searchValue = "") => {
   const token = localStorage.getItem("access_token"); // Token'ı localStorage'dan al
   if (!token) {
     throw new Error("Erişim tokenı bulunamadı. Lütfen giriş yapın.");
   }
-  return apiRequest("/user/users/with-permissions", "GET", null, token); // Yetki API'sine istek
+
+  const queryParam = searchValue ? `?search=${searchValue}` : ""; // Arama parametresi ekle
+  return apiRequest(`/user/users/with-permissions${queryParam}`, "GET", null, token); // Yetki API'sine istek
 };
 // Şirket CRUD İstekleri
 export const createCompany = (companyData) =>

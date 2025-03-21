@@ -5,6 +5,7 @@ from models.permissions import Permission
 from models.user import User
 from schemas.user import UserCreate
 from utils.bearerToken import create_access_token
+from sqlalchemy.sql import or_
 
 async def create_user(db: AsyncSession, user: UserCreate):
     # E-posta kontrolü
@@ -65,18 +66,39 @@ async def login_user(db: AsyncSession, email: str, password: str):
 async def get_user_by_id(db: AsyncSession, user_id: int):
     result = await db.execute(select(User).filter(User.id == user_id))
     return result.scalars().first()  # İlk sonucu döndür
-async def get_all_users_with_permissions(db: AsyncSession):
+async def get_all_users_with_permissions(db: AsyncSession, search: str = None, limit: int = 50):
     """
     Tüm kullanıcıların isim, soyisim, e-posta ve izin bilgilerini getirir.
+    Eğer bir 'search' parametresi verilirse, belirtilen alanlarda filtre uygular.
     """
-    result = await db.execute(select(User, Permission).join(Permission, User.id == Permission.user_id))
+    # Kullanıcılar ve izinlerine ilişkin temel sorgu
+    query = select(User, Permission).join(Permission, User.id == Permission.user_id, isouter=True)
+    # Eğer bir arama parametresi varsa, filtre uygula
+    if search:
+        search_filter = or_(
+            User.name.ilike(f"%{search}%"),
+            User.surname.ilike(f"%{search}%"),
+            User.email.ilike(f"%{search}%"),
+            User.phone_number.ilike(f"%{search}%"),
+        )
+        query = query.where(search_filter)
+
+    # Limiti uygula
+    query = query.limit(limit)
+
+    # Sorguyu çalıştır ve sonuçları al
+    result = await db.execute(query)
+
+    # Sonuçları işleyip döndür
     users_with_permissions = []
-    for user, permission in result.all():
+    for user, permission in result.unique().all():
         users_with_permissions.append({
             "id": user.id,
             "name": user.name,
             "surname": user.surname,
             "email": user.email,
+            "phone_number": user.phone_number,
             "permissions": permission.permissions if permission else []
         })
+
     return users_with_permissions
