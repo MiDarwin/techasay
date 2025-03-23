@@ -16,6 +16,8 @@ import {
   createInventory,
   getBranchesByCompanyId,
   getSubBranchesByBranchId,
+  getInventoryHelpers, // Cihaz türlerini çekmek için API fonksiyonu
+  getModelsByDeviceType,
 } from "../../utils/api";
 
 const AddInventoryModal = ({
@@ -31,6 +33,8 @@ const AddInventoryModal = ({
   const [companyId, setCompanyId] = useState(selectedCompanyId || "");
   const [deviceType, setDeviceType] = useState("");
   const [deviceModel, setDeviceModel] = useState("");
+  const [deviceTypes, setDeviceTypes] = useState([]); // Cihaz türleri
+  const [deviceModels, setDeviceModels] = useState([]); // Seçilen türün modelleri
   const [quantity, setQuantity] = useState(1); // Default olarak 1
   const [specs, setSpecs] = useState("");
   const [note, setNote] = useState("");
@@ -40,32 +44,6 @@ const AddInventoryModal = ({
   const [hasSubBranches, setHasSubBranches] = useState("");
   const [selectedSubBranchId, setSelectedSubBranchId] = useState(""); // Seçilen alt şube ID'si
 
-  useEffect(() => {
-    const fetchSubBranches = async () => {
-      if (branchId) {
-        try {
-          const data = await getSubBranchesByBranchId(branchId);
-          setSubBranches(data);
-        } catch (error) {
-          console.error("Alt şubeler alınırken hata oluştu:", error);
-        }
-      } else {
-        setSubBranches([]); // Şube seçilmediğinde alt şubeleri sıfırla
-      }
-    };
-
-    fetchSubBranches();
-  }, [branchId]); // branchId değiştiğinde alt şubeleri çek
-  // Alt şubeleri alma
-  const fetchSubBranches = async (branchId) => {
-    try {
-      const data = await getSubBranchesByBranchId(branchId);
-      setSubBranches(data);
-      setHasSubBranches(data.length > 0); // Eğer alt şube varsa, true yap
-    } catch (error) {
-      console.error("Alt şubeler alınırken hata oluştu:", error);
-    }
-  };
   // Şubeleri alma
   const fetchBranches = async (companyId) => {
     try {
@@ -76,12 +54,61 @@ const AddInventoryModal = ({
     }
   };
 
+  // Alt şubeleri alma
+  const fetchSubBranches = async (branchId) => {
+    try {
+      const selectedBranch = branches.find((branch) => branch.id === branchId);
+
+      // Eğer seçilen şubenin alt şubesi yoksa sorgu yapma
+      if (!selectedBranch || !selectedBranch.has_sub_branches) {
+        setSubBranches([]); // Alt şubeleri sıfırla
+        setHasSubBranches(false);
+        return;
+      }
+
+      const data = await getSubBranchesByBranchId(branchId);
+      setSubBranches(data);
+      setHasSubBranches(data.length > 0);
+    } catch (error) {
+      console.error("Alt şubeler alınırken hata oluştu:", error);
+    }
+  };
+
   // Şirket değiştiğinde şubeleri yükle
   useEffect(() => {
     if (companyId) {
       fetchBranches(companyId);
     }
   }, [companyId]);
+
+  // Şube değiştiğinde alt şubeleri kontrol et
+  useEffect(() => {
+    if (branchId) {
+      fetchSubBranches(branchId);
+    } else {
+      setSubBranches([]);
+      setHasSubBranches(false);
+    }
+    setSelectedSubBranchId(""); // Şube değiştiğinde alt şube seçimini sıfırla
+  }, [branchId]);
+
+  // **Cihaz türlerini API'den çek**
+  useEffect(() => {
+    getInventoryHelpers().then(setDeviceTypes).catch(console.error);
+  }, []);
+
+  // **Cihaz türü seçildiğinde modelleri API'den çek**
+  useEffect(() => {
+    if (deviceType) {
+      const selectedDevice = deviceTypes.find(
+        (type) => type.device_type === deviceType
+      );
+      setDeviceModels(selectedDevice ? selectedDevice.device_models : []);
+    } else {
+      setDeviceModels([]);
+    }
+    setDeviceModel("");
+  }, [deviceType]);
 
   // Formu gönder
   const handleSubmit = async () => {
@@ -95,38 +122,21 @@ const AddInventoryModal = ({
         device_type: deviceType,
         device_model: deviceModel,
         quantity,
-        specs, // specs opsiyonel olduğu için boş gönderilebilir
+        specs,
       };
 
-      // Eğer alt şube seçilmişse onun id'sini kullan, aksi halde ana şube id'sini kullan
       const targetBranchId = selectedSubBranchId || branchId;
 
       await createInventory(targetBranchId, inventoryData);
       alert("Envanter başarıyla eklendi!");
-      onInventoryAdded(); // Envanter eklendikten sonra listeyi güncelle
-      onClose(); // Modalı kapat
+      onInventoryAdded();
+      onClose();
     } catch (err) {
       console.error("Envanter eklenirken hata oluştu:", err);
       alert("Envanter eklenirken bir hata oluştu.");
     }
   };
-  // Şube değiştiğinde alt şubeleri kontrol et
-  useEffect(() => {
-    if (branchId) {
-      fetchSubBranches(branchId);
-    } else {
-      setSubBranches([]);
-      setHasSubBranches(false);
-    }
-    setSelectedSubBranchId(""); // Şube değiştiğinde alt şube seçimini sıfırla
-  }, [branchId]);
-  const deviceModelsByType = {
-    Modbus: ["MB12", "MB13", "MB14"],
-    Router: ["RT100", "RT200", "RT300"],
-    Anten: ["ANT01", "ANT02", "ANT03"],
-    "Güçlendirilmiş Anten": ["ANTX01", "ANTX02", "ANTX03"],
-    "Ethernet Kablosu": ["Cat 5", "Cat 6", "Cat 7"],
-  };
+
   return (
     <Modal open={open} onClose={onClose}>
       <Box
@@ -239,32 +249,33 @@ const AddInventoryModal = ({
           </FormControl>
         )}
         {/* Cihaz Türü Seçimi */}
-        {/* Cihaz Türü Seçimi */}
         <FormControl fullWidth margin="normal">
           <InputLabel sx={{ color: "#6B7280" }}>Cihaz Türü</InputLabel>
           <Select
             value={deviceType}
             onChange={(e) => {
-              setDeviceType(e.target.value); // Cihaz türünü güncelle
-              setDeviceModel(""); // Cihaz türü değiştiğinde modeli sıfırla
+              setDeviceType(e.target.value);
+              const selectedDevice = deviceTypes.find(
+                (type) => type.device_type === e.target.value
+              );
+              setDeviceModels(
+                selectedDevice ? selectedDevice.device_models : []
+              );
+              setDeviceModel(""); // Yeni tür seçildiğinde model sıfırlansın
             }}
             sx={{
               "& .MuiOutlinedInput-root": {
-                "& fieldset": {
-                  borderColor: "#A5B68D",
-                },
-                "&:hover fieldset": {
-                  borderColor: "#8FA781",
-                },
+                "& fieldset": { borderColor: "#A5B68D" },
+                "&:hover fieldset": { borderColor: "#8FA781" },
               },
             }}
           >
             <MenuItem value="">
               <em>Cihaz Türü Seçin</em>
             </MenuItem>
-            {Object.keys(deviceModelsByType).map((type) => (
-              <MenuItem key={type} value={type}>
-                {type}
+            {deviceTypes.map((type) => (
+              <MenuItem key={type.id} value={type.device_type}>
+                {type.device_type}
               </MenuItem>
             ))}
           </Select>
@@ -278,26 +289,22 @@ const AddInventoryModal = ({
             onChange={(e) => setDeviceModel(e.target.value)}
             sx={{
               "& .MuiOutlinedInput-root": {
-                "& fieldset": {
-                  borderColor: "#A5B68D",
-                },
-                "&:hover fieldset": {
-                  borderColor: "#8FA781",
-                },
+                "& fieldset": { borderColor: "#A5B68D" },
+                "&:hover fieldset": { borderColor: "#8FA781" },
               },
             }}
           >
             <MenuItem value="">
               <em>Cihaz Modeli Seçin</em>
             </MenuItem>
-            {deviceType &&
-              deviceModelsByType[deviceType].map((model) => (
-                <MenuItem key={model} value={model}>
-                  {model}
-                </MenuItem>
-              ))}
+            {deviceModels.map((model, index) => (
+              <MenuItem key={`${deviceType}-${index}`} value={model}>
+                {model}
+              </MenuItem>
+            ))}
           </Select>
         </FormControl>
+
         <TextField
           fullWidth
           margin="normal"
