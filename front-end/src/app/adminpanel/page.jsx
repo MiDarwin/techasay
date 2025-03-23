@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState, useCallback } from "react";
+import { useRouter } from "next/navigation"; // Next.js'in yönlendirme hook'u
 import adminPanelStyles from "../styles/adminPanelStyles"; // Stil dosyasını içe aktar
 import { getUserPermissions, updateUserPermissions } from "../utils/api"; // API fonksiyonları
 
@@ -8,6 +9,7 @@ const AdminPanelPage = () => {
   const [loading, setLoading] = useState(false); // Yüklenme durumu
   const [error, setError] = useState(null); // Hata durumu
   const [search, setSearch] = useState(""); // Arama kutusu için state
+  const router = useRouter(); // Yönlendirme hook'u
 
   // API'den kullanıcıları getiren fonksiyon
   const fetchUsers = useCallback(
@@ -71,6 +73,12 @@ const AdminPanelPage = () => {
   return (
     <div style={adminPanelStyles.container}>
       <h1 style={adminPanelStyles.title}>Admin Panel</h1>
+      <button
+        style={adminPanelStyles.permissionButton}
+        onClick={() => router.push("/InventoryManagerPage")} // Next.js yönlendirme
+      >
+        Envanter Model Yönetimi
+      </button>
       {/* Arama Kutusu */}
       <input
         type="text"

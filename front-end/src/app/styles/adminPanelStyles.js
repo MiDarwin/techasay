@@ -46,6 +46,15 @@ const adminPanelStyles = {
     textAlign: "center",
     border: "1px solid #ddd",
   },
+  searchInput: {
+    width: "80%",
+    padding: "10px",
+    marginBottom: "20px",
+    fontSize: "1rem",
+    border: "1px solid #ddd",
+    borderRadius: "5px",
+  },
+
   permissionButton: {
     fontSize: "0.8rem",
     color: "#FFF",

@@ -278,3 +278,23 @@ export const deleteSubBranch = async (subBranchId) => {
 
   return; // Başarılı ise boş döndür
 };
+// Envanter modellerini ve türlerini getir
+export const getInventoryHelpers = async () => {
+  return apiRequest("/inventory-helpers", "GET");
+};
+
+// Belirli bir modele göre türleri getir
+export const getModelsByDeviceType = async (deviceType) => {
+  return apiRequest(`/inventory-helpers/${deviceType}/models`, "GET");
+};
+
+// Yeni bir envanter türü ekle
+export const addNewInventoryType = async (deviceType, newModel) => {
+  const data = { device_type: deviceType, device_models: [newModel] };
+  return apiRequest("/inventory-helpers", "POST", data);
+};
+
+// Bir modeli ve altındaki türleri güncelle
+export const updateInventoryHelper = async (helperId, updatedData) => {
+  return apiRequest(`/inventory-helpers/${helperId}`, "PUT", updatedData);
+};
