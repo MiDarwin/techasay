@@ -6,4 +6,4 @@ class InventoryHelper(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     device_type = Column(String, nullable=False, unique=True)
-    device_models = Column(JSON, nullable=False)
+    device_models = Column(JSON, nullable=False, default=[])

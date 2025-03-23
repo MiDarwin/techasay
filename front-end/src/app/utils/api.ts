@@ -285,13 +285,17 @@ export const getInventoryHelpers = async () => {
 
 // Belirli bir modele göre türleri getir
 export const getModelsByDeviceType = async (deviceType) => {
-  return apiRequest(`/inventory-helpers/${deviceType}/models`, "GET");
+  return apiRequest(`/inventory-helpers`, "GET");
 };
 
 // Yeni bir envanter türü ekle
-export const addNewInventoryType = async (deviceType, newModel) => {
-  const data = { device_type: deviceType, device_models: [newModel] };
-  return apiRequest("/inventory-helpers", "POST", data);
+export const createDeviceType = async (deviceType) => {
+  return apiRequest("/inventory-helpers/types", "POST", { device_type: deviceType });
+};
+
+// Yeni bir modeli belirli bir cihaz türüne ekle
+export const addModelToDeviceType = async (deviceTypeId, modelName) => {
+  return apiRequest(`/inventory-helpers/${deviceTypeId}/models`, "POST", { model_name: modelName });
 };
 
 // Bir modeli ve altındaki türleri güncelle
