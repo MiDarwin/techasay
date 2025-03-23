@@ -39,7 +39,7 @@ const CompanyTable = ({ companies, onEdit, onDelete }) => {
         <TableBody>
           {companies.map((company, index) => (
             <TableRow
-              key={company.company_id}
+              key={company.name}
               sx={{
                 backgroundColor: index % 2 === 0 ? "#EDE8DC" : "#C1CFA1",
                 "&:hover": {

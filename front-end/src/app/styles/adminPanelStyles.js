@@ -1,6 +1,6 @@
 const adminPanelStyles = {
   container: {
-    backgroundColor: "#F5F5F5",
+    backgroundColor: "#EDE8DC",
     padding: "20px",
     minHeight: "100vh",
     display: "flex",
@@ -34,14 +34,14 @@ const adminPanelStyles = {
   tableHeader: {
     fontSize: "1rem",
     color: "#FFF",
-    backgroundColor: "#4CAF50",
+    backgroundColor: "#A5B68D",
     padding: "10px",
     textAlign: "center",
     border: "1px solid #ddd",
   },
   tableCell: {
     fontSize: "1rem",
-    color: "#333",
+    color: "#A5B68D",
     padding: "10px",
     textAlign: "center",
     border: "1px solid #ddd",

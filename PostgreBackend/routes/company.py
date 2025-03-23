@@ -12,8 +12,10 @@ async def create_company_endpoint(company: CompanyCreate, db: AsyncSession = Dep
     try:
         db_company = await create_company(db, company)
         return db_company
+    except HTTPException as e:
+        raise e  # Hata mesajını döndür
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e))  # Genel hata
 
 @router.get("/companies", response_model=list[CompanyResponse])
 async def read_companies(skip: int = 0, limit: int = 10, db: AsyncSession = Depends(get_db)):

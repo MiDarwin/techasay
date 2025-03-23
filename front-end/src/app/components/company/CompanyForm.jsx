@@ -11,42 +11,23 @@ const CompanyForm = ({
 }) => {
   const [form, setForm] = useState({
     name: "",
-    company_id_prefix: "",
-    company_id_suffix: "",
   });
 
   const [errors, setErrors] = useState({
     name: "",
-    company_id_suffix: "",
   });
-
-  const sectors = {
-    Bankacılık: "10",
-    Yemek: "20",
-    Enerji: "30",
-    Tekstil: "40",
-    İnşaat: "50",
-    Sağlık: "60",
-    Teknoloji: "70",
-    OSB: "80",
-    Lojistik: "90",
-  };
 
   useEffect(() => {
     if (initialData) {
       setForm({
         name: initialData.name || "",
-        company_id_prefix: initialData.company_id?.toString().slice(0, 2) || "",
-        company_id_suffix: initialData.company_id?.toString().slice(2) || "",
       });
     } else {
       setForm({
         name: "",
-        company_id_prefix: "",
-        company_id_suffix: "",
       });
     }
-    setErrors({ name: "", company_id_suffix: "" });
+    setErrors({ name: "" });
   }, [initialData]);
 
   const validate = () => {
@@ -55,15 +36,6 @@ const CompanyForm = ({
 
     if (!form.name.trim()) {
       newErrors.name = "Şirket adı zorunludur.";
-      isValid = false;
-    }
-
-    if (!form.company_id_suffix.trim()) {
-      newErrors.company_id_suffix = "Şirket ID’nin son 4 hanesi zorunludur.";
-      isValid = false;
-    } else if (!/^\d{4}$/.test(form.company_id_suffix)) {
-      newErrors.company_id_suffix =
-        "Şirket ID’nin son 4 hanesi 4 haneli bir sayı olmalıdır.";
       isValid = false;
     }
 
@@ -76,23 +48,11 @@ const CompanyForm = ({
     setErrors({ ...errors, [e.target.name]: "" });
   };
 
-  const handleSectorChange = (e) => {
-    const selectedPrefix = sectors[e.target.value] || "";
-    setForm((prev) => ({
-      ...prev,
-      company_id_prefix: selectedPrefix,
-    }));
-  };
-
   const handleSubmit = (e) => {
     e.preventDefault();
     if (validate()) {
       const submissionData = {
         name: form.name.trim(),
-        company_id: parseInt(
-          `${form.company_id_prefix}${form.company_id_suffix}`,
-          10
-        ), // company_id'yi oluştur
       };
       if (isEditMode && initialData && initialData.company_id) {
         onSubmit(initialData.company_id, submissionData); // company_id kullan
@@ -133,61 +93,9 @@ const CompanyForm = ({
           }}
         />
       </div>
-      <div className="mb-4">
-        <label htmlFor="sector" className="block mb-2">
-          Sektör
-        </label>
-        <select
-          id="sector"
-          name="sector"
-          onChange={handleSectorChange}
-          className={`w-full p-2 rounded border border-gray-300 ${
-            darkMode ? "bg-gray-700 text-white" : "bg-white text-black"
-          }`}
-        >
-          <option value="">Sektör Seçiniz</option>
-          {Object.keys(sectors).map((sector) => (
-            <option key={sector} value={sector}>
-              {sector}
-            </option>
-          ))}
-        </select>
-      </div>
+
       <div className="mb-4 grid grid-cols-2 gap-4">
-        <div>
-          <TextField
-            id="company_id_prefix"
-            name="company_id_prefix"
-            label="Şirket ID Prefix"
-            variant="outlined"
-            value={form.company_id_prefix}
-            InputProps={{ readOnly: true }}
-            fullWidth
-            sx={{
-              backgroundColor: darkMode ? "rgba(55, 65, 81, 1)" : "white",
-              color: darkMode ? "white" : "black",
-              pointerEvents: "none",
-            }}
-          />
-        </div>
-        <div>
-          <TextField
-            id="company_id_suffix"
-            name="company_id_suffix"
-            label="Şirket ID (Son 4 Hane)"
-            variant="outlined"
-            value={form.company_id_suffix}
-            onChange={handleChange}
-            required
-            error={!!errors.company_id_suffix}
-            helperText={errors.company_id_suffix}
-            fullWidth
-            sx={{
-              backgroundColor: darkMode ? "rgba(55, 65, 81, 1)" : "white",
-              color: darkMode ? "white" : "black",
-            }}
-          />
-        </div>
+        <div></div>
       </div>
       <div className="flex space-x-4">
         <button
