@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   Table,
   TableBody,
@@ -14,8 +14,22 @@ import {
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import NoBackpackIcon from "@mui/icons-material/NoBackpack";
+import { getAllUsersPermissions } from "@/app/utils/api";
 
 const InventoryList = ({ inventories, onEdit, onDelete }) => {
+  const [permissions, setPermissions] = useState([]); // Kullanıcı izinleri
+  useEffect(() => {
+    const fetchPermissions = async () => {
+      try {
+        const userPermissions = await getAllUsersPermissions(); // Kullanıcı izinlerini al
+        setPermissions(userPermissions); // İzinleri state'e ata
+      } catch (error) {
+        console.error("Kullanıcı izinleri alınırken hata oluştu:", error);
+      }
+    };
+
+    fetchPermissions();
+  }, []);
   return (
     <TableContainer
       component={Paper}
@@ -82,23 +96,27 @@ const InventoryList = ({ inventories, onEdit, onDelete }) => {
                   {inventory.specs}
                 </TableCell>
                 <TableCell sx={{ textAlign: "center" }}>
-                  <Tooltip title="Düzenle">
-                    <IconButton
-                      onClick={() => onEdit(inventory)}
-                      color="warning"
-                      aria-label="Düzenle"
-                    >
-                      <EditIcon />
-                    </IconButton>
-                  </Tooltip>
-                  <Tooltip title="Sil">
-                    <IconButton
-                      onClick={() => onDelete(inventory.id)}
-                      color="error"
-                    >
-                      <NoBackpackIcon />
-                    </IconButton>
-                  </Tooltip>
+                  {permissions.includes("inventoryEdit") && (
+                    <Tooltip title="Düzenle">
+                      <IconButton
+                        onClick={() => onEdit(inventory)}
+                        color="warning"
+                        aria-label="Düzenle"
+                      >
+                        <EditIcon />
+                      </IconButton>
+                    </Tooltip>
+                  )}
+                  {permissions.includes("inventoryDelete") && (
+                    <Tooltip title="Sil">
+                      <IconButton
+                        onClick={() => onDelete(inventory.id)}
+                        color="error"
+                      >
+                        <NoBackpackIcon />
+                      </IconButton>
+                    </Tooltip>
+                  )}
                 </TableCell>
               </TableRow>
             ))

@@ -10,6 +10,7 @@ import {
   getBranchesByCompanyId,
   deleteInventory,
   getInventoryByBranch,
+  getAllUsersPermissions,
 } from "../../utils/api";
 import AddIcon from "@mui/icons-material/Add";
 import {
@@ -35,6 +36,7 @@ const InventoryManager = () => {
   const [selectedCompanyId, setSelectedCompanyId] = useState("");
   const [selectedBranch, setSelectedBranch] = useState("");
   const [isInventoryAddModalOpen, setIsInventoryAddModalOpen] = useState(false);
+  const [permissions, setPermissions] = useState([]); // Kullanıcı izinleri
 
   const fetchCompanies = async () => {
     try {
@@ -153,7 +155,18 @@ const InventoryManager = () => {
       console.error("Şubeler alınırken hata oluştu:", err);
     }
   };
+  useEffect(() => {
+    const fetchPermissions = async () => {
+      try {
+        const userPermissions = await getAllUsersPermissions(); // Kullanıcı izinlerini al
+        setPermissions(userPermissions); // İzinleri state'e ata
+      } catch (error) {
+        console.error("Kullanıcı izinleri alınırken hata oluştu:", error);
+      }
+    };
 
+    fetchPermissions();
+  }, []);
   return (
     <div>
       <main>
@@ -253,17 +266,19 @@ const InventoryManager = () => {
               </div>
 
               {/* Envanter Ekle Butonu */}
-              <Button
-                variant="contained"
-                color="success"
-                onClick={() => setIsInventoryAddModalOpen(true)}
-                className="flex items-center"
-                size="small"
-                sx={{ height: "40px", ml: "auto" }} // Butonu en sağa almak için margin-left: auto
-              >
-                <AddIcon className="mr-1" />
-                Envanter Ekle
-              </Button>
+              {permissions.includes("inventoryAdd") && (
+                <Button
+                  variant="contained"
+                  color="success"
+                  onClick={() => setIsInventoryAddModalOpen(true)}
+                  className="flex items-center"
+                  size="small"
+                  sx={{ height: "40px", ml: "auto" }} // Butonu en sağa almak için margin-left: auto
+                >
+                  <AddIcon className="mr-1" />
+                  Envanter Ekle
+                </Button>
+              )}
               {isInventoryAddModalOpen && (
                 <AddInventoryModal
                   open={isInventoryAddModalOpen}
