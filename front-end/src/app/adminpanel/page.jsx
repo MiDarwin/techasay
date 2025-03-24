@@ -111,11 +111,28 @@ const AdminPanelPage = () => {
                 <td style={adminPanelStyles.tableCell}>{user.surname}</td>
                 <td style={adminPanelStyles.tableCell}>{user.email}</td>
                 <td style={adminPanelStyles.tableCell}>
-                  {["read", "write", "delete"].map((permission) => (
+                  {[
+                    "read",
+                    "write",
+                    "delete",
+                    "companyAdd",
+                    "companyDelete",
+                    "companyEdit",
+                    "branchAdd",
+                    "branchDelete",
+                    "branchEdit",
+                    "subBranchAdd",
+                    "subBranchDelete",
+                    "subBranchEdit",
+                    "inventoryAdd",
+                    "inventoryDelete",
+                    "inventoryEdit",
+                  ].map((permission) => (
                     <label
                       key={`${user.id}-${permission}`}
                       style={{ marginRight: "10px" }}
                     >
+                      {permission.charAt(0).toUpperCase() + permission.slice(1)}
                       <input
                         type="checkbox"
                         checked={user.permissions.includes(permission)} // İzin aktifse işaretli
@@ -127,7 +144,6 @@ const AdminPanelPage = () => {
                           )
                         }
                       />
-                      {permission.toUpperCase()}
                     </label>
                   ))}
                 </td>

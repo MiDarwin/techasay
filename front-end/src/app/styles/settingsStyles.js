@@ -166,6 +166,44 @@ const settingsStyles = {
     borderRadius: "10px", // Kenarları yumuşat
     boxShadow: "0px 2px 4px rgba(0, 0, 0.05)", // Hafif gölge efekti
   },
+  modal: {
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
+    width: "400px",
+    backgroundColor: "#ffffff",
+    borderRadius: "10px",
+    boxShadow: "0px 4px 10px rgba(0, 0, 0.2)",
+    padding: "20px",
+    textAlign: "center",
+  },
+  modalTitle: {
+    marginBottom: "20px",
+    fontWeight: "bold",
+    fontSize: "18px",
+    color: "#333",
+  },
+  errorText: {
+    color: "red",
+    fontSize: "14px",
+    marginTop: "10px",
+  },
+  successText: {
+    color: "green",
+    fontSize: "14px",
+    marginTop: "10px",
+  },
+  submitButton: {
+    marginTop: "20px",
+    backgroundColor: "#6B7280",
+    color: "#fff",
+    padding: "10px 20px",
+    border: "none",
+    borderRadius: "5px",
+    cursor: "pointer",
+    fontWeight: "bold",
+  },
 };
 
 export default settingsStyles;

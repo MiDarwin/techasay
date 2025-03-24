@@ -10,6 +10,7 @@ import {
   deleteBranch,
   getAllCompanies,
   getAllBranches,
+  getAllUsersPermissions,
 } from "../../utils/api";
 import AddBusinessIcon from "@mui/icons-material/AddBusiness";
 import Button from "@mui/material/Button";
@@ -26,6 +27,8 @@ const BranchManager = () => {
   const [searchFilter, setSearchFilter] = useState("");
   const [branchLoading, setBranchLoading] = useState(false);
   const [isFormVisible, setIsFormVisible] = useState(false);
+  const [permissions, setPermissions] = useState([]); // Kullanıcı izinleri
+
   const fetchAllBranches = async () => {
     try {
       setBranchLoading(true); // Yüklenme durumunu göster
@@ -150,7 +153,18 @@ const BranchManager = () => {
     fetchCompanies();
     fetchAllBranches();
   }, []);
+  useEffect(() => {
+    const fetchPermissions = async () => {
+      try {
+        const userPermissions = await getAllUsersPermissions(); // Kullanıcı izinlerini al
+        setPermissions(userPermissions); // İzinleri state'e ata
+      } catch (error) {
+        console.error("Kullanıcı izinleri alınırken hata oluştu:", error);
+      }
+    };
 
+    fetchPermissions();
+  }, []);
   return (
     <div className="flex flex-col">
       <div
@@ -230,18 +244,21 @@ const BranchManager = () => {
             }}
           />
         </form>
-        <Button
-          variant="contained"
-          color="success"
-          onClick={() => {
-            setIsFormVisible(true);
-            setCurrentBranch(null);
-          }}
-          className="flex items-center mr-2"
-        >
-          <AddBusinessIcon className="mr-2" />
-          Şube Ekle
-        </Button>
+        {/* Şube Ekle Butonu */}
+        {permissions.includes("branchAdd") && (
+          <Button
+            variant="contained"
+            color="success"
+            onClick={() => {
+              setIsFormVisible(true);
+              setCurrentBranch(null);
+            }}
+            className="flex items-center mr-2"
+          >
+            <AddBusinessIcon className="mr-2" />
+            Şube Ekle
+          </Button>
+        )}
       </div>
 
       {/* Şube Ekleme Modalı */}

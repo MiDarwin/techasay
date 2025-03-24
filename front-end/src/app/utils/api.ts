@@ -56,13 +56,8 @@ export const getCurrentUser = () => {
   }
   return apiRequest("/user/users/me", "GET", null, token); // Token'ı apiRequest'e gönder
 };
-// Kullanıcı şifresini güncelleme
-export const updateUserPassword = (email, oldPassword, newPassword) =>
-  apiRequest("/users/update-password", "PUT", {
-    email,
-    old_password: oldPassword,
-    new_password: newPassword,
-  });
+export const updatePassword = (passwordData) =>
+  apiRequest("/user/users/update-password", "PUT", passwordData);
 // Tüm kullanıcıları getirme
 export const getAllUsers = async () => {
   const token = localStorage.getItem("access_token"); // Token'ı localStorage'dan al
