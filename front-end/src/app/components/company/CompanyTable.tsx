@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   Table,
   TableBody,
@@ -12,8 +12,10 @@ import {
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
-
+import { getAllUsersPermissions } from "@/app/utils/api";
 const CompanyTable = ({ companies, onEdit, onDelete }) => {
+  const [permissions, setPermissions] = useState([]); // Kullanıcı izinleri
+
   return (
     <TableContainer
       component={Paper}
@@ -50,19 +52,23 @@ const CompanyTable = ({ companies, onEdit, onDelete }) => {
               <TableCell>{company.company_id}</TableCell>
               <TableCell>{company.name}</TableCell>
               <TableCell>
-                <Tooltip title="Düzenle">
-                  <IconButton onClick={() => onEdit(company)} color="warning">
-                    <EditIcon />
-                  </IconButton>
-                </Tooltip>
-                <Tooltip title="Sil">
-                  <IconButton
-                    onClick={() => onDelete(company.company_id)}
-                    color="error"
-                  >
-                    <DeleteIcon />
-                  </IconButton>
-                </Tooltip>
+                {permissions.includes("companyEdit") && (
+                  <Tooltip title="Düzenle">
+                    <IconButton onClick={() => onEdit(company)} color="warning">
+                      <EditIcon />
+                    </IconButton>
+                  </Tooltip>
+                )}
+                {permissions.includes("companyDelete") && (
+                  <Tooltip title="Sil">
+                    <IconButton
+                      onClick={() => onDelete(company.company_id)}
+                      color="error"
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                  </Tooltip>
+                )}
               </TableCell>
             </TableRow>
           ))}

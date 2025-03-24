@@ -8,6 +8,7 @@ import {
   getAllCompanies,
   updateCompany,
   deleteCompany,
+  getAllUsersPermissions,
 } from "../../utils/api";
 import TextField from "@mui/material/TextField"; // MUI TextField bileşeni
 import AddIcon from "@mui/icons-material/Add"; // Ekleme ikonu
@@ -20,6 +21,7 @@ const CompanyManager = () => {
   const [currentCompany, setCurrentCompany] = useState(null);
   const [isFormVisible, setIsFormVisible] = useState(false); // Modal görünürlüğü için durum
   const [searchTerm, setSearchTerm] = useState(""); // Arama terimi durumu
+  const [permissions, setPermissions] = useState([]); // Kullanıcı izinleri
 
   const fetchCompanies = async () => {
     try {
@@ -82,7 +84,18 @@ const CompanyManager = () => {
   const filteredCompanies = companies.filter((company) =>
     company.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
+  useEffect(() => {
+    const fetchPermissions = async () => {
+      try {
+        const userPermissions = await getAllUsersPermissions(); // Kullanıcı izinlerini al
+        setPermissions(userPermissions); // İzinleri state'e ata
+      } catch (error) {
+        console.error("Kullanıcı izinleri alınırken hata oluştu:", error);
+      }
+    };
 
+    fetchPermissions();
+  }, []);
   return (
     <div className="flex flex-col">
       <div
@@ -119,18 +132,20 @@ const CompanyManager = () => {
         />
 
         {/* Şirket Ekle Butonu en sağda */}
-        <Button
-          variant="contained"
-          color="success"
-          onClick={() => {
-            setIsEditMode(false); // Yeni ekleme için mod değiştir
-            setIsFormVisible(true); // Modalı aç
-          }}
-          className="flex items-center"
-        >
-          <DomainAddIcon className="mr-2" /> {/* İkonu ekle */}
-          Şirket Ekle
-        </Button>
+        {permissions.includes("companyAdd") && (
+          <Button
+            variant="contained"
+            color="success"
+            onClick={() => {
+              setIsEditMode(false); // Yeni ekleme için mod değiştir
+              setIsFormVisible(true); // Modalı aç
+            }}
+            className="flex items-center"
+          >
+            <DomainAddIcon className="mr-2" /> {/* İkonu ekle */}
+            Şirket Ekle
+          </Button>
+        )}
       </div>
 
       {/* Modal */}
