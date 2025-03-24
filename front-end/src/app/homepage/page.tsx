@@ -36,14 +36,14 @@ const HomePage = () => {
   };
 
   return (
-    <div>
+    <div style={{ backgroundColor: "#E7F6F2", flexGrow: 1 }}>
       <header>
         <Box
           sx={{
             display: "flex", // Flexbox düzeni
             justifyContent: "space-between", // Yatay eksende boşluk dağılımı
             alignItems: "center", // Dikey eksende ortalama
-            margin: "16px 0", // Üst ve alt boşluk
+            margin: "0", // Üst ve alt boşlukları tamamen kaldırır
           }}
         >
           {/* Sol taraftaki ikon */}
@@ -112,7 +112,7 @@ const HomePage = () => {
 
       <main
         style={{
-          backgroundColor: "#EDE8DC",
+          backgroundColor: "#2C3333",
           padding: "20px",
           minHeight: "100vh",
         }}

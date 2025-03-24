@@ -4,6 +4,8 @@ const settingsStyles = {
     padding: "20px",
     minHeight: "100vh",
     display: "flex",
+    alignItems: "center", // Tüm içeriği ortala
+
     flexDirection: "column",
   },
   userBox: {
@@ -148,23 +150,35 @@ const settingsStyles = {
     cursor: "pointer", // Tıklanabilir simge
   },
   permissions: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "10px",
+    display: "grid", // Grid düzeni
+    gridTemplateColumns: "repeat(2, 1fr)", // Her satırda iki sütun
+    gap: "20px", // Kartlar arasında dikey ve yatay boşluk
+    justifyContent: "center", // Kartları yatay olarak ortala
+    alignItems: "center", // Kartları dikey olarak ortala
+    width: "100%", // Tüm alanı kullan
+    maxWidth: "600px", // Maksimum genişlik
   },
   permissionsTitle: {
-    fontSize: "1.2rem",
-    fontWeight: "bold",
-    color: "#333",
+    textAlign: "center", // Başlığı ortala
+    fontSize: "1.5rem", // Yazı boyutu
+    fontWeight: "bold", // Kalın yazı
+    marginBottom: "5px",
+    color: "#333", // Yazı rengi
   },
   permissionItem: {
     display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between", // Yazı ve switch'i iki yana dağıt
+    alignItems: "center", // Metin ve tik işaretini dikey hizala
+    justifyContent: "space-between", // Metin ve tik işareti arasına boşluk ekle
     padding: "10px",
-    backgroundColor: "#F9F9F9", // Yetki satırının arka planı
-    borderRadius: "10px", // Kenarları yumuşat
-    boxShadow: "0px 2px 4px rgba(0, 0, 0.05)", // Hafif gölge efekti
+    border: "1px solid #ccc", // Çerçeve ekle
+    borderRadius: "5px", // Köşeleri yuvarlat
+    backgroundColor: "#f9f9f9", // Arka plan rengi
+    boxShadow: "0 2px 4px rgba(0, 0, 0.1)", // Hafif gölge
+    fontSize: "1rem", // Yazı boyutu
+    fontWeight: "bold", // Kalın yazı
+    color: "#333", // Yazı rengi
+    width: "100%", // Kart genişliği
+    maxWidth: "260px", // Maksimum genişlik
   },
   modal: {
     position: "absolute",

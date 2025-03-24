@@ -119,7 +119,6 @@ const SettingsPage = () => {
             <span style={settingsStyles.tooltip}>Çıkış Yap</span>
           </div>
         </div>
-
         <div style={settingsStyles.changePassword}>
           <span>Şifre Değiştir</span>
           <div style={settingsStyles.iconWrapper}>
@@ -130,7 +129,6 @@ const SettingsPage = () => {
             <span style={settingsStyles.tooltip}>Şifre Değiştir</span>
           </div>
         </div>
-
         <div style={settingsStyles.adminPanel}>
           <button
             style={settingsStyles.adminPanelButton}
@@ -139,18 +137,13 @@ const SettingsPage = () => {
             Admin Panel
           </button>
         </div>
-
         {/* Yetkilerim */}
+        <h3 style={settingsStyles.permissionsTitle}>Yetkilerim</h3>{" "}
         <div style={settingsStyles.permissions}>
-          <h3 style={settingsStyles.permissionsTitle}>Yetkilerim</h3>
-          {allPermissions.map((permission) => (
+          {permissions.map((permission) => (
             <div key={permission} style={settingsStyles.permissionItem}>
               <span>{permission.toUpperCase()}</span>
-              {permissions.includes(permission) ? (
-                <span style={settingsStyles.greenTick}>✔</span>
-              ) : (
-                <span style={settingsStyles.redCross}>✘</span>
-              )}
+              <span style={settingsStyles.greenTick}>✔</span>
             </div>
           ))}
         </div>

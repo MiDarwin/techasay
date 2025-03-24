@@ -172,7 +172,8 @@ async def create_sub_branch(db: AsyncSession, branch: BranchCreate, parent_branc
         phone_number=branch.phone_number,
         branch_note=branch.branch_note,
         location_link=branch.location_link,
-        parent_branch_id=parent_branch_id  # Alt şube için parent_branch_id atanır
+        parent_branch_id=parent_branch_id,  # Alt şube için parent_branch_id atanır
+    created_date = datetime.utcnow()
     )
 
     db.add(db_branch)

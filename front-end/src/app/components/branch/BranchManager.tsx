@@ -170,7 +170,7 @@ const BranchManager = () => {
       <div
         className="flex items-center mb-4 p-4 rounded-lg shadow-lg border border-gray-300"
         style={{
-          backgroundColor: "#F8F1E4", // Arka plan rengini değiştirdik
+          backgroundColor: "#E7F6F2", // Arka plan rengini değiştirdik
         }}
       >
         {" "}

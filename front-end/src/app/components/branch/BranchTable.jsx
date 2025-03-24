@@ -31,7 +31,7 @@ import UpdateBranchModal from "./UpdateBranchModal";
 import SubBranchTable from "./SubBranchTable"; // Alt şube tablosu bileşeni
 import SubBranchForm from "./SubBranchForm"; // Alt şube ekleme formu
 import InventoryModal from "./InventoryModal"; // Envanter Modalı Component
-
+import tableStyles from "../../styles/tableStyles";
 const style = {
   position: "absolute",
   top: "50%",
@@ -152,22 +152,10 @@ const BranchTable = ({ branches, companies, onEdit, onDelete }) => {
 
   return (
     <>
-      <TableContainer
-        component={Paper}
-        sx={{ borderRadius: "8px", boxShadow: 3 }}
-      >
+      <TableContainer component={Paper} sx={tableStyles.tableContainer}>
         <Table>
           <TableHead>
-            <TableRow
-              sx={{
-                backgroundColor: "#bf8f6b",
-                color: "#ffffff",
-                "& th": {
-                  fontWeight: "bold",
-                  fontSize: "1.1rem",
-                },
-              }}
-            >
+            <TableRow sx={tableStyles.tableHeader}>
               <TableCell>Şirket Adı</TableCell>
               <TableCell>Şehir</TableCell>
               <TableCell>İlçe</TableCell>
@@ -182,15 +170,7 @@ const BranchTable = ({ branches, companies, onEdit, onDelete }) => {
           <TableBody>
             {branches.map((branch, index) => (
               <React.Fragment key={branch.id}>
-                <TableRow
-                  key={branch.id}
-                  sx={{
-                    backgroundColor: index % 2 === 0 ? "#EDE8DC" : "#C1CFA1",
-                    "&:hover": {
-                      backgroundColor: "#dfedbe",
-                    },
-                  }}
-                >
+                <TableRow key={branch.id} sx={tableStyles.tableRow}>
                   <TableCell>{branch.company_name}</TableCell>
                   <TableCell>{branch.city}</TableCell>
                   <TableCell>{branch.district || "Yok"}</TableCell>
@@ -198,9 +178,7 @@ const BranchTable = ({ branches, companies, onEdit, onDelete }) => {
                   <TableCell>{branch.address}</TableCell>
                   <TableCell>
                     {branch.phone_number}
-                    {branch.phone_number_2
-                      ? ` / ${branch.phone_number_2}` // Eğer yedek telefon numarası varsa, "/" ile ekle
-                      : ""}
+                    {branch.phone_number_2 ? ` / ${branch.phone_number_2}` : ""}
                   </TableCell>
                   <TableCell>{branch.branch_note || "Yok"}</TableCell>
                   <TableCell>{branch.created_date}</TableCell>
@@ -277,7 +255,7 @@ const BranchTable = ({ branches, companies, onEdit, onDelete }) => {
                 {expandedRow === branch.id && (
                   <TableRow>
                     <TableCell
-                      colSpan={8}
+                      colSpan={9}
                       sx={{
                         backgroundColor: "#EDE8DC", // Alt şube tablosu için arka plan rengi
                         width: "100%", // BranchTable ile aynı genişlikte olması için
