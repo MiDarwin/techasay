@@ -29,6 +29,7 @@ class BranchResponse(BaseModel):
     phone_number_2: Optional[str] = None
     parent_branch_id: Optional[int] = None  # Üst şube ilişkisi için
     has_sub_branches: Optional[bool] = None  # Alt şubelerinin olup olmadığını gösteren alan
+    created_date: Optional[str] = None  # Eklenilen tarih (Gün/Ay/Yıl)
 
 
     class Config:

@@ -175,6 +175,7 @@ const BranchTable = ({ branches, companies, onEdit, onDelete }) => {
               <TableCell>Adres</TableCell>
               <TableCell>Telefon Numarası / Yedek Telefon</TableCell>
               <TableCell>Şube Notu</TableCell>
+              <TableCell>Kurulum Tarihi</TableCell>
               <TableCell>İşlemler</TableCell>
             </TableRow>
           </TableHead>
@@ -202,6 +203,8 @@ const BranchTable = ({ branches, companies, onEdit, onDelete }) => {
                       : ""}
                   </TableCell>
                   <TableCell>{branch.branch_note || "Yok"}</TableCell>
+                  <TableCell>{branch.created_date}</TableCell>
+
                   <TableCell>
                     {branch.location_link && (
                       <Tooltip title="Konum Göster">
@@ -274,9 +277,10 @@ const BranchTable = ({ branches, companies, onEdit, onDelete }) => {
                 {expandedRow === branch.id && (
                   <TableRow>
                     <TableCell
-                      colSpan={7}
+                      colSpan={8}
                       sx={{
                         backgroundColor: "#EDE8DC", // Alt şube tablosu için arka plan rengi
+                        width: "100%", // BranchTable ile aynı genişlikte olması için
                       }}
                     >
                       {loading ? (

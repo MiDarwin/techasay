@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types"; // Prop validation için
 import {
   Table,
@@ -24,6 +24,7 @@ import {
   updateBranch,
   deleteBranch,
   getInventoryByBranch,
+  getAllUsersPermissions,
 } from "../../utils/api"; // Silme ve güncelleme API fonksiyonları
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -51,6 +52,8 @@ const SubBranchTable = ({ subBranches, onReload }) => {
   const [inventory, setInventory] = useState([]);
   const [selectedBranchId, setSelectedBranchId] = useState(null);
   const [selectedBranchName, setSelectedBranchName] = useState("");
+  const [permissions, setPermissions] = useState([]); // Kullanıcı izinleri
+
   const openModal = (subBranch) => {
     setSelectedSubBranch(subBranch); // Seçilen alt şubenin bilgilerini ayarla
     setIsModalOpen(true);
@@ -112,6 +115,7 @@ const SubBranchTable = ({ subBranches, onReload }) => {
         marginTop: 2,
         borderRadius: "10px", // Köşeleri yuvarlatma
         boxShadow: "0px 4px 10px rgba(0, 0, 0.2)", // Hafif gölge
+        width: "100%", // BranchTable ile aynı genişlikte olması için
       }}
     >
       {/* Tablo */}
@@ -167,26 +171,30 @@ const SubBranchTable = ({ subBranches, onReload }) => {
                 >
                   <BackpackIcon />
                 </IconButton>
-                <IconButton
-                  onClick={() => openModal(branch)}
-                  sx={{
-                    color: "#B17F59", // Düzenle ikonu rengi
-                    "&:hover": { color: "#8FA781" }, // Hover rengi
-                  }}
-                  aria-label="Düzenle"
-                >
-                  <EditIcon />
-                </IconButton>
-                <IconButton
-                  onClick={() => openDeleteDialog(branch)}
-                  sx={{
-                    color: "#E57373", // Sil ikonu rengi
-                    "&:hover": { color: "#D32F2F" }, // Hover rengi
-                  }}
-                  aria-label="Sil"
-                >
-                  <DeleteIcon />
-                </IconButton>
+                {permissions.includes("subBranchEdit") && (
+                  <IconButton
+                    onClick={() => openModal(branch)}
+                    sx={{
+                      color: "#B17F59", // Düzenle ikonu rengi
+                      "&:hover": { color: "#8FA781" }, // Hover rengi
+                    }}
+                    aria-label="Düzenle"
+                  >
+                    <EditIcon />
+                  </IconButton>
+                )}
+                {permissions.includes("subBranchDelete") && (
+                  <IconButton
+                    onClick={() => openDeleteDialog(branch)}
+                    sx={{
+                      color: "#E57373", // Sil ikonu rengi
+                      "&:hover": { color: "#D32F2F" }, // Hover rengi
+                    }}
+                    aria-label="Sil"
+                  >
+                    <DeleteIcon />
+                  </IconButton>
+                )}
               </TableCell>
             </TableRow>
           ))}

@@ -1,6 +1,6 @@
 # services/branch_service.py
 from typing import Optional
-
+from datetime import datetime
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from models.branch import Branch
@@ -22,7 +22,8 @@ async def create_branch(db: AsyncSession, branch: BranchCreate, company_id: int)
         branch_note=branch.branch_note,
         location_link=branch.location_link,
         company_id=company_id,
-        phone_number_2=branch.phone_number_2
+        phone_number_2=branch.phone_number_2,
+    created_date = datetime.utcnow()
     )
 
     db.add(db_branch)
@@ -43,7 +44,8 @@ async def create_branch(db: AsyncSession, branch: BranchCreate, company_id: int)
         company_id=db_branch.company_id,
         company_name=company.name if company else "",  # Şirket adı varsa
         branch_note=db_branch.branch_note,
-        location_link=db_branch.location_link
+        location_link=db_branch.location_link,
+    created_date = db_branch.created_date.strftime("%d/%m/%Y")
     )
 
 
@@ -89,7 +91,9 @@ async def get_branches(db: AsyncSession, company_id: int, skip: int = 0, limit: 
             "branch_note": branch.branch_note if hasattr(branch, 'branch_note') else "",
             "parent_branch_id": branch.parent_branch_id,
             "phone_number_2": branch.phone_number_2,
-            "has_sub_branches": has_sub_branches  # Yeni alan eklendi
+            "has_sub_branches": has_sub_branches, # Yeni alan eklendi
+            "created_date": branch.created_date.strftime("%d/%m/%Y")  # Tarih formatı: Gün/Ay/Yıl
+
         })
 
     return branch_responses
@@ -152,7 +156,9 @@ async def get_all_branches(db: AsyncSession, limit: int = 50, city: Optional[str
             "phone_number_2": branch.phone_number_2,
             "branch_note": branch.branch_note if hasattr(branch, 'branch_note') else "",
             "parent_branch_id": branch.parent_branch_id,
-            "has_sub_branches": has_sub_branches  # Yeni alan eklendi
+            "has_sub_branches": has_sub_branches,  # Yeni alan eklendi
+            "created_date" : branch.created_date.strftime("%d/%m/%Y")
+
         })
 
     return branch_responses

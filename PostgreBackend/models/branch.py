@@ -1,6 +1,7 @@
 # models/branch.py
+import datetime
 
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
 from database import Base
 
@@ -17,6 +18,7 @@ class Branch(Base):
     location_link = Column(String, index=True)
     phone_number_2 = Column(String, index=True)
 
+    created_date = Column(DateTime, default=datetime)  # Varsayılan olarak şu anki zaman
 
     company_id = Column(Integer, ForeignKey("companies.company_id"))
     company = relationship("Company", back_populates="branches")
