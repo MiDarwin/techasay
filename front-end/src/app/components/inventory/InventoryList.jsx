@@ -15,6 +15,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import NoBackpackIcon from "@mui/icons-material/NoBackpack";
 import { getAllUsersPermissions } from "@/app/utils/api";
+import tableStyles from "../../styles/tableStyles";
 
 const InventoryList = ({ inventories, onEdit, onDelete }) => {
   const [permissions, setPermissions] = useState([]); // Kullanıcı izinleri
@@ -31,27 +32,10 @@ const InventoryList = ({ inventories, onEdit, onDelete }) => {
     fetchPermissions();
   }, []);
   return (
-    <TableContainer
-      component={Paper}
-      sx={{
-        borderRadius: "10px", // Köşeleri yuvarlat
-        boxShadow: "0px 4px 10px rgba(0, 0, 0.2)", // Hafif gölge
-        overflow: "hidden", // Taşmaları önle
-      }}
-    >
+    <TableContainer component={Paper} sx={tableStyles.tableContainer}>
       <Table>
         <TableHead>
-          <TableRow
-            sx={{
-              backgroundColor: "#bf8f6b", // Başlık arka plan rengi
-              "& th": {
-                color: "#black", // Başlık metin rengi
-                fontWeight: "bold",
-                fontSize: "1.1rem",
-                textAlign: "center", // Başlık metinleri ortalanır
-              },
-            }}
-          >
+          <TableRow sx={tableStyles.tableHeader}>
             <TableCell>Şube Adı</TableCell>
             <TableCell>Ürün Türü</TableCell>
             <TableCell>Ürün Modeli</TableCell>

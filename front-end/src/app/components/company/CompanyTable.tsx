@@ -13,26 +13,16 @@ import {
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { getAllUsersPermissions } from "@/app/utils/api";
+import tableStyles from "@/app/styles/tableStyles";
+
 const CompanyTable = ({ companies, onEdit, onDelete }) => {
   const [permissions, setPermissions] = useState([]); // Kullanıcı izinleri
 
   return (
-    <TableContainer
-      component={Paper}
-      sx={{ borderRadius: "8px", boxShadow: 3 }}
-    >
+    <TableContainer component={Paper} sx={tableStyles.tableContainer}>
       <Table>
         <TableHead>
-          <TableRow
-            sx={{
-              backgroundColor: "#bf8f6b",
-              color: "#ffffff",
-              "& th": {
-                fontWeight: "bold",
-                fontSize: "1.1rem",
-              },
-            }}
-          >
+          <TableRow sx={tableStyles.tableHeader}>
             <TableCell>Şirket ID</TableCell>
             <TableCell>Şirket Adı</TableCell>
             <TableCell>İşlemler</TableCell>
@@ -40,15 +30,7 @@ const CompanyTable = ({ companies, onEdit, onDelete }) => {
         </TableHead>
         <TableBody>
           {companies.map((company, index) => (
-            <TableRow
-              key={company.name}
-              sx={{
-                backgroundColor: index % 2 === 0 ? "#EDE8DC" : "#C1CFA1",
-                "&:hover": {
-                  backgroundColor: "#dfedbe",
-                },
-              }}
-            >
+            <TableRow key={company.name} sx={tableStyles.tableRow}>
               <TableCell>{company.company_id}</TableCell>
               <TableCell>{company.name}</TableCell>
               <TableCell>

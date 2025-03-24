@@ -14,6 +14,8 @@ import TextField from "@mui/material/TextField"; // MUI TextField bileşeni
 import AddIcon from "@mui/icons-material/Add"; // Ekleme ikonu
 import Button from "@mui/material/Button"; // MUI Button bileşeni
 import DomainAddIcon from "@mui/icons-material/DomainAdd";
+import tableStyles from "@/app/styles/tableStyles";
+
 const CompanyManager = () => {
   const [companies, setCompanies] = useState([]);
   const [companyError, setCompanyError] = useState("");
@@ -101,34 +103,16 @@ const CompanyManager = () => {
       <div
         className="flex items-center justify-between mb-4 p-4 rounded-lg shadow-lg border border-gray-300"
         style={{
-          backgroundColor: "#F8F1E4", // Arka plan rengi
+          backgroundColor: "#E7F6F2",
         }}
       >
-        <TextField
-          variant="outlined"
+        <input
+          type="text"
           placeholder="Şirket Ara..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="mr-4"
-          sx={{
-            height: "40px", // Arama çubuğu yüksekliği
-            width: "200px", // Yatay genişlik
-            "& .MuiOutlinedInput-root": {
-              "& fieldset": {
-                borderColor: "#A5B68D", // Varsayılan kenar rengi
-              },
-              "&:hover fieldset": {
-                borderColor: "#A5B68D", // Hover durumu için kenar rengi
-              },
-              "&.Mui-focused fieldset": {
-                borderColor: "#A5B68D", // Odaklandığında (focus) kenar rengi
-              },
-            },
-            "& .MuiInputBase-input": {
-              height: "40px", // İçerik yüksekliği
-              padding: "2px", // İçerik dolgu
-            },
-          }}
+          style={tableStyles.textInput}
         />
 
         {/* Şirket Ekle Butonu en sağda */}

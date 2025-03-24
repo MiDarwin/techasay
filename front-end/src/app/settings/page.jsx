@@ -6,6 +6,8 @@ import ExitToAppIcon from "@mui/icons-material/ExitToApp"; // Çıkış simgesi
 import Modal from "@mui/material/Modal"; // Modal bileşeni
 import TextField from "@mui/material/TextField"; // Textfield bileşeni
 import Button from "@mui/material/Button"; // Button bileşeni
+import { SketchPicker } from "react-color"; // Renk seçici kütüphanesi
+import ColorModal from "./ColorModal";
 
 import settingsStyles from "../styles/settingsStyles"; // Stil dosyasını içe aktar
 import {
@@ -26,6 +28,9 @@ const SettingsPage = () => {
   const [newPassword, setNewPassword] = useState(""); // Yeni şifre field
   const [passwordError, setPasswordError] = useState(""); // Hata mesajı
   const [passwordSuccess, setPasswordSuccess] = useState(""); // Başarı mesajı
+  const [tableColor, setTableColor] = useState("#395B64"); // Varsayılan renk
+  const [open, setOpen] = useState(false);
+
   const router = useRouter(); // Kullanıcıyı yönlendirmek için router
 
   const allPermissions = ["permission_management", "read", "write", "delete"]; // Tüm yetkiler
@@ -48,7 +53,17 @@ const SettingsPage = () => {
 
     fetchData();
   }, []);
+  useEffect(() => {
+    const savedColor = localStorage.getItem("tableColor");
+    if (savedColor) {
+      setTableColor(savedColor);
+    }
+  }, []);
 
+  const handleColorChange = (color) => {
+    setTableColor(color.hex);
+    localStorage.setItem("tableColor", color.hex);
+  };
   // Admin Paneline gitme fonksiyonu
   const goToAdminPanel = () => {
     router.push("/adminpanel"); // Admin Panel sayfasına yönlendir
@@ -137,6 +152,10 @@ const SettingsPage = () => {
             Admin Panel
           </button>
         </div>
+        <Button variant="contained" onClick={() => setOpen(true)}>
+          Renkleri Değiştir
+        </Button>
+        <ColorModal open={open} handleClose={() => setOpen(false)} />
         {/* Yetkilerim */}
         <h3 style={settingsStyles.permissionsTitle}>Yetkilerim</h3>{" "}
         <div style={settingsStyles.permissions}>

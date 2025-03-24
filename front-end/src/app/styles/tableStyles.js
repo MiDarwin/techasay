@@ -1,10 +1,18 @@
+const getColors = () => {
+  if (typeof window !== "undefined") {
+    return JSON.parse(localStorage.getItem("tableColors")) || {};
+  }
+  return {};
+};
+const colors = getColors();
+
 const tableStyles = {
   tableContainer: {
     borderRadius: "8px",
     boxShadow: "3px 3px 10px rgba(0, 0, 0.1)",
   },
   tableHeader: {
-    backgroundColor: "#E7F6F2",
+    backgroundColor: colors.tableHeader || "#E7F6F2",
     color: "#ffffff",
     "& th": {
       fontWeight: "bold",
@@ -13,57 +21,53 @@ const tableStyles = {
   },
   tableRow: {
     "&:nth-of-type(odd)": {
-      backgroundColor: "#395B64", // Tek satırlar
+      backgroundColor: colors.tableRowOdd || "#395B64",
     },
     "&:nth-of-type(even)": {
-      backgroundColor: "#E7F6F2", // Çift satırlar
+      backgroundColor: colors.tableRowEven || "#E7F6F2",
     },
     "&:hover": {
-      backgroundColor: "#A5C9CA", // Hover efekti
+      backgroundColor: "#A5C9CA",
     },
   },
   subBranchRow: {
-    backgroundColor: "#EDE8DC", // Alt şube arka plan rengi
+    backgroundColor: colors.subBranchRow || "#EDE8DC",
   },
   // Form ve filtre bileşenleri
   filterContainer: {
-    display: "flex",
-    alignItems: "center",
-    marginBottom: "16px",
-    padding: "16px",
+    backgroundColor: colors.filterContainer || "#E7F6F2",
     borderRadius: "8px",
     boxShadow: "0px 4px 6px rgba(0, 0, 0.1)",
     border: "1px solid #ccc",
-    backgroundColor: "#E7F6F2",
+    padding: "16px",
+    marginBottom: "16px",
   },
   selectInput: {
-    backgroundColor: "#F8F1E4",
+    backgroundColor: "#FFF",
     borderWidth: "1px",
-    borderColor: "#A5B68D",
+    borderColor: "black",
     padding: "8px",
     marginRight: "8px",
     borderRadius: "8px",
   },
   textInput: {
-    backgroundColor: "#F8F1E4",
+    backgroundColor: "#FFF",
     borderWidth: "1px",
-    borderColor: "#A5B68D",
+    borderColor: "black",
     padding: "8px",
     marginRight: "8px",
     borderRadius: "8px",
-    flexGrow: 1, // Tüm alanı kapla
   },
   button: {
-    display: "flex",
-    alignItems: "center",
-    padding: "8px 16px",
-    backgroundColor: "#28a745",
+    backgroundColor: colors.button || "#28a745",
     color: "#fff",
     borderRadius: "8px",
     cursor: "pointer",
+    padding: "8px 16px",
     border: "none",
     transition: "background-color 0.3s ease",
   },
+
   buttonHover: {
     "&:hover": {
       backgroundColor: "#218838",
