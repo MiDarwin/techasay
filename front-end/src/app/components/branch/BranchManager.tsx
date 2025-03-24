@@ -14,6 +14,7 @@ import {
 } from "../../utils/api";
 import AddBusinessIcon from "@mui/icons-material/AddBusiness";
 import Button from "@mui/material/Button";
+import tableStyles from "@/app/styles/tableStyles";
 
 const BranchManager = () => {
   const [branches, setBranches] = useState([]);
@@ -174,17 +175,16 @@ const BranchManager = () => {
         }}
       >
         {" "}
-        <form className="flex items-center flex-grow mr-4">
+        <form
+          className="flex-grow"
+          style={{ display: "flex", alignItems: "center" }}
+        >
           <select
             id="companyFilter"
             value={companyFilter}
             onChange={(e) => setCompanyFilter(e.target.value)}
             className="border p-2 mr-2 rounded-lg"
-            style={{
-              backgroundColor: "#F8F1E4",
-              borderWidth: "1px", // Çizgi kalınlığını arttırdık
-              borderColor: "#A5B68D",
-            }}
+            style={tableStyles.selectInput}
           >
             <option value="">Tüm Şirketler</option>
             {companies.map((company) => (
@@ -198,11 +198,7 @@ const BranchManager = () => {
             value={cityFilter}
             onChange={handleCityChange}
             className="border p-2 mr-2 rounded-lg"
-            style={{
-              backgroundColor: "#F8F1E4",
-              borderWidth: "1px",
-              borderColor: "#A5B68D",
-            }}
+            style={tableStyles.selectInput}
           >
             <option value="">Tüm Şehirler</option>
             {Object.keys(turkishCities).map((city) => (
@@ -216,11 +212,7 @@ const BranchManager = () => {
             value={districtFilter}
             onChange={handleDistrictChange}
             className="border p-2 mr-2 rounded-lg"
-            style={{
-              backgroundColor: "#F8F1E4",
-              borderWidth: "1px",
-              borderColor: "#A5B68D",
-            }}
+            style={tableStyles.selectInput}
             disabled={!availableDistricts.length}
           >
             <option value="">Tüm İlçeler</option>
@@ -237,11 +229,7 @@ const BranchManager = () => {
             value={searchFilter}
             onChange={(e) => setSearchFilter(e.target.value)}
             className="border p-2 mr-2 rounded-lg"
-            style={{
-              backgroundColor: "#F8F1E4",
-              borderWidth: "1px", // Çizgi kalınlığını arttırdık
-              borderColor: "#A5B68D",
-            }}
+            style={tableStyles.textInput}
           />
         </form>
         {/* Şube Ekle Butonu */}
