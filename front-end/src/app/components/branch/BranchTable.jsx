@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import {
   Table,
@@ -24,6 +24,7 @@ import {
   getcombinedinventoryByBranch,
   getSubBranchesByBranchId,
   updateBranch,
+  getAllUsersPermissions,
   createSubBranch, // Alt şube silme API çağrısı
 } from "../../utils/api"; // API'den envanter ve alt şubeleri almak için kullanılan fonksiyonlar
 import UpdateBranchModal from "./UpdateBranchModal";
@@ -54,6 +55,7 @@ const BranchTable = ({ branches, companies, onEdit, onDelete }) => {
   const [loading, setLoading] = useState(false); // Yükleme durumunu takip etmek için
   const [isSubBranchModalOpen, setIsSubBranchModalOpen] = useState(false); // Alt şube modal durumu
   const [selectedBranchName, setSelectedBranchName] = useState(""); // Şube adı
+  const [permissions, setPermissions] = useState([]); // Kullanıcı izinleri
 
   const handleOpenInventory = async (branchId, branchName) => {
     setSelectedBranchId(branchId);
@@ -135,6 +137,18 @@ const BranchTable = ({ branches, companies, onEdit, onDelete }) => {
       alert("Şube güncellerken bir hata oluştu.");
     }
   };
+  useEffect(() => {
+    const fetchPermissions = async () => {
+      try {
+        const userPermissions = await getAllUsersPermissions(); // Kullanıcı izinlerini al
+        setPermissions(userPermissions); // İzinleri state'e ata
+      } catch (error) {
+        console.error("Kullanıcı izinleri alınırken hata oluştu:", error);
+      }
+    };
+
+    fetchPermissions();
+  }, []);
 
   return (
     <>
@@ -200,24 +214,28 @@ const BranchTable = ({ branches, companies, onEdit, onDelete }) => {
                         </IconButton>
                       </Tooltip>
                     )}
-                    <Tooltip title="Düzenle">
-                      <IconButton
-                        onClick={() => handleEditClick(branch)}
-                        color="warning"
-                        aria-label="Düzenle"
-                      >
-                        <EditIcon />
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip title="Sil">
-                      <IconButton
-                        onClick={() => onDelete(branch.id)}
-                        color="error"
-                        aria-label="Sil"
-                      >
-                        <DeleteIcon />
-                      </IconButton>
-                    </Tooltip>
+                    {permissions.includes("branchEdit") && (
+                      <Tooltip title="Düzenle">
+                        <IconButton
+                          onClick={() => handleEditClick(branch)}
+                          color="warning"
+                          aria-label="Düzenle"
+                        >
+                          <EditIcon />
+                        </IconButton>
+                      </Tooltip>
+                    )}
+                    {permissions.includes("branchDelete") && (
+                      <Tooltip title="Sil">
+                        <IconButton
+                          onClick={() => onDelete(branch.id)}
+                          color="error"
+                          aria-label="Sil"
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                      </Tooltip>
+                    )}
 
                     <Tooltip title="Şube Envanterini Görüntüle">
                       <IconButton
@@ -228,15 +246,17 @@ const BranchTable = ({ branches, companies, onEdit, onDelete }) => {
                         <BackpackIcon />
                       </IconButton>
                     </Tooltip>
-                    <Tooltip title="Alt Şube Ekle">
-                      <IconButton
-                        onClick={() => openSubBranchModal(branch)}
-                        color="success"
-                        aria-label="Alt Şube Ekle"
-                      >
-                        <HolidayVillageIcon />
-                      </IconButton>
-                    </Tooltip>
+                    {permissions.includes("subBranchAdd") && (
+                      <Tooltip title="Alt Şube Ekle">
+                        <IconButton
+                          onClick={() => openSubBranchModal(branch)}
+                          color="success"
+                          aria-label="Alt Şube Ekle"
+                        >
+                          <HolidayVillageIcon />
+                        </IconButton>
+                      </Tooltip>
+                    )}
                     {branch.has_sub_branches && (
                       <Tooltip title="Alt Şubeleri Görüntüle">
                         <IconButton
