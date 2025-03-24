@@ -193,9 +193,7 @@ const InventoryManager = () => {
                     onChange={(e) => setSelectedCompanyId(e.target.value)}
                     style={tableStyles.selectInput}
                   >
-                    <option value="">
-                      <em>Tüm Şirketler</em>
-                    </option>
+                    <option value="">Tüm Şirketler</option>
                     {companies.map((company) => (
                       <option
                         key={company.company_id}
@@ -219,9 +217,7 @@ const InventoryManager = () => {
                     style={tableStyles.selectInput}
                     disabled={!selectedCompanyId || branches.length === 0}
                   >
-                    <option value="">
-                      <em>Tüm Şubeler</em>
-                    </option>
+                    <option value="">Tüm Şubeler</option>
                     {branches.map((branch) => (
                       <option key={branch.id} value={branch.name}>
                         {branch.name}

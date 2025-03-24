@@ -19,6 +19,7 @@ import {
   getSubBranchesByBranchId,
 } from "../../utils/api";
 import { turkishCities } from "../branch/cities"; // Şehir ve ilçeler için dosya importu
+import tableStyles from "@/app/styles/tableStyles";
 
 const AddInventoryModal = ({
   open,
@@ -129,7 +130,6 @@ const AddInventoryModal = ({
   }, [deviceType]);
 
   // Formu gönder
-  // Formu gönder
   const handleSubmit = async () => {
     try {
       if (!branchId || !deviceType || !deviceModel) {
@@ -159,22 +159,7 @@ const AddInventoryModal = ({
 
   return (
     <Modal open={open} onClose={onClose}>
-      <Box
-        sx={{
-          position: "absolute",
-          top: "50%",
-          left: "50%",
-          transform: "translate(-50%, -50%)",
-          width: "fit-content",
-          maxWidth: "90vw",
-          maxHeight: "90vh",
-          bgcolor: "#F8F1E4",
-          boxShadow: "0px 4px 10px rgba(0, 0, 0.2)",
-          p: 4,
-          borderRadius: "10px",
-          overflow: "auto",
-        }}
-      >
+      <Box style={tableStyles.modalBox}>
         <Typography
           variant="h6"
           component="h2"
