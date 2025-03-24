@@ -170,11 +170,8 @@ const BranchManager = () => {
     <div className="flex flex-col">
       <div
         className="flex items-center mb-4 p-4 rounded-lg shadow-lg border border-gray-300"
-        style={{
-          backgroundColor: "#E7F6F2", // Arka plan rengini değiştirdik
-        }}
+        style={tableStyles.tableHeaderBackground}
       >
-        {" "}
         <form
           className="flex-grow"
           style={{ display: "flex", alignItems: "center" }}

@@ -19,6 +19,9 @@ const tableStyles = {
       fontSize: "1.1rem",
     },
   },
+  tableHeaderBackground: {
+    backgroundColor: colors.tableHeader || "#E7F6F2",
+  },
   tableRow: {
     "&:nth-of-type(odd)": {
       backgroundColor: colors.tableRowOdd || "#395B64",

@@ -57,12 +57,7 @@ const InventoryList = ({ inventories, onEdit, onDelete }) => {
             inventories.map((inventory, index) => (
               <TableRow
                 key={inventory.id ?? `inventory-${index}`}
-                sx={{
-                  backgroundColor: index % 2 === 0 ? "#EDE8DC" : "#C1CFA1", // Alternatif satır renkleri
-                  "&:hover": {
-                    backgroundColor: "#dfedbe", // Hover rengi
-                  },
-                }}
+                sx={tableStyles.tableHeader}
               >
                 <TableCell sx={{ textAlign: "center" }}>
                   {inventory.branch_name}

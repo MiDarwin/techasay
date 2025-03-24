@@ -16,6 +16,7 @@ import {
   createInventory,
   getBranchesByCompanyId,
   getInventoryHelpers, // Cihaz türlerini çekmek için API fonksiyonu
+  getSubBranchesByBranchId,
 } from "../../utils/api";
 import { turkishCities } from "../branch/cities"; // Şehir ve ilçeler için dosya importu
 
@@ -40,6 +41,9 @@ const AddInventoryModal = ({
   const [cityFilter, setCityFilter] = useState("");
   const [districtFilter, setDistrictFilter] = useState("");
   const [availableDistricts, setAvailableDistricts] = useState([]);
+  const [subBranches, setSubBranches] = useState([]); // Alt şubeleri tutmak için state
+  const [hasSubBranches, setHasSubBranches] = useState("");
+  const [selectedSubBranchId, setSelectedSubBranchId] = useState(""); // Seçilen alt şube ID'si
 
   // Şirket değiştiğinde şubeleri yükleme
   const fetchBranches = async (companyId, city, district) => {
@@ -77,7 +81,35 @@ const AddInventoryModal = ({
     setDistrictFilter(selectedDistrict);
     fetchBranches(companyId, cityFilter, selectedDistrict); // Şubeleri filtrele
   };
+  // Alt şubeleri alma
+  const fetchSubBranches = async (branchId) => {
+    try {
+      const selectedBranch = branches.find((branch) => branch.id === branchId);
 
+      // Eğer seçilen şubenin alt şubesi yoksa sorgu yapma
+      if (!selectedBranch || !selectedBranch.has_sub_branches) {
+        setSubBranches([]); // Alt şubeleri sıfırla
+        setHasSubBranches(false);
+        return;
+      }
+
+      const data = await getSubBranchesByBranchId(branchId);
+      setSubBranches(data);
+      setHasSubBranches(data.length > 0);
+    } catch (error) {
+      console.error("Alt şubeler alınırken hata oluştu:", error);
+    }
+  };
+  // Şube değiştiğinde alt şubeleri kontrol et
+  useEffect(() => {
+    if (branchId) {
+      fetchSubBranches(branchId);
+    } else {
+      setSubBranches([]);
+      setHasSubBranches(false);
+    }
+    setSelectedSubBranchId(""); // Şube değiştiğinde alt şube seçimini sıfırla
+  }, [branchId]);
   // Cihaz türlerini API'den çek
   useEffect(() => {
     getInventoryHelpers().then(setDeviceTypes).catch(console.error);
@@ -97,6 +129,7 @@ const AddInventoryModal = ({
   }, [deviceType]);
 
   // Formu gönder
+  // Formu gönder
   const handleSubmit = async () => {
     try {
       if (!branchId || !deviceType || !deviceModel) {
@@ -111,7 +144,10 @@ const AddInventoryModal = ({
         specs,
       };
 
-      await createInventory(branchId, inventoryData);
+      // Alt şube seçildiyse onun ID'sini, aksi takdirde seçilen şubenin ID'sini kullan
+      const targetBranchId = selectedSubBranchId || branchId;
+
+      await createInventory(targetBranchId, inventoryData); // Doğru branch ID kullanılıyor
       alert("Envanter başarıyla eklendi!");
       onInventoryAdded();
       onClose();
@@ -245,6 +281,25 @@ const AddInventoryModal = ({
               </MenuItem>
             ))}
           </Select>
+          {/* Alt Şube Seçimi */}
+          {hasSubBranches && (
+            <FormControl fullWidth margin="normal">
+              <InputLabel sx={{ color: "#6B7280" }}>Alt Şube Seçin</InputLabel>
+              <Select
+                value={selectedSubBranchId}
+                onChange={(e) => setSelectedSubBranchId(e.target.value)}
+              >
+                <MenuItem value="">
+                  <em>Alt Şube Seçin</em>
+                </MenuItem>
+                {subBranches.map((subBranch) => (
+                  <MenuItem key={subBranch.id} value={subBranch.id}>
+                    {subBranch.name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          )}
         </FormControl>
 
         {/* Cihaz Türü ve Modeli Seçimi */}

@@ -254,13 +254,7 @@ const BranchTable = ({ branches, companies, onEdit, onDelete }) => {
                 {/* Alt Şube Tablosu */}
                 {expandedRow === branch.id && (
                   <TableRow>
-                    <TableCell
-                      colSpan={9}
-                      sx={{
-                        backgroundColor: "#EDE8DC", // Alt şube tablosu için arka plan rengi
-                        width: "100%", // BranchTable ile aynı genişlikte olması için
-                      }}
-                    >
+                    <TableCell colSpan={9} sx={tableStyles.tableRow}>
                       {loading ? (
                         <CircularProgress />
                       ) : (

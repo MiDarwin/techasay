@@ -23,6 +23,7 @@ import {
   MenuItem,
   Typography,
 } from "@mui/material";
+import tableStyles from "@/app/styles/tableStyles";
 
 const InventoryManager = () => {
   const [activeTab, setActiveTab] = useState("inventory");
@@ -174,95 +175,60 @@ const InventoryManager = () => {
           <Box sx={{ padding: 2 }}>
             <div
               className="flex items-center justify-between mb-4 p-2 rounded-lg shadow-md "
-              style={{
-                backgroundColor: "#F8F1E4", // Arka plan rengi
-                boxShadow: "0px 1px 1px rgba(0, 0, 0)", // Hafif gölge efekti
-                borderColor: "#A5B68D", // Çerçeve rengi
-                height: "auto", // Daha az yükseklik
-              }}
+              style={tableStyles.tableHeaderBackground}
             >
               {/* Şirket ve Şube Seçimi */}
               <div className="flex items-center gap-4">
                 {/* Şirket Seçimi */}
-                <FormControl
-                  variant="outlined"
-                  margin="normal"
-                  sx={{ minWidth: 150 }}
-                >
-                  <InputLabel>Şirket Seçin</InputLabel>
-                  <Select
+                <div>
+                  <label
+                    htmlFor="companyFilter"
+                    style={{ marginRight: "10px" }}
+                  >
+                    Şirket Seçin:
+                  </label>
+                  <select
+                    id="companyFilter"
                     value={selectedCompanyId}
                     onChange={(e) => setSelectedCompanyId(e.target.value)}
-                    label="Şirket Seçin"
-                    sx={{
-                      height: "40px",
-                      backgroundColor: "#F8F1E4", // Arka plan rengi
-                      borderWidth: "2px", // Çerçeve kalınlığı
-                      padding: 1,
-                      borderColor: "#A5B68D", // Çerçeve rengi
-                      "& .MuiOutlinedInput-notchedOutline": {
-                        borderColor: "#A5B68D", // Varsayılan çerçeve rengi
-                      },
-                      "&:hover .MuiOutlinedInput-notchedOutline": {
-                        borderColor: "#8FA781", // Hover durumunda çerçeve rengi
-                      },
-                      "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                        borderColor: "#6B7280", // Odaklandığında çerçeve rengi
-                      },
-                    }}
+                    style={tableStyles.selectInput}
                   >
-                    <MenuItem value="">
+                    <option value="">
                       <em>Tüm Şirketler</em>
-                    </MenuItem>
+                    </option>
                     {companies.map((company) => (
-                      <MenuItem
+                      <option
                         key={company.company_id}
                         value={company.company_id}
                       >
                         {company.name}
-                      </MenuItem>
+                      </option>
                     ))}
-                  </Select>
-                </FormControl>
+                  </select>
+                </div>
 
                 {/* Şube Seçimi */}
-                <FormControl
-                  variant="outlined"
-                  margin="normal"
-                  sx={{ minWidth: 150 }}
-                >
-                  <InputLabel>Şube Seçin</InputLabel>
-                  <Select
+                <div>
+                  <label htmlFor="branchFilter" style={{ marginRight: "10px" }}>
+                    Şube Seçin:
+                  </label>
+                  <select
+                    id="branchFilter"
                     value={selectedBranch}
                     onChange={(e) => setSelectedBranch(e.target.value)}
-                    label="Şube Seçin"
-                    sx={{
-                      height: "40px",
-                      backgroundColor: "#F8F1E4", // Arka plan rengi
-                      borderWidth: "2px", // Çerçeve kalınlığı
-                      borderColor: "#A5B68D", // Çerçeve rengi
-                      "& .MuiOutlinedInput-notchedOutline": {
-                        borderColor: "#f5f5f5", // Varsayılan çerçeve rengi
-                      },
-                      "&:hover .MuiOutlinedInput-notchedOutline": {
-                        borderColor: "#8FA781", // Hover durumunda çerçeve rengi
-                      },
-                      "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                        borderColor: "#6B7280", // Odaklandığında çerçeve rengi
-                      },
-                    }}
+                    style={tableStyles.selectInput}
                     disabled={!selectedCompanyId || branches.length === 0}
                   >
-                    <MenuItem value="">
+                    <option value="">
                       <em>Tüm Şubeler</em>
-                    </MenuItem>
+                    </option>
                     {branches.map((branch) => (
-                      <MenuItem key={branch.id} value={branch.name}>
+                      <option key={branch.id} value={branch.name}>
                         {branch.name}
-                      </MenuItem>
+                      </option>
                     ))}
-                  </Select>
-                </FormControl>
+                  </select>
+                </div>
               </div>
 
               {/* Envanter Ekle Butonu */}
