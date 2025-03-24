@@ -1,8 +1,15 @@
 "use client";
 
-import React, { useState } from "react";
-import { Box, Button, Modal, TextField, Typography } from "@mui/material";
-import { updateInventory } from "../../utils/api";
+import React, { useState, useEffect } from "react";
+import {
+  Box,
+  Button,
+  Modal,
+  TextField,
+  Typography,
+  MenuItem,
+} from "@mui/material";
+import { updateInventory, getInventoryHelpers } from "../../utils/api";
 
 const UpdateInventoryModal = ({
   open,
@@ -10,25 +17,53 @@ const UpdateInventoryModal = ({
   inventory,
   onInventoryUpdated,
 }) => {
+  const [deviceTypes, setDeviceTypes] = useState([]); // Cihaz türleri
+  const [deviceModels, setDeviceModels] = useState([]); // Seçili türe ait modeller
   const [deviceType, setDeviceType] = useState(inventory.device_type || "");
   const [deviceModel, setDeviceModel] = useState(inventory.device_model || "");
   const [quantity, setQuantity] = useState(inventory.quantity || 1);
   const [specs, setSpecs] = useState(inventory.specs || "");
 
-  // Formu gönder
+  // Cihaz türlerini API'den çek
+  useEffect(() => {
+    getInventoryHelpers()
+      .then(setDeviceTypes)
+      .catch((err) =>
+        console.error("Cihaz türleri alınırken hata oluştu:", err)
+      );
+  }, []);
+
+  // Seçili cihaz türüne göre modelleri belirle
+  useEffect(() => {
+    if (deviceType) {
+      const selectedDevice = deviceTypes.find(
+        (type) => type.device_type === deviceType
+      );
+      setDeviceModels(selectedDevice ? selectedDevice.device_models : []);
+    } else {
+      setDeviceModels([]);
+    }
+  }, [deviceType, deviceTypes]);
+
+  // Güncelleme işlemi
   const handleSubmit = async () => {
     try {
+      if (!deviceType || !deviceModel) {
+        alert("Lütfen cihaz türü ve modelini seçin!");
+        return;
+      }
+
       const updateData = {
         device_type: deviceType,
         device_model: deviceModel,
         quantity,
-        specs, // Opsiyonel alan
+        specs,
       };
 
-      await updateInventory(inventory.id, updateData); // API çağrısı
+      await updateInventory(inventory.id, updateData);
       alert("Envanter başarıyla güncellendi!");
-      onInventoryUpdated(); // Güncelleme işleminden sonra listeyi yenile
-      onClose(); // Modalı kapat
+      onInventoryUpdated();
+      onClose();
     } catch (err) {
       console.error("Envanter güncellenirken hata oluştu:", err);
       alert("Envanter güncellenirken bir hata oluştu.");
@@ -43,31 +78,28 @@ const UpdateInventoryModal = ({
           top: "50%",
           left: "50%",
           transform: "translate(-50%, -50%)",
-          width: "fit-content", // İçeriğe göre genişlik
-          maxWidth: "90vw", // Ekranın %90'ını aşmasın
-          maxHeight: "90vh", // Ekranın %90'ını aşmasın
-          bgcolor: "#F8F1E4", // Arka plan rengi
-          boxShadow: "0px 4px 10px rgba(0, 0, 0.2)", // Hafif gölge efekti
+          width: "fit-content",
+          maxWidth: "90vw",
+          maxHeight: "90vh",
+          bgcolor: "#F8F1E4",
+          boxShadow: "0px 4px 10px rgba(0, 0, 0.2)",
           p: 4,
-          borderRadius: "10px", // Köşeleri yuvarlatma
-          overflow: "auto", // İçerik taşması durumunda kaydırma çubuğu
+          borderRadius: "10px",
+          overflow: "auto",
         }}
       >
         <Typography
           variant="h6"
           component="h2"
           mb={2}
-          sx={{
-            color: "#A5B68D", // Başlık rengi
-            textAlign: "center", // Ortalanmış başlık
-            fontWeight: "bold",
-          }}
+          sx={{ color: "#A5B68D", textAlign: "center", fontWeight: "bold" }}
         >
           Envanteri Güncelle
         </Typography>
 
-        {/* Form Alanları */}
+        {/* Cihaz Türü Seçimi */}
         <TextField
+          select
           fullWidth
           margin="normal"
           label="Cihaz Türü"
@@ -75,32 +107,40 @@ const UpdateInventoryModal = ({
           onChange={(e) => setDeviceType(e.target.value)}
           sx={{
             "& .MuiOutlinedInput-root": {
-              "& fieldset": {
-                borderColor: "#A5B68D", // Çerçeve rengi
-              },
-              "&:hover fieldset": {
-                borderColor: "#8FA781", // Hover çerçeve rengi
-              },
+              "& fieldset": { borderColor: "#A5B68D" },
             },
           }}
-        />
+        >
+          {deviceTypes.map((type) => (
+            <MenuItem key={type.device_type} value={type.device_type}>
+              {type.device_type}
+            </MenuItem>
+          ))}
+        </TextField>
+
+        {/* Cihaz Modeli Seçimi */}
         <TextField
+          select
           fullWidth
           margin="normal"
           label="Cihaz Modeli"
           value={deviceModel}
           onChange={(e) => setDeviceModel(e.target.value)}
+          disabled={!deviceType} // Cihaz türü seçilmeden model seçilemez
           sx={{
             "& .MuiOutlinedInput-root": {
-              "& fieldset": {
-                borderColor: "#A5B68D",
-              },
-              "&:hover fieldset": {
-                borderColor: "#8FA781",
-              },
+              "& fieldset": { borderColor: "#A5B68D" },
             },
           }}
-        />
+        >
+          {deviceModels.map((model) => (
+            <MenuItem key={model} value={model}>
+              {model}
+            </MenuItem>
+          ))}
+        </TextField>
+
+        {/* Adet Girişi */}
         <TextField
           fullWidth
           margin="normal"
@@ -110,15 +150,12 @@ const UpdateInventoryModal = ({
           onChange={(e) => setQuantity(Number(e.target.value))}
           sx={{
             "& .MuiOutlinedInput-root": {
-              "& fieldset": {
-                borderColor: "#A5B68D",
-              },
-              "&:hover fieldset": {
-                borderColor: "#8FA781",
-              },
+              "& fieldset": { borderColor: "#A5B68D" },
             },
           }}
         />
+
+        {/* Özellikler */}
         <TextField
           fullWidth
           margin="normal"
@@ -127,28 +164,21 @@ const UpdateInventoryModal = ({
           onChange={(e) => setSpecs(e.target.value)}
           sx={{
             "& .MuiOutlinedInput-root": {
-              "& fieldset": {
-                borderColor: "#A5B68D",
-              },
-              "&:hover fieldset": {
-                borderColor: "#8FA781",
-              },
+              "& fieldset": { borderColor: "#A5B68D" },
             },
           }}
         />
 
-        {/* Gönder Butonu */}
+        {/* Güncelle Butonu */}
         <Button
           fullWidth
           variant="contained"
           onClick={handleSubmit}
           sx={{
             mt: 2,
-            backgroundColor: "#A5B68D", // Buton arka plan rengi
-            color: "#FFFFFF", // Buton metin rengi
-            "&:hover": {
-              backgroundColor: "#8FA781", // Hover rengi
-            },
+            backgroundColor: "#A5B68D",
+            color: "#FFFFFF",
+            "&:hover": { backgroundColor: "#8FA781" },
           }}
         >
           Güncelle

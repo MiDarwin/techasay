@@ -15,22 +15,20 @@ import {
 import {
   createInventory,
   getBranchesByCompanyId,
-  getSubBranchesByBranchId,
   getInventoryHelpers, // Cihaz türlerini çekmek için API fonksiyonu
-  getModelsByDeviceType,
 } from "../../utils/api";
+import { turkishCities } from "../branch/cities"; // Şehir ve ilçeler için dosya importu
 
 const AddInventoryModal = ({
   open,
   onClose,
   companies,
   selectedCompanyId,
-  selectedBranchId,
   onInventoryAdded,
 }) => {
-  const [branches, setBranches] = useState([]);
-  const [branchId, setBranchId] = useState(selectedBranchId || "");
   const [companyId, setCompanyId] = useState(selectedCompanyId || "");
+  const [branches, setBranches] = useState([]);
+  const [branchId, setBranchId] = useState("");
   const [deviceType, setDeviceType] = useState("");
   const [deviceModel, setDeviceModel] = useState("");
   const [deviceTypes, setDeviceTypes] = useState([]); // Cihaz türleri
@@ -38,66 +36,54 @@ const AddInventoryModal = ({
   const [quantity, setQuantity] = useState(1); // Default olarak 1
   const [specs, setSpecs] = useState("");
   const [note, setNote] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
-  const [subBranches, setSubBranches] = useState([]); // Alt şubeleri tutmak için state
-  const [hasSubBranches, setHasSubBranches] = useState("");
-  const [selectedSubBranchId, setSelectedSubBranchId] = useState(""); // Seçilen alt şube ID'si
+  const [cityFilter, setCityFilter] = useState("");
+  const [districtFilter, setDistrictFilter] = useState("");
+  const [availableDistricts, setAvailableDistricts] = useState([]);
 
-  // Şubeleri alma
-  const fetchBranches = async (companyId) => {
+  // Şirket değiştiğinde şubeleri yükleme
+  const fetchBranches = async (companyId, city, district) => {
     try {
-      const branchData = await getBranchesByCompanyId(companyId);
-      setBranches(branchData);
+      const data = await getBranchesByCompanyId(companyId, city, district);
+      setBranches(data);
     } catch (err) {
-      console.error("Şubeler alınırken hata oluştu:", err);
+      console.error("Şubeler alınırken bir hata oluştu:", err);
     }
   };
 
-  // Alt şubeleri alma
-  const fetchSubBranches = async (branchId) => {
-    try {
-      const selectedBranch = branches.find((branch) => branch.id === branchId);
-
-      // Eğer seçilen şubenin alt şubesi yoksa sorgu yapma
-      if (!selectedBranch || !selectedBranch.has_sub_branches) {
-        setSubBranches([]); // Alt şubeleri sıfırla
-        setHasSubBranches(false);
-        return;
-      }
-
-      const data = await getSubBranchesByBranchId(branchId);
-      setSubBranches(data);
-      setHasSubBranches(data.length > 0);
-    } catch (error) {
-      console.error("Alt şubeler alınırken hata oluştu:", error);
-    }
-  };
-
-  // Şirket değiştiğinde şubeleri yükle
+  // Şirket değiştiğinde filtreleri sıfırlayıp şubeleri getir
   useEffect(() => {
     if (companyId) {
-      fetchBranches(companyId);
+      setCityFilter("");
+      setDistrictFilter("");
+      setBranchId("");
+      setAvailableDistricts([]);
+      fetchBranches(companyId, "", "");
     }
   }, [companyId]);
 
-  // Şube değiştiğinde alt şubeleri kontrol et
-  useEffect(() => {
-    if (branchId) {
-      fetchSubBranches(branchId);
-    } else {
-      setSubBranches([]);
-      setHasSubBranches(false);
-    }
-    setSelectedSubBranchId(""); // Şube değiştiğinde alt şube seçimini sıfırla
-  }, [branchId]);
+  // İl değiştiğinde ilçeleri yükle ve şubeleri getir
+  const handleCityChange = (e) => {
+    const selectedCity = e.target.value;
+    setCityFilter(selectedCity);
+    setDistrictFilter(""); // İl değiştiğinde ilçe filtresini sıfırla
+    setAvailableDistricts(turkishCities[selectedCity] || []); // Seçilen ilin ilçelerini getir
+    fetchBranches(companyId, selectedCity); // Sadece il ile şubeleri filtrele
+  };
 
-  // **Cihaz türlerini API'den çek**
+  // İlçe değiştiğinde şubeleri filtrele
+  const handleDistrictChange = (e) => {
+    const selectedDistrict = e.target.value;
+    setDistrictFilter(selectedDistrict);
+    fetchBranches(companyId, cityFilter, selectedDistrict); // Şubeleri filtrele
+  };
+
+  // Cihaz türlerini API'den çek
   useEffect(() => {
     getInventoryHelpers().then(setDeviceTypes).catch(console.error);
   }, []);
 
-  // **Cihaz türü seçildiğinde modelleri API'den çek**
+  // Cihaz türü seçildiğinde modelleri API'den çek
   useEffect(() => {
     if (deviceType) {
       const selectedDevice = deviceTypes.find(
@@ -125,9 +111,7 @@ const AddInventoryModal = ({
         specs,
       };
 
-      const targetBranchId = selectedSubBranchId || branchId;
-
-      await createInventory(targetBranchId, inventoryData);
+      await createInventory(branchId, inventoryData);
       alert("Envanter başarıyla eklendi!");
       onInventoryAdded();
       onClose();
@@ -145,22 +129,22 @@ const AddInventoryModal = ({
           top: "50%",
           left: "50%",
           transform: "translate(-50%, -50%)",
-          width: "fit-content", // İçeriğe göre genişlik ayarı
-          maxWidth: "90vw", // Ekranın %90'ını aşmasın
-          maxHeight: "90vh", // Ekranın %90'ını aşmasın
-          bgcolor: "#F8F1E4", // Arka plan rengi
-          boxShadow: "0px 4px 10px rgba(0, 0, 0.2)", // Hafif gölge efekti
+          width: "fit-content",
+          maxWidth: "90vw",
+          maxHeight: "90vh",
+          bgcolor: "#F8F1E4",
+          boxShadow: "0px 4px 10px rgba(0, 0, 0.2)",
           p: 4,
-          borderRadius: "10px", // Köşeleri yuvarlatma
-          overflow: "auto", // Taşma durumunda kaydırma çubuğu
+          borderRadius: "10px",
+          overflow: "auto",
         }}
       >
         <Typography
           variant="h6"
           component="h2"
           sx={{
-            color: "#A5B68D", // Başlık rengi
-            textAlign: "center", // Ortalanmış başlık
+            color: "#A5B68D",
+            textAlign: "center",
             fontWeight: "bold",
           }}
         >
@@ -172,18 +156,11 @@ const AddInventoryModal = ({
           <InputLabel sx={{ color: "#6B7280" }}>Şirket Seçin</InputLabel>
           <Select
             value={companyId}
-            onChange={(e) => {
-              setCompanyId(e.target.value);
-              setBranchId(""); // Şirket değiştiğinde şube sıfırlanır
-            }}
+            onChange={(e) => setCompanyId(e.target.value)}
             sx={{
               "& .MuiOutlinedInput-root": {
-                "& fieldset": {
-                  borderColor: "#A5B68D", // Çerçeve rengi
-                },
-                "&:hover fieldset": {
-                  borderColor: "#8FA781", // Hover çerçeve rengi
-                },
+                "& fieldset": { borderColor: "#A5B68D" },
+                "&:hover fieldset": { borderColor: "#8FA781" },
               },
             }}
           >
@@ -198,26 +175,66 @@ const AddInventoryModal = ({
           </Select>
         </FormControl>
 
+        {/* İl Seçimi */}
+        <FormControl fullWidth margin="normal" disabled={!companyId}>
+          <InputLabel sx={{ color: "#6B7280" }}>İl Seçin</InputLabel>
+          <Select
+            value={cityFilter}
+            onChange={handleCityChange}
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                "& fieldset": { borderColor: "#A5B68D" },
+                "&:hover fieldset": { borderColor: "#8FA781" },
+              },
+            }}
+          >
+            <MenuItem value="">
+              <em>İl Seçin</em>
+            </MenuItem>
+            {Object.keys(turkishCities).map((city) => (
+              <MenuItem key={city} value={city}>
+                {city}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+
+        {/* İlçe Seçimi */}
+        <FormControl fullWidth margin="normal" disabled={!cityFilter}>
+          <InputLabel sx={{ color: "#6B7280" }}>İlçe Seçin</InputLabel>
+          <Select
+            value={districtFilter}
+            onChange={handleDistrictChange}
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                "& fieldset": { borderColor: "#A5B68D" },
+                "&:hover fieldset": { borderColor: "#8FA781" },
+              },
+            }}
+          >
+            <MenuItem value="">
+              <em>İlçe Seçin</em>
+            </MenuItem>
+            {availableDistricts.map((district) => (
+              <MenuItem key={district} value={district}>
+                {district}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+
         {/* Şube Seçimi */}
-        <FormControl
-          fullWidth
-          margin="normal"
-          disabled={!companyId}
-          sx={{
-            "& .MuiOutlinedInput-root": {
-              "& fieldset": {
-                borderColor: "#A5B68D",
-              },
-              "&:hover fieldset": {
-                borderColor: "#8FA781",
-              },
-            },
-          }}
-        >
+        <FormControl fullWidth margin="normal" disabled={!cityFilter}>
           <InputLabel sx={{ color: "#6B7280" }}>Şube Seçin</InputLabel>
           <Select
             value={branchId}
             onChange={(e) => setBranchId(e.target.value)}
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                "& fieldset": { borderColor: "#A5B68D" },
+                "&:hover fieldset": { borderColor: "#8FA781" },
+              },
+            }}
           >
             <MenuItem value="">
               <em>Şube Seçin</em>
@@ -229,40 +246,13 @@ const AddInventoryModal = ({
             ))}
           </Select>
         </FormControl>
-        {/* Alt Şube Seçimi */}
-        {hasSubBranches && (
-          <FormControl fullWidth margin="normal">
-            <InputLabel sx={{ color: "#6B7280" }}>Alt Şube Seçin</InputLabel>
-            <Select
-              value={selectedSubBranchId}
-              onChange={(e) => setSelectedSubBranchId(e.target.value)}
-            >
-              <MenuItem value="">
-                <em>Alt Şube Seçin</em>
-              </MenuItem>
-              {subBranches.map((subBranch) => (
-                <MenuItem key={subBranch.id} value={subBranch.id}>
-                  {subBranch.name}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        )}
-        {/* Cihaz Türü Seçimi */}
+
+        {/* Cihaz Türü ve Modeli Seçimi */}
         <FormControl fullWidth margin="normal">
           <InputLabel sx={{ color: "#6B7280" }}>Cihaz Türü</InputLabel>
           <Select
             value={deviceType}
-            onChange={(e) => {
-              setDeviceType(e.target.value);
-              const selectedDevice = deviceTypes.find(
-                (type) => type.device_type === e.target.value
-              );
-              setDeviceModels(
-                selectedDevice ? selectedDevice.device_models : []
-              );
-              setDeviceModel(""); // Yeni tür seçildiğinde model sıfırlansın
-            }}
+            onChange={(e) => setDeviceType(e.target.value)}
             sx={{
               "& .MuiOutlinedInput-root": {
                 "& fieldset": { borderColor: "#A5B68D" },
@@ -281,7 +271,6 @@ const AddInventoryModal = ({
           </Select>
         </FormControl>
 
-        {/* Cihaz Modeli Seçimi */}
         <FormControl fullWidth margin="normal" disabled={!deviceType}>
           <InputLabel sx={{ color: "#6B7280" }}>Cihaz Modeli</InputLabel>
           <Select
@@ -314,12 +303,8 @@ const AddInventoryModal = ({
           onChange={(e) => setQuantity(Number(e.target.value))}
           sx={{
             "& .MuiOutlinedInput-root": {
-              "& fieldset": {
-                borderColor: "#A5B68D",
-              },
-              "&:hover fieldset": {
-                borderColor: "#8FA781",
-              },
+              "& fieldset": { borderColor: "#A5B68D" },
+              "&:hover fieldset": { borderColor: "#8FA781" },
             },
           }}
         />
@@ -331,27 +316,21 @@ const AddInventoryModal = ({
           onChange={(e) => setSpecs(e.target.value)}
           sx={{
             "& .MuiOutlinedInput-root": {
-              "& fieldset": {
-                borderColor: "#A5B68D",
-              },
-              "&:hover fieldset": {
-                borderColor: "#8FA781",
-              },
+              "& fieldset": { borderColor: "#A5B68D" },
+              "&:hover fieldset": { borderColor: "#8FA781" },
             },
           }}
         />
-
-        {/* Gönder Butonu */}
         <Button
           fullWidth
           variant="contained"
           onClick={handleSubmit}
           sx={{
             mt: 2,
-            backgroundColor: "#A5B68D", // Buton arka plan rengi
-            color: "#FFFFFF", // Buton metin rengi
+            backgroundColor: "#A5B68D",
+            color: "#FFFFFF",
             "&:hover": {
-              backgroundColor: "#8FA781", // Hover rengi
+              backgroundColor: "#8FA781",
             },
           }}
         >

@@ -41,60 +41,72 @@ const HomePage = () => {
         <Box
           sx={{
             display: "flex", // Flexbox düzeni
-            justifyContent: "center", // Yatay eksende ortalama
+            justifyContent: "space-between", // Yatay eksende boşluk dağılımı
             alignItems: "center", // Dikey eksende ortalama
             margin: "16px 0", // Üst ve alt boşluk
           }}
         >
-          <Box sx={{ display: "flex", alignItems: "center", marginRight: 2 }}>
-            {getActiveIcon()} {/* Aktif sekmeye göre ikon */}
-          </Box>
-          <Breadcrumbs aria-label="breadcrumb">
-            <Link
-              underline="hover"
-              color={activeTab === "company" ? "text.primary" : "inherit"}
-              onClick={() => handleTabChange("company")}
-              sx={{
-                cursor: "pointer",
-                fontWeight: activeTab === "company" ? "bold" : "normal",
-              }}
-            >
-              Şirket
-            </Link>
-            <Link
-              underline="hover"
-              color={activeTab === "branch" ? "text.primary" : "inherit"}
-              onClick={() => handleTabChange("branch")}
-              sx={{
-                cursor: "pointer",
-                fontWeight: activeTab === "branch" ? "bold" : "normal",
-              }}
-            >
-              Şube
-            </Link>
-            <Link
-              underline="hover"
-              color={activeTab === "inventory" ? "text.primary" : "inherit"}
-              onClick={() => handleTabChange("inventory")}
-              sx={{
-                cursor: "pointer",
-                fontWeight: activeTab === "inventory" ? "bold" : "normal",
-              }}
-            >
-              Envanter
-            </Link>
-          </Breadcrumbs>
-        </Box>
-        <Box>
-          <SettingsIcon
+          {/* Sol taraftaki ikon */}
+          <Box sx={{ display: "flex", alignItems: "center" }}></Box>
+
+          {/* Ortada Breadcrumbs */}
+          <Box
             sx={{
-              fontSize: "30px", // İkon boyutu
-              color: "#A5B68D", // İkon rengi
-              cursor: "pointer", // İmleç göstergesi
-              "&:hover": { color: "#8FA781" }, // Hover rengi
+              display: "flex", // Flexbox düzeni
+              justifyContent: "center", // Yatay eksende ortalama
+              flexGrow: 1, // Alanın tamamını kapla
             }}
-            onClick={navigateToSettings} // Settings sayfasına yönlendirme
-          />
+          >
+            <Breadcrumbs aria-label="breadcrumb">
+              {getActiveIcon()} {/* Aktif sekmeye göre ikon */}
+              <Link
+                underline="hover"
+                color={activeTab === "company" ? "text.primary" : "inherit"}
+                onClick={() => handleTabChange("company")}
+                sx={{
+                  cursor: "pointer",
+                  fontWeight: activeTab === "company" ? "bold" : "normal",
+                }}
+              >
+                Şirket
+              </Link>
+              <Link
+                underline="hover"
+                color={activeTab === "branch" ? "text.primary" : "inherit"}
+                onClick={() => handleTabChange("branch")}
+                sx={{
+                  cursor: "pointer",
+                  fontWeight: activeTab === "branch" ? "bold" : "normal",
+                }}
+              >
+                Şube
+              </Link>
+              <Link
+                underline="hover"
+                color={activeTab === "inventory" ? "text.primary" : "inherit"}
+                onClick={() => handleTabChange("inventory")}
+                sx={{
+                  cursor: "pointer",
+                  fontWeight: activeTab === "inventory" ? "bold" : "normal",
+                }}
+              >
+                Envanter
+              </Link>
+            </Breadcrumbs>
+          </Box>
+
+          {/* Sağ tarafta Settings */}
+          <Box>
+            <SettingsIcon
+              sx={{
+                fontSize: "30px", // İkon boyutu
+                color: "#A5B68D", // İkon rengi
+                cursor: "pointer", // İmleç göstergesi
+                "&:hover": { color: "#8FA781" }, // Hover rengi
+              }}
+              onClick={navigateToSettings} // Settings sayfasına yönlendirme
+            />
+          </Box>
         </Box>
       </header>
 
