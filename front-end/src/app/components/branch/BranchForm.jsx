@@ -349,7 +349,7 @@ const BranchForm = ({
                 color: "#FFFFFF",
               }}
               onMouseEnter={(e) => (e.target.style.backgroundColor = "#8FA781")}
-              onMouseLeave={(e) => (e.target.style.backgroundColor = "gray")}
+              onMouseLeave={(e) => (e.target.style.backgroundColor = "#A5B68D")}
             >
               {isEditMode ? "Güncelle" : "Ekle"}
             </button>
