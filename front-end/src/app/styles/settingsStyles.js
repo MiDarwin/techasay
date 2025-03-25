@@ -1,6 +1,6 @@
 const settingsStyles = {
   container: {
-    backgroundColor: "#EDE8DC",
+    backgroundColor: "gray",
     padding: "20px",
     minHeight: "100vh",
     display: "flex",

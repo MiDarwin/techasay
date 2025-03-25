@@ -74,7 +74,7 @@ const UpdateBranchModal = ({ open, onClose, branchData, onUpdate }) => {
 
   const handleSubmit = async () => {
     try {
-      // API çağrısında branch_id ve diğer verileri gönderiyoruz
+      // API çağrısı
       await onUpdate(formData.id, {
         branch_name: formData.name,
         address: formData.address,
@@ -85,12 +85,19 @@ const UpdateBranchModal = ({ open, onClose, branchData, onUpdate }) => {
         location_link: formData.location_link,
         phone_number_2: formData.phone_number_2,
       });
-      onClose(); // Modalı kapat
+
+      // Modalı kapat
+      onClose();
+
+      // Güncelleme sonrası şubelerin yeniden fetch edildiğinden emin olun
       if (typeof onUpdate === "function") {
-        onUpdate(); // Güncelleme sonrası şube listesini çek
+        await onUpdate();
+      } else {
+        console.error("onUpdate bir fonksiyon değil!");
       }
     } catch (error) {
-      alert("Şube başarıyla güncellendi.");
+      console.error("Şube güncellenirken hata oluştu:", error);
+      alert("Şube güncellenirken bir hata oluştu.");
     }
   };
 

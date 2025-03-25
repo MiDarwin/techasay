@@ -152,7 +152,26 @@ const SettingsPage = () => {
             Admin Panel
           </button>
         </div>
-        <Button variant="contained" onClick={() => setOpen(true)}>
+        <Button
+          variant="contained"
+          onClick={() => setOpen(!open)}
+          sx={{
+            background:
+              "linear-gradient(90deg, red, orange, yellow, green, blue, indigo, violet)",
+            backgroundSize: "400% 400%",
+            animation: "rainbowEffect 5s linear infinite",
+            color: "white",
+            fontWeight: "bold",
+            boxShadow: "0px 4px 10px rgba(0, 0, 0.3)",
+            borderRadius: "8px",
+            "&:hover": {
+              background:
+                "linear-gradient(90deg, red, orange, yellow, green, blue, indigo, violet)",
+              animation: "rainbowEffect 3s linear infinite",
+              boxShadow: "0px 6px 14px rgba(0, 0, 0.4)",
+            },
+          }}
+        >
           Renkleri Değiştir
         </Button>
         <ColorModal open={open} handleClose={() => setOpen(false)} />

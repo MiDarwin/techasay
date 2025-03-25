@@ -100,9 +100,9 @@ const HomePage = () => {
             <SettingsIcon
               sx={{
                 fontSize: "30px", // İkon boyutu
-                color: "#A5B68D", // İkon rengi
+                color: "black", // İkon rengi
                 cursor: "pointer", // İmleç göstergesi
-                "&:hover": { color: "#8FA781" }, // Hover rengi
+                "&:hover": { color: "gray" }, // Hover rengi
               }}
               onClick={navigateToSettings} // Settings sayfasına yönlendirme
             />

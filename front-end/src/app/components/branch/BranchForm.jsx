@@ -103,7 +103,7 @@ const BranchForm = ({
     >
       <div className="p-6">
         <h2
-          className="text-2xl font-bold mb-6"
+          className="text-2xl font-bold mb-4"
           style={{ color: "gray", textAlign: "center" }}
         >
           {isEditMode ? "Şubeyi Güncelle" : "Yeni Şube Ekle"}

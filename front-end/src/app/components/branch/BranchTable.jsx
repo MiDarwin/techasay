@@ -56,6 +56,8 @@ const BranchTable = ({ branches, companies, onEdit, onDelete }) => {
   const [isSubBranchModalOpen, setIsSubBranchModalOpen] = useState(false); // Alt şube modal durumu
   const [selectedBranchName, setSelectedBranchName] = useState(""); // Şube adı
   const [permissions, setPermissions] = useState([]); // Kullanıcı izinleri
+  const [branchError, setBranchError] = useState("");
+  const [branchLoading, setBranchLoading] = useState(false);
 
   const handleOpenInventory = async (branchId, branchName) => {
     setSelectedBranchId(branchId);
@@ -130,13 +132,13 @@ const BranchTable = ({ branches, companies, onEdit, onDelete }) => {
     try {
       // Correct API call with branch_id in the URL
       await updateBranch(branchId, updatedData);
-      fetchBranches(cityFilter, districtFilter, searchFilter, companyFilter); // Şubeleri yeniden yükle
+      fetchBranches(cityFilter, districtFilter, companyFilter); // Şubeleri yeniden yükle
       alert(
         "Şube başarıyla güncellendi. Sayfayı yeniledikten sonra yeni veriyi görebilirsiniz."
       );
       // Tabloyu yeniden yükleyin veya güncellenen veriyi tabloya yansıtın
     } catch (error) {
-      fetchBranches(cityFilter, districtFilter, searchFilter, companyFilter); // Şubeleri yeniden yükle
+      fetchBranches(cityFilter, districtFilter, companyFilter); // Şubeleri yeniden yükle
     }
   };
   useEffect(() => {
@@ -152,14 +154,14 @@ const BranchTable = ({ branches, companies, onEdit, onDelete }) => {
     fetchPermissions();
   }, []);
   const fetchBranches = async (
-    city = "",
-    districtFilter = "",
-    search = "",
-    company = ""
+    city = cityFilter,
+    district = districtFilter,
+    search = searchFilter,
+    company = companyFilter
   ) => {
     try {
       setBranchLoading(true);
-      console.log("Seçilen İlçe:", districtFilter);
+      console.log("Seçilen İlçe:", district);
       if (!company) {
         // Eğer companyFilter boşsa tüm şubeleri getir
         await fetchAllBranches();
@@ -168,7 +170,7 @@ const BranchTable = ({ branches, companies, onEdit, onDelete }) => {
         const data = await getBranchesByCompanyId(
           company,
           city,
-          districtFilter,
+          district,
           search
         );
         setBranches(data); // Gelen şube verilerini state'e ata
@@ -349,6 +351,10 @@ BranchTable.propTypes = {
   companies: PropTypes.object.isRequired,
   onEdit: PropTypes.func.isRequired,
   onDelete: PropTypes.func.isRequired,
+  cityFilter: PropTypes.string, // Yeni eklenen prop
+  districtFilter: PropTypes.string, // Yeni eklenen prop
+  searchFilter: PropTypes.string, // Yeni eklenen prop
+  companyFilter: PropTypes.string, // Yeni eklenen prop
 };
 
 export default BranchTable;

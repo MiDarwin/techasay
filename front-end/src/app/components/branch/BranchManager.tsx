@@ -111,17 +111,25 @@ const BranchManager = () => {
       setBranchError(err.detail || "Şube eklenirken bir hata oluştu.");
     }
   };
-  const handleUpdateBranch = async (branch) => {
+  const handleUpdateBranch = async (branchId, updatedData) => {
     try {
-      await updateBranch(branch.id, branch);
+      // Şubeyi güncelle
+      await updateBranch(branchId, updatedData);
+
+      // Şubeleri yeniden fetch et
       await fetchBranches(
         cityFilter,
         districtFilter,
         searchFilter,
         companyFilter
-      ); // await ekledik
+      );
+
+      // Hata mesajını temizle
       setBranchError("");
+
+      // Modalı kapat
       closeBranchModal();
+
       alert("Şube başarıyla güncellendi.");
     } catch (err) {
       setBranchError(err.detail || "Şube güncellenirken bir hata oluştu.");
@@ -277,8 +285,11 @@ const BranchManager = () => {
         }, {})}
         onEdit={openBranchEditModal}
         onDelete={handleDeleteBranch}
-        fetchBranches={fetchBranches} // Şubeleri yeniden yükleme fonksiyonu
-        handleUpdateBranch={handleUpdateBranch}
+        cityFilter={cityFilter} // Filtreleri ekleyin
+        districtFilter={districtFilter}
+        searchFilter={searchFilter}
+        companyFilter={companyFilter}
+        fetchBranches={fetchBranches} // fetchBranches fonksiyonunu geçiyoruz
       />
     </div>
   );
