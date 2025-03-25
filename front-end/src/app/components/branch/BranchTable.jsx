@@ -134,7 +134,7 @@ const BranchTable = ({ branches, companies, onEdit, onDelete }) => {
       alert("Şube başarıyla güncellendi.");
       // Tabloyu yeniden yükleyin veya güncellenen veriyi tabloya yansıtın
     } catch (error) {
-      alert("Şube güncellerken bir hata oluştu.");
+      fetchBranches(cityFilter, districtFilter, searchFilter, companyFilter); // Şubeleri yeniden yükle
     }
   };
   useEffect(() => {
@@ -149,7 +149,35 @@ const BranchTable = ({ branches, companies, onEdit, onDelete }) => {
 
     fetchPermissions();
   }, []);
+  const fetchBranches = async (
+    city = "",
+    districtFilter = "",
+    search = "",
+    company = ""
+  ) => {
+    try {
+      setBranchLoading(true);
+      console.log("Seçilen İlçe:", districtFilter);
+      if (!company) {
+        // Eğer companyFilter boşsa tüm şubeleri getir
+        await fetchAllBranches();
+      } else {
+        // Eğer companyFilter doluysa şirket bazlı şubeleri getir
+        const data = await getBranchesByCompanyId(
+          company,
+          city,
+          districtFilter,
+          search
+        );
+        setBranches(data); // Gelen şube verilerini state'e ata
+      }
 
+      setBranchLoading(false);
+    } catch (err) {
+      setBranchError(err.message || "Şubeler alınırken bir hata oluştu.");
+      setBranchLoading(false);
+    }
+  };
   return (
     <>
       <TableContainer component={Paper} sx={tableStyles.tableContainer}>

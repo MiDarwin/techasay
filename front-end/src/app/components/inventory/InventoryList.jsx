@@ -16,7 +16,17 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import NoBackpackIcon from "@mui/icons-material/NoBackpack";
 import { getAllUsersPermissions } from "@/app/utils/api";
 import tableStyles from "../../styles/tableStyles";
-
+const style = {
+  position: "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  width: 400,
+  bgcolor: "background.paper",
+  border: "2px solid #1976d2",
+  boxShadow: 24,
+  p: 4,
+};
 const InventoryList = ({ inventories, onEdit, onDelete }) => {
   const [permissions, setPermissions] = useState([]); // Kullanıcı izinleri
   useEffect(() => {
@@ -57,7 +67,7 @@ const InventoryList = ({ inventories, onEdit, onDelete }) => {
             inventories.map((inventory, index) => (
               <TableRow
                 key={inventory.id ?? `inventory-${index}`}
-                sx={tableStyles.tableHeader}
+                sx={tableStyles.tableRow}
               >
                 <TableCell sx={{ textAlign: "center" }}>
                   {inventory.branch_name}

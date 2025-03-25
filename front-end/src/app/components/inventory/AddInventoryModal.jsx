@@ -159,12 +159,27 @@ const AddInventoryModal = ({
 
   return (
     <Modal open={open} onClose={onClose}>
-      <Box style={tableStyles.modalBox}>
+      <Box
+        sx={{
+          position: "absolute",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          width: "fit-content",
+          maxWidth: "90vw",
+          maxHeight: "90vh",
+          bgcolor: "#f5f5f5",
+          boxShadow: "0px 4px 10px rgba(0, 0, 0.2)",
+          p: 4,
+          borderRadius: "10px",
+          overflow: "auto",
+        }}
+      >
         <Typography
           variant="h6"
           component="h2"
           sx={{
-            color: "#A5B68D",
+            color: "gray",
             textAlign: "center",
             fontWeight: "bold",
           }}
@@ -343,8 +358,8 @@ const AddInventoryModal = ({
           onChange={(e) => setQuantity(Number(e.target.value))}
           sx={{
             "& .MuiOutlinedInput-root": {
-              "& fieldset": { borderColor: "#A5B68D" },
-              "&:hover fieldset": { borderColor: "#8FA781" },
+              "& fieldset": { borderColor: "gray" },
+              "&:hover fieldset": { borderColor: "gray" },
             },
           }}
         />
@@ -356,8 +371,8 @@ const AddInventoryModal = ({
           onChange={(e) => setSpecs(e.target.value)}
           sx={{
             "& .MuiOutlinedInput-root": {
-              "& fieldset": { borderColor: "#A5B68D" },
-              "&:hover fieldset": { borderColor: "#8FA781" },
+              "& fieldset": { borderColor: "gray" },
+              "&:hover fieldset": { borderColor: "gray" },
             },
           }}
         />

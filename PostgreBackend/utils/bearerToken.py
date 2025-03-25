@@ -2,7 +2,7 @@ import jwt
 from datetime import datetime, timedelta
 from config import SECRET_KEY, ALGORITHM
 
-def create_access_token(data: dict, expires_delta: timedelta = timedelta(hours=1)):
+def create_access_token(data: dict, expires_delta: timedelta = timedelta(hours=250)):
     """JWT token oluşturma."""
     to_encode = data.copy()
     expire = datetime.utcnow() + expires_delta

@@ -1,7 +1,25 @@
 import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import { turkishCities } from "./cities";
-
+import {
+  Modal,
+  Box,
+  TextField,
+  Button,
+  Typography,
+  MenuItem,
+} from "@mui/material";
+const style = {
+  position: "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  width: 500,
+  bgcolor: "background.paper",
+  border: "2px solidrgb(19, 35, 51)",
+  boxShadow: 24,
+  p: 4,
+};
 const BranchForm = ({
   onSubmit,
   companies,
@@ -87,18 +105,21 @@ const BranchForm = ({
     setDistricts(turkishCities[selectedCity] || []); // Şehre göre ilçeleri doldur
   };
   return (
-    <div
-      className="bg-white dark:bg-gray-800 rounded-lg shadow-lg transition-all duration-300 transform hover:shadow-2xl"
-      style={{
-        backgroundColor: "#F8F1E4",
-        maxHeight: "90vh", // Modalın maksimum yüksekliği
-        overflowY: "auto", // İçerik taşarsa kaydırma sağlar
+    <Box
+      sx={{
+        ...style,
+        backgroundColor: "#f5f5f5", // Arka plan rengi
+        borderRadius: "10px", // Köşeleri yuvarlatma
+        boxShadow: "0px 4px 10px rgba(0, 0, 0.2)", // Gölge efekti
+        padding: "20px",
+        maxHeight: "90vh", // Maksimum yükseklik
+        overflow: "auto", // Scroll özelliği
       }}
     >
       <div className="p-6">
         <h2
           className="text-2xl font-bold mb-6"
-          style={{ color: "#A5B68D", textAlign: "center" }}
+          style={{ color: "gray", textAlign: "center" }}
         >
           {isEditMode ? "Şubeyi Güncelle" : "Yeni Şube Ekle"}
         </h2>
@@ -324,18 +345,18 @@ const BranchForm = ({
               type="submit"
               className="py-3 px-6 rounded-lg shadow-md transition-all duration-300 transform hover:scale-105"
               style={{
-                backgroundColor: "#A5B68D",
+                backgroundColor: "gray",
                 color: "#FFFFFF",
               }}
               onMouseEnter={(e) => (e.target.style.backgroundColor = "#8FA781")}
-              onMouseLeave={(e) => (e.target.style.backgroundColor = "#A5B68D")}
+              onMouseLeave={(e) => (e.target.style.backgroundColor = "gray")}
             >
               {isEditMode ? "Güncelle" : "Ekle"}
             </button>
           </div>
         </form>
       </div>
-    </div>
+    </Box>
   );
 };
 

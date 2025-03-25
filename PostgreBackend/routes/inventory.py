@@ -1,8 +1,9 @@
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-
+from models.ArchivedInventory import ArchivedInventory
 from models.branch import Branch
 from schemas.inventory import InventoryCreate, InventoryResponse, InventoryUpdate
 from services.inventory_service import create_inventory, get_inventory_by_branch, delete_inventory, get_all_inventory, \
@@ -77,3 +78,11 @@ async def get_combined_inventory(branch_id: int, db: AsyncSession = Depends(get_
         return inventory
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+@router.get("/archived_inventories", response_model=list[InventoryResponse])
+async def get_archived_inventory_endpoint(
+    limit: int = 50, db: AsyncSession = Depends(get_db)
+):
+    query = select(ArchivedInventory).limit(limit)
+    result = await db.execute(query)
+    archived_inventories = result.scalars().all()
+    return archived_inventories

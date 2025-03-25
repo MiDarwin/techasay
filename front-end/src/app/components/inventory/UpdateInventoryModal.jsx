@@ -81,7 +81,7 @@ const UpdateInventoryModal = ({
           width: "fit-content",
           maxWidth: "90vw",
           maxHeight: "90vh",
-          bgcolor: "#F8F1E4",
+          bgcolor: "#f5f5f5",
           boxShadow: "0px 4px 10px rgba(0, 0, 0.2)",
           p: 4,
           borderRadius: "10px",
@@ -92,7 +92,7 @@ const UpdateInventoryModal = ({
           variant="h6"
           component="h2"
           mb={2}
-          sx={{ color: "#A5B68D", textAlign: "center", fontWeight: "bold" }}
+          sx={{ color: "gray", textAlign: "center", fontWeight: "bold" }}
         >
           Envanteri Güncelle
         </Typography>
@@ -107,7 +107,7 @@ const UpdateInventoryModal = ({
           onChange={(e) => setDeviceType(e.target.value)}
           sx={{
             "& .MuiOutlinedInput-root": {
-              "& fieldset": { borderColor: "#A5B68D" },
+              "& fieldset": { borderColor: "gray" },
             },
           }}
         >
@@ -129,7 +129,7 @@ const UpdateInventoryModal = ({
           disabled={!deviceType} // Cihaz türü seçilmeden model seçilemez
           sx={{
             "& .MuiOutlinedInput-root": {
-              "& fieldset": { borderColor: "#A5B68D" },
+              "& fieldset": { borderColor: "gray" },
             },
           }}
         >
@@ -150,7 +150,7 @@ const UpdateInventoryModal = ({
           onChange={(e) => setQuantity(Number(e.target.value))}
           sx={{
             "& .MuiOutlinedInput-root": {
-              "& fieldset": { borderColor: "#A5B68D" },
+              "& fieldset": { borderColor: "gray" },
             },
           }}
         />
@@ -164,7 +164,7 @@ const UpdateInventoryModal = ({
           onChange={(e) => setSpecs(e.target.value)}
           sx={{
             "& .MuiOutlinedInput-root": {
-              "& fieldset": { borderColor: "#A5B68D" },
+              "& fieldset": { borderColor: "gray" },
             },
           }}
         />

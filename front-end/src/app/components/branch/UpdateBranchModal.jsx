@@ -87,7 +87,7 @@ const UpdateBranchModal = ({ open, onClose, branchData, onUpdate }) => {
       });
       onClose(); // Modalı kapat
     } catch (error) {
-      alert("Güncelleme sırasında bir hata oluştu.");
+      alert("Şube başarıyla güncellendi.");
     }
   };
 
@@ -96,10 +96,12 @@ const UpdateBranchModal = ({ open, onClose, branchData, onUpdate }) => {
       <Box
         sx={{
           ...style,
-          backgroundColor: "#F8F1E4", // Arka plan rengi
+          backgroundColor: "#f5f5f5", // Arka plan rengi
           borderRadius: "10px", // Köşeleri yuvarlatma
           boxShadow: "0px 4px 10px rgba(0, 0, 0.2)", // Gölge efekti
           padding: "20px",
+          maxHeight: "90vh", // Maksimum yükseklik
+          overflow: "auto", // Scroll özelliği
         }}
       >
         <Typography
@@ -107,7 +109,7 @@ const UpdateBranchModal = ({ open, onClose, branchData, onUpdate }) => {
           component="h2"
           sx={{
             mb: 2,
-            color: "#A5B68D", // Başlık rengi
+            color: "gray", // Başlık rengi
             textAlign: "center", // Ortalanmış başlık
             fontWeight: "bold",
           }}
@@ -126,10 +128,10 @@ const UpdateBranchModal = ({ open, onClose, branchData, onUpdate }) => {
             sx={{
               "& .MuiOutlinedInput-root": {
                 "& fieldset": {
-                  borderColor: "#A5B68D", // Border rengi
+                  borderColor: "gray", // Border rengi
                 },
                 "&:hover fieldset": {
-                  borderColor: "#8FA781", // Hover border rengi
+                  borderColor: "gray", // Hover border rengi
                 },
               },
             }}
@@ -145,10 +147,10 @@ const UpdateBranchModal = ({ open, onClose, branchData, onUpdate }) => {
             sx={{
               "& .MuiOutlinedInput-root": {
                 "& fieldset": {
-                  borderColor: "#A5B68D",
+                  borderColor: "gray",
                 },
                 "&:hover fieldset": {
-                  borderColor: "#8FA781",
+                  borderColor: "gray",
                 },
               },
             }}
@@ -196,10 +198,10 @@ const UpdateBranchModal = ({ open, onClose, branchData, onUpdate }) => {
             sx={{
               "& .MuiOutlinedInput-root": {
                 "& fieldset": {
-                  borderColor: "#A5B68D",
+                  borderColor: "gray",
                 },
                 "&:hover fieldset": {
-                  borderColor: "#8FA781",
+                  borderColor: "gray",
                 },
               },
             }}
@@ -215,10 +217,10 @@ const UpdateBranchModal = ({ open, onClose, branchData, onUpdate }) => {
             sx={{
               "& .MuiOutlinedInput-root": {
                 "& fieldset": {
-                  borderColor: "#A5B68D",
+                  borderColor: "gray",
                 },
                 "&:hover fieldset": {
-                  borderColor: "#8FA781",
+                  borderColor: "gray",
                 },
               },
             }}
@@ -234,10 +236,10 @@ const UpdateBranchModal = ({ open, onClose, branchData, onUpdate }) => {
             sx={{
               "& .MuiOutlinedInput-root": {
                 "& fieldset": {
-                  borderColor: "#A5B68D",
+                  borderColor: "gray",
                 },
                 "&:hover fieldset": {
-                  borderColor: "#8FA781",
+                  borderColor: "gray",
                 },
               },
             }}
@@ -252,10 +254,10 @@ const UpdateBranchModal = ({ open, onClose, branchData, onUpdate }) => {
             sx={{
               "& .MuiOutlinedInput-root": {
                 "& fieldset": {
-                  borderColor: "#A5B68D",
+                  borderColor: "gray",
                 },
                 "&:hover fieldset": {
-                  borderColor: "#8FA781",
+                  borderColor: "gray",
                 },
               },
             }}
@@ -265,11 +267,11 @@ const UpdateBranchModal = ({ open, onClose, branchData, onUpdate }) => {
               variant="outlined"
               onClick={onClose}
               sx={{
-                color: "#A5B68D",
-                borderColor: "#A5B68D",
+                color: "black",
+                borderColor: "gray",
                 "&:hover": {
-                  borderColor: "#8FA781",
-                  backgroundColor: "#F0EFE6",
+                  borderColor: "gray",
+                  backgroundColor: "#f5f5f5",
                 },
                 mr: 1,
               }}

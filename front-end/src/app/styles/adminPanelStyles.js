@@ -1,6 +1,6 @@
 const adminPanelStyles = {
   container: {
-    backgroundColor: "#EDE8DC",
+    backgroundColor: "#2B2E4A",
     padding: "20px",
     minHeight: "100vh",
     display: "flex",
@@ -9,7 +9,7 @@ const adminPanelStyles = {
   },
   title: {
     fontSize: "2rem",
-    color: "#333",
+    color: "#fff",
     marginBottom: "20px",
   },
   description: {
@@ -34,14 +34,14 @@ const adminPanelStyles = {
   tableHeader: {
     fontSize: "1rem",
     color: "#FFF",
-    backgroundColor: "#A5B68D",
+    backgroundColor: "#903749",
     padding: "10px",
     textAlign: "center",
     border: "1px solid #ddd",
   },
   tableCell: {
     fontSize: "1rem",
-    color: "#A5B68D",
+    color: "#fff",
     padding: "10px",
     textAlign: "center",
     border: "1px solid #ddd",
@@ -63,7 +63,7 @@ const adminPanelStyles = {
     borderRadius: "5px",
     border: "none",
     cursor: "pointer",
-    backgroundColor: "#4CAF50", // Varsayılan yeşil renk
+    backgroundColor: "#E84545", // Varsayılan yeşil renk
   },
 };
 

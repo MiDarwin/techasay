@@ -297,3 +297,6 @@ export const addModelToDeviceType = async (deviceTypeId, modelName) => {
 export const updateInventoryHelper = async (helperId, updatedData) => {
   return apiRequest(`/inventory-helpers/${helperId}`, "PUT", updatedData);
 };
+export const getArchivedInventory = async () => {
+  return apiRequest(`/archived_inventories`, "GET");
+};

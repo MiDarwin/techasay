@@ -11,6 +11,7 @@ import {
   deleteInventory,
   getInventoryByBranch,
   getAllUsersPermissions,
+  getArchivedInventory,
 } from "../../utils/api";
 import AddIcon from "@mui/icons-material/Add";
 import {
@@ -21,9 +22,15 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  IconButton,
+  Drawer,
+  List,
   Typography,
+  ListItem,
+  ListItemText,
 } from "@mui/material";
 import tableStyles from "@/app/styles/tableStyles";
+import HistoryIcon from "@mui/icons-material/History"; // Kum saati simgesi için
 
 const InventoryManager = () => {
   const [activeTab, setActiveTab] = useState("inventory");
@@ -38,7 +45,24 @@ const InventoryManager = () => {
   const [selectedBranch, setSelectedBranch] = useState("");
   const [isInventoryAddModalOpen, setIsInventoryAddModalOpen] = useState(false);
   const [permissions, setPermissions] = useState([]); // Kullanıcı izinleri
+  const [archivedInventories, setArchivedInventories] = useState([]);
+  const [isArchiveDrawerOpen, setIsArchiveDrawerOpen] = useState(false);
 
+  // Arşivlenmiş envanterleri çekme fonksiyonu
+  const fetchArchivedInventories = async () => {
+    try {
+      const archivedData = await getArchivedInventory();
+      setArchivedInventories(archivedData);
+    } catch (err) {
+      console.error("Arşivlenmiş envanterler alınırken hata oluştu:", err);
+    }
+  };
+
+  // Kum saati simgesine tıklanınca arşiv çek ve drawer aç
+  const handleOpenArchive = async () => {
+    await fetchArchivedInventories();
+    setIsArchiveDrawerOpen(true);
+  };
   const fetchCompanies = async () => {
     try {
       const companyData = await getAllCompanies();
@@ -204,7 +228,6 @@ const InventoryManager = () => {
                     ))}
                   </select>
                 </div>
-
                 {/* Şube Seçimi */}
                 <div>
                   <label htmlFor="branchFilter" style={{ marginRight: "10px" }}>
@@ -224,7 +247,11 @@ const InventoryManager = () => {
                       </option>
                     ))}
                   </select>
-                </div>
+                </div>{" "}
+                {/* Arşivlenmiş Envanter Butonu */}
+                <IconButton color="primary" onClick={handleOpenArchive}>
+                  <HistoryIcon />
+                </IconButton>
               </div>
 
               {/* Envanter Ekle Butonu */}
@@ -294,6 +321,30 @@ const InventoryManager = () => {
           </Box>
         )}
       </main>
+      {/* Arşivlenmiş Envanterler Drawer'ı */}
+      <Drawer
+        anchor="right"
+        open={isArchiveDrawerOpen}
+        onClose={() => setIsArchiveDrawerOpen(false)}
+      >
+        <Box sx={{ width: 350, padding: 2 }}>
+          <Typography variant="h6">Arşivlenmiş Envanterler</Typography>
+          <List>
+            {archivedInventories.length > 0 ? (
+              archivedInventories.map((inventory, index) => (
+                <ListItem key={index}>
+                  <ListItemText
+                    primary={inventory.device_type}
+                    secondary={`Cihaz Modeli: ${inventory.device_model}, quantity: ${inventory.quantity}`}
+                  />
+                </ListItem>
+              ))
+            ) : (
+              <Typography color="textSecondary">Arşiv boş</Typography>
+            )}
+          </List>
+        </Box>
+      </Drawer>
     </div>
   );
 };

@@ -17,7 +17,18 @@ import tableStyles from "@/app/styles/tableStyles";
 
 const CompanyTable = ({ companies, onEdit, onDelete }) => {
   const [permissions, setPermissions] = useState([]); // Kullanıcı izinleri
+  useEffect(() => {
+    const fetchPermissions = async () => {
+      try {
+        const userPermissions = await getAllUsersPermissions(); // Kullanıcı izinlerini al
+        setPermissions(userPermissions); // İzinleri state'e ata
+      } catch (error) {
+        console.error("Kullanıcı izinleri alınırken hata oluştu:", error);
+      }
+    };
 
+    fetchPermissions();
+  }, []);
   return (
     <TableContainer component={Paper} sx={tableStyles.tableContainer}>
       <Table>

@@ -96,11 +96,10 @@ const InventoryManagerPage = () => {
   };
 
   return (
-    <div className="inventory-container">
-      <h1 className="inventory-title">Envanter Kontrol</h1>
-      <button className="back-button" onClick={() => router.push("/")}>
-        Geri Dön
-      </button>
+    <div className="inventory-container" style={{ backgroundColor: "#903749" }}>
+      <h1 className="inventory-title" style={{ color: "#fff" }}>
+        Envanter Kontrol
+      </h1>
 
       <div className="inventory-grid">
         {/* Sol taraf: Cihaz Türleri */}
@@ -137,7 +136,7 @@ const InventoryManagerPage = () => {
         </div>
 
         {/* Orta kısım */}
-        <div className="inventory-arrow">
+        <div className="inventory-arrow" style={{ color: "#fff" }}>
           {selectedDeviceType && <span>→</span>}
         </div>
 

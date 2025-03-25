@@ -1,5 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, join, func
+
+from models.ArchivedInventory import ArchivedInventory
 from models.inventory import Inventory
 from schemas.inventory import InventoryCreate, InventoryResponse,InventoryUpdate
 from models.branch import Branch  # Branch modelini içe aktarın
@@ -47,6 +49,15 @@ async def delete_inventory(db: AsyncSession, inventory_id: int):
     result = await db.execute(query)
     db_inventory = result.scalars().first()
     if db_inventory:
+        # Silinmeden önce depo kaydını oluştur
+        archived_inventory = ArchivedInventory(
+            device_type=db_inventory.device_type,
+            device_model=db_inventory.device_model,
+            quantity=db_inventory.quantity,
+            specs=db_inventory.specs,
+            branch_id=db_inventory.branch_id
+        )
+        db.add(archived_inventory)
         await db.delete(db_inventory)
         await db.commit()
         return db_inventory
@@ -89,23 +100,36 @@ async def get_all_inventory(db: AsyncSession, limit: int = 50, company_name: Opt
         for row in rows
     ]
 async def update_inventory(db: AsyncSession, inventory_id: int, inventory_update: InventoryUpdate):
-    # Envanteri veritabanından getir
     result = await db.execute(select(Inventory).filter(Inventory.id == inventory_id))
     db_inventory = result.scalar_one_or_none()
 
     if not db_inventory:
-        raise ValueError("Envanter bulunamadı.")  # Eğer envanter yoksa hata döndür
+        raise ValueError("Envanter bulunamadı.")
 
-    # Gelen alanları güncelle
+    # Eğer miktar azaltılıyorsa, eksilen kısmı kaydedelim
+    if "quantity" in inventory_update.dict(exclude_unset=True):
+        new_quantity = inventory_update.quantity
+        if new_quantity < db_inventory.quantity:
+            diff = db_inventory.quantity - new_quantity
+            archived_inventory = ArchivedInventory(
+                device_type=db_inventory.device_type,
+                device_model=db_inventory.device_model,
+                quantity=diff,
+                specs=db_inventory.specs,
+                branch_id=db_inventory.branch_id
+            )
+            db.add(archived_inventory)
+
+    # Güncellenmiş miktarı kaydet
     for key, value in inventory_update.dict(exclude_unset=True).items():
         setattr(db_inventory, key, value)
 
-    # Veritabanına güncellemeyi uygula
     db.add(db_inventory)
     await db.commit()
     await db.refresh(db_inventory)
 
     return db_inventory
+
 async def get_inventory_by_branch_id(db, branch_id: int):
     # 1. Ana şubenin kendi envanteri
     main_branch_query = select(Branch.branch_name).where(Branch.id == branch_id)

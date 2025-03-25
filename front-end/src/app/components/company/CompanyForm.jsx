@@ -1,7 +1,24 @@
 import React, { useState, useEffect } from "react";
-import TextField from "@mui/material/TextField"; // MUI TextField bileşeni eklendi
 import "../../styles/styles.css";
-
+import {
+  Modal,
+  Box,
+  TextField,
+  Button,
+  Typography,
+  MenuItem,
+} from "@mui/material";
+const style = {
+  position: "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  width: 500,
+  bgcolor: "background.paper",
+  border: "2px solidrgb(19, 35, 51)",
+  boxShadow: 24,
+  p: 4,
+};
 const CompanyForm = ({
   onSubmit,
   initialData,
@@ -63,60 +80,72 @@ const CompanyForm = ({
   };
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className={`p-6 rounded-lg shadow-lg ${
-        darkMode ? "bg-gray-800 bg-opacity-50" : "bg-gray-100"
-      }`}
+    <Box
+      sx={{
+        ...style,
+        backgroundColor: "#f5f5f5", // Arka plan rengi
+        borderRadius: "10px", // Köşeleri yuvarlatma
+        boxShadow: "0px 4px 10px rgba(0, 0, 0.2)", // Gölge efekti
+        padding: "20px",
+        maxHeight: "90vh", // Maksimum yükseklik
+        overflow: "auto", // Scroll özelliği
+      }}
     >
-      <h2
-        className="text-2xl font-medium mb-4 text-indigo-500"
-        style={{ color: "#B17F59" }}
+      <form
+        onSubmit={handleSubmit}
+        className={`p-6 rounded-lg shadow-lg ${
+          darkMode ? "bg-gray-800 bg-opacity-50" : "bg-gray-100"
+        }`}
       >
-        {isEditMode ? "Şirketi Güncelle" : "Şirket Ekle"}
-      </h2>
-      <div className="mb-4">
-        <TextField
-          id="name"
-          name="name"
-          label="Şirket Adı"
-          variant="outlined"
-          value={form.name}
-          onChange={handleChange}
-          required
-          error={!!errors.name}
-          helperText={errors.name}
-          fullWidth
-          sx={{
-            backgroundColor: darkMode ? "rgba(55, 65, 81, 1)" : "white",
-            color: darkMode ? "white" : "black",
-          }}
-        />
-      </div>
-
-      <div className="mb-4 grid grid-cols-2 gap-4">
-        <div></div>
-      </div>
-      <div className="flex space-x-4">
-        <button
-          type="submit"
-          className="bg-indigo-500 hover:bg-indigo-600 text-white px-6 py-3 rounded-lg shadow-md transition-all duration-300 transform hover:scale-105"
-          style={{ backgroundColor: "#A5B68D", color: "#FFFFFF" }}
+        <h2
+          className="text-2xl font-medium mb-4 text-indigo-500"
+          style={{ color: "gray" }}
         >
-          {isEditMode ? "Güncelle" : "Ekle"}
-        </button>
-        {isEditMode && (
+          {isEditMode ? "Şirketi Güncelle" : "Şirket Ekle"}
+        </h2>
+        <div className="mb-4">
+          <TextField
+            id="name"
+            name="name"
+            label="Şirket Adı"
+            variant="outlined"
+            value={form.name}
+            onChange={handleChange}
+            required
+            error={!!errors.name}
+            helperText={errors.name}
+            fullWidth
+            sx={{
+              backgroundColor: darkMode ? "rgba(55, 65, 81, 1)" : "white",
+              color: darkMode ? "white" : "black",
+            }}
+          />
+        </div>
+
+        <div className="mb-4 grid grid-cols-2 gap-4">
+          <div></div>
+        </div>
+        <div className="flex space-x-4">
           <button
-            type="button"
-            onClick={onCancel}
-            className="bg-gray-700 hover:bg-gray-800 text-white px-6 py-3 rounded-lg shadow-md transition-all duration-300 transform hover:scale-105"
-            style={{ backgroundColor: "#B17F59", color: "#FFFFFF" }}
+            type="submit"
+            className="bg-indigo-500 hover:bg-indigo-600 text-white px-6 py-3 rounded-lg shadow-md transition-all duration-300 transform hover:scale-105"
+            style={{ backgroundColor: "#A5B68D", color: "#FFFFFF" }}
           >
-            İptal
+            {isEditMode ? "Güncelle" : "Ekle"}
           </button>
-        )}
-      </div>
-    </form>
+          {isEditMode && (
+            <button
+              type="button"
+              onClick={onCancel}
+              className="bg-gray-700 hover:bg-gray-800 text-white px-6 py-3 rounded-lg shadow-md transition-all duration-300 transform hover:scale-105"
+              style={{ backgroundColor: "#B17F59", color: "#FFFFFF" }}
+            >
+              İptal
+            </button>
+          )}
+        </div>
+      </form>
+    </Box>
   );
 };
 
