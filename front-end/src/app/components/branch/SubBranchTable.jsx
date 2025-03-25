@@ -30,6 +30,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import BackpackIcon from "@mui/icons-material/Backpack"; // Envanter ikonu
 import InventoryModal from "./InventoryModal"; // Envanter Modalı Component
+import tableStyles from "../../styles/tableStyles";
 
 const style = {
   position: "absolute",
@@ -63,7 +64,18 @@ const SubBranchTable = ({ subBranches, onReload }) => {
     setSelectedSubBranch(null);
     setIsModalOpen(false);
   };
+  useEffect(() => {
+    const fetchPermissions = async () => {
+      try {
+        const userPermissions = await getAllUsersPermissions(); // Kullanıcı izinlerini al
+        setPermissions(userPermissions); // İzinleri state'e ata
+      } catch (error) {
+        console.error("Kullanıcı izinleri alınırken hata oluştu:", error);
+      }
+    };
 
+    fetchPermissions();
+  }, []);
   const openDeleteDialog = (branch) => {
     setBranchToDelete(branch);
     setIsDeleteDialogOpen(true);
@@ -109,49 +121,20 @@ const SubBranchTable = ({ subBranches, onReload }) => {
     setSelectedBranchName("");
   };
   return (
-    <TableContainer
-      component={Paper}
-      sx={{
-        marginTop: 2,
-        borderRadius: "10px", // Köşeleri yuvarlatma
-        boxShadow: "0px 4px 10px rgba(0, 0, 0.2)", // Hafif gölge
-        width: "100%", // BranchTable ile aynı genişlikte olması için
-      }}
-    >
+    <TableContainer component={Paper} sx={tableStyles.tableContainer}>
       {/* Tablo */}
       <Table>
         <TableHead>
-          <TableRow sx={{ backgroundColor: "#A5B68D" }}>
-            <TableCell sx={{ color: "#FFFFFF", fontWeight: "bold" }}>
-              ID
-            </TableCell>
-            <TableCell sx={{ color: "#FFFFFF", fontWeight: "bold" }}>
-              Şube Adı
-            </TableCell>
-            <TableCell sx={{ color: "#FFFFFF", fontWeight: "bold" }}>
-              Şube Notu
-            </TableCell>
-            <TableCell
-              sx={{
-                color: "#FFFFFF",
-                fontWeight: "bold",
-                textAlign: "center",
-                paddingRight: "25px",
-              }}
-            >
-              İşlemler
-            </TableCell>
+          <TableRow sx={tableStyles.tableHeader}>
+            <TableCell>ID</TableCell>
+            <TableCell>Şube Adı</TableCell>
+            <TableCell>Şube Notu</TableCell>
+            <TableCell>İşlemler</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
           {subBranches.map((branch) => (
-            <TableRow
-              key={branch.id}
-              sx={{
-                "&:nth-of-type(odd)": { backgroundColor: "#F8F1E4" }, // Alternatif satır rengi
-                "&:nth-of-type(even)": { backgroundColor: "#FFFFFF" },
-              }}
-            >
+            <TableRow key={branch.id} sx={tableStyles.tableRow}>
               <TableCell>{branch.id}</TableCell>
               <TableCell>{branch.name}</TableCell>
               <TableCell>{branch.branch_note || "Bilgi Yok"}</TableCell>
@@ -163,10 +146,7 @@ const SubBranchTable = ({ subBranches, onReload }) => {
               >
                 <IconButton
                   onClick={() => handleOpenInventory(branch.id, branch.name)}
-                  sx={{
-                    color: "#6B7280", // Envanter ikonu rengi
-                    "&:hover": { color: "#8FA781" }, // Hover rengi
-                  }}
+                  color="primary" // Envanter ikonu rengi
                   aria-label="Şube Envanterini Görüntüle"
                 >
                   <BackpackIcon />
@@ -174,10 +154,7 @@ const SubBranchTable = ({ subBranches, onReload }) => {
                 {permissions.includes("subBranchEdit") && (
                   <IconButton
                     onClick={() => openModal(branch)}
-                    sx={{
-                      color: "#B17F59", // Düzenle ikonu rengi
-                      "&:hover": { color: "#8FA781" }, // Hover rengi
-                    }}
+                    color="warning"
                     aria-label="Düzenle"
                   >
                     <EditIcon />
@@ -186,10 +163,7 @@ const SubBranchTable = ({ subBranches, onReload }) => {
                 {permissions.includes("subBranchDelete") && (
                   <IconButton
                     onClick={() => openDeleteDialog(branch)}
-                    sx={{
-                      color: "#E57373", // Sil ikonu rengi
-                      "&:hover": { color: "#D32F2F" }, // Hover rengi
-                    }}
+                    color="error"
                     aria-label="Sil"
                   >
                     <DeleteIcon />
