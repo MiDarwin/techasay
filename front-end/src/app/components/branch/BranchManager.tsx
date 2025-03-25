@@ -113,11 +113,16 @@ const BranchManager = () => {
   };
   const handleUpdateBranch = async (branch) => {
     try {
-      await updateBranch(branch.id, branch); // ID kullanarak güncelle
-      fetchBranches(cityFilter, searchFilter, companyFilter);
+      await updateBranch(branch.id, branch);
+      await fetchBranches(
+        cityFilter,
+        districtFilter,
+        searchFilter,
+        companyFilter
+      ); // await ekledik
       setBranchError("");
       closeBranchModal();
-      alert("Şube başarıyla güncellendi."); // Başarı mesajı
+      alert("Şube başarıyla güncellendi.");
     } catch (err) {
       setBranchError(err.detail || "Şube güncellenirken bir hata oluştu.");
     }
@@ -148,6 +153,7 @@ const BranchManager = () => {
   const closeBranchModal = () => {
     setIsFormVisible(false);
     setCurrentBranch(null);
+    fetchBranches(cityFilter, districtFilter, searchFilter, companyFilter);
   };
 
   useEffect(() => {

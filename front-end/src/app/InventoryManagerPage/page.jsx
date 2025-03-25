@@ -56,7 +56,24 @@ const InventoryManagerPage = () => {
       setLoading(false);
     }
   };
+  // Cihaz türlerini getir
+  const fetchDeviceTypes = async () => {
+    try {
+      setLoading(true);
+      const data = await getModelsByDeviceType(); // API çağrısı
+      setDeviceTypes(data);
+    } catch (err) {
+      console.error("Cihaz türleri alınamadı:", err);
+      setError("Cihaz türleri alınamadı.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  // useEffect içinde çağırma
+  useEffect(() => {
+    fetchDeviceTypes();
+  }, []);
   // Yeni model ekle (Mevcut cihaz türüne ekleme)
   const handleAddModel = async () => {
     if (!newModelName.trim() || !selectedDeviceType) {
@@ -66,25 +83,17 @@ const InventoryManagerPage = () => {
 
     try {
       setLoading(true);
-      const updatedHelper = await addModelToDeviceType(
-        selectedDeviceType.id,
-        newModelName
-      );
+      await addModelToDeviceType(selectedDeviceType.id, newModelName);
 
-      // Seçili cihaz türüne modeli ekleyerek state'i güncelle
-      setDeviceTypes((prev) =>
-        prev.map((type) =>
-          type.id === selectedDeviceType.id
-            ? {
-                ...type,
-                device_models: [
-                  ...type.device_models,
-                  { model_name: newModelName },
-                ],
-              }
-            : type
-        )
+      // Yeni model eklendikten sonra cihaz türlerini yeniden çek
+      const updatedDeviceTypes = await getModelsByDeviceType();
+      setDeviceTypes(updatedDeviceTypes);
+
+      // Seçili cihaz türünü tekrar bul ve set et
+      const updatedSelectedType = updatedDeviceTypes.find(
+        (type) => type.id === selectedDeviceType.id
       );
+      setSelectedDeviceType(updatedSelectedType || null);
 
       setNewModelName(""); // Input'u temizle
     } catch (err) {

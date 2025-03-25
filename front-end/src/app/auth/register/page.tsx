@@ -32,7 +32,7 @@ export default function RegisterPage() {
         phone_number: formattedPhoneNumber,
         password,
       });
-      alert(data.message);
+      alert("Kayıt Başarılı");
       router.push("/auth/login");
     } catch (error) {
       if (error instanceof Error) {

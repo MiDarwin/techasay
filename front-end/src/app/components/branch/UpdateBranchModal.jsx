@@ -86,6 +86,9 @@ const UpdateBranchModal = ({ open, onClose, branchData, onUpdate }) => {
         phone_number_2: formData.phone_number_2,
       });
       onClose(); // Modalı kapat
+      if (typeof onUpdate === "function") {
+        onUpdate(); // Güncelleme sonrası şube listesini çek
+      }
     } catch (error) {
       alert("Şube başarıyla güncellendi.");
     }
