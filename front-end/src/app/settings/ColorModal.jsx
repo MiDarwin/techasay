@@ -13,10 +13,21 @@ const ColorModal = ({ open, handleClose }) => {
     button: "#28a745",
   });
 
+  // Renk anahtarlarıyla ilgili daha kullanıcı dostu metinler
+  const colorLabels = {
+    tableRowOdd: "1. Satır Rengi",
+    tableRowEven: "2. Satır Rengi",
+    tableHeader: "Tablo Başlığı Rengi",
+    subBranchRow: "Alt Dal Satırı Rengi",
+    filterContainer: "Filtre Konteynır Rengi",
+    button: "Buton Rengi",
+  };
+
   useEffect(() => {
-    // LocalStorage'dan kayıtlı renkleri al
-    const savedColors = JSON.parse(localStorage.getItem("tableColors"));
-    if (savedColors) setColors(savedColors);
+    const savedColors = localStorage.getItem("tableColors");
+    if (savedColors) {
+      setColors(JSON.parse(savedColors));
+    }
   }, []);
 
   const handleChange = (e) => {
@@ -47,7 +58,7 @@ const ColorModal = ({ open, handleClose }) => {
         <h3>Renk Ayarları</h3>
         {Object.keys(colors).map((key) => (
           <div key={key} style={{ marginBottom: "10px" }}>
-            <label>{key}:</label>
+            <label>{colorLabels[key]}:</label>
             <input
               type="color"
               name={key}

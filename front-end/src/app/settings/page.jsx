@@ -169,18 +169,24 @@ const SettingsPage = () => {
       </div>
 
       {/* Şifre Değiştirme Modal */}
-      <Modal open={isPasswordModalOpen} onClose={togglePasswordModal}>
-        <div style={settingsStyles.modal}>
-          <h2 style={settingsStyles.modalTitle}>Şifre Değiştir</h2>
+      <Modal
+        open={isPasswordModalOpen}
+        onClose={togglePasswordModal}
+        sx={{ display: "flex", alignItems: "center", justifyContent: "center" }}
+      >
+        <div
+          style={{
+            ...settingsStyles.modal,
+            backgroundColor: "white",
+            padding: "20px",
+            borderRadius: "8px",
+            boxShadow: "0 3px 6px rgba(0,0,0,0.1)",
+          }}
+        >
+          <h2 style={{ ...settingsStyles.modalTitle, marginBottom: "20px" }}>
+            Şifre Değiştir
+          </h2>
 
-          <TextField
-            label="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            fullWidth
-            margin="normal"
-            disabled
-          />
           <TextField
             label="Mevcut Şifre"
             type="password"
@@ -188,7 +194,9 @@ const SettingsPage = () => {
             onChange={(e) => setOldPassword(e.target.value)}
             fullWidth
             margin="normal"
+            sx={{ mb: 2 }}
           />
+
           <TextField
             label="Yeni Şifre"
             type="password"
@@ -196,20 +204,27 @@ const SettingsPage = () => {
             onChange={(e) => setNewPassword(e.target.value)}
             fullWidth
             margin="normal"
+            sx={{ mb: 2 }}
           />
 
           {passwordError && (
-            <p style={settingsStyles.errorText}>{passwordError}</p>
+            <div style={{ color: "error.main", marginBottom: "10px" }}>
+              {passwordError}
+            </div>
           )}
+
           {passwordSuccess && (
-            <p style={settingsStyles.successText}>{passwordSuccess}</p>
+            <div style={{ color: "success.main", marginBottom: "10px" }}>
+              {passwordSuccess}
+            </div>
           )}
 
           <Button
             variant="contained"
             color="primary"
             onClick={handleChangePassword}
-            style={settingsStyles.submitButton}
+            fullWidth
+            sx={{ mt: 2 }}
           >
             Şifreyi Güncelle
           </Button>

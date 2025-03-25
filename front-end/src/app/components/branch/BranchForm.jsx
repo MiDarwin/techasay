@@ -1,14 +1,7 @@
 import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import { turkishCities } from "./cities";
-import {
-  Modal,
-  Box,
-  TextField,
-  Button,
-  Typography,
-  MenuItem,
-} from "@mui/material";
+import { Box } from "@mui/material";
 const style = {
   position: "absolute",
   top: "50%",
@@ -65,40 +58,32 @@ const BranchForm = ({
       setError("Lütfen tüm alanları doldurun.");
       return;
     }
-    const handleUpdateBranch = async (updatedData) => {
-      try {
-        await updateBranch(selectedBranch._id, updatedData);
-        alert("Şube başarıyla güncellendi.");
-        setIsEditMode(false); // Düzenleme modunu kapat
-        // Tabloyu güncellemek için yeni verileri çekebilirsiniz
-      } catch (err) {
-        alert(err.message || "Şubeyi güncellerken bir hata oluştu.");
-      }
-    };
-    const phoneRegex = /^(\+90|0)?[5-9]\d{9}$/;
+
+    const numberOnlyRegex = /^\d+$/;
     const normalizedPhoneNumber = phoneNumber.replace(/\s/g, "");
-    if (!phoneRegex.test(normalizedPhoneNumber)) {
-      setError("Geçerli bir telefon numarası girin.");
+
+    if (!numberOnlyRegex.test(normalizedPhoneNumber)) {
+      setError("Telefon numarası sadece rakamlardan oluşmalıdır.");
       return;
     }
 
     try {
       await onSubmit({
-        company_id: parseInt(companyId, 10), // Şirket ID'sinin doğru olduğunu kontrol et
+        company_id: parseInt(companyId, 10),
         branch_name: branchName,
         address,
         city,
-        district, // İlçe bilgisi ekleniyor
+        district,
         phone_number: normalizedPhoneNumber,
         branch_note: branchNote,
         location_link: locationLink,
-        phone_number_2: phoneNumber2, // Doğru isimlendirme
+        phone_number_2: phoneNumber2,
       });
-      // Formu sıfırla
     } catch (submissionError) {
       setError("Şubeyi eklerken veya güncellerken bir hata oluştu.");
     }
   };
+
   const handleCityChange = (selectedCity) => {
     setCity(selectedCity);
     setDistrict(""); // İlçe seçimini sıfırla
