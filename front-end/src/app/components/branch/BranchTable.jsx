@@ -44,7 +44,13 @@ const style = {
   p: 4,
 };
 
-const BranchTable = ({ branches, companies, onEdit, onDelete }) => {
+const BranchTable = ({
+  branches,
+  companies,
+  onEdit,
+  onDelete,
+  fetchBranches,
+}) => {
   const [openInventory, setOpenInventory] = useState(false);
   const [inventory, setInventory] = useState([]);
   const [selectedBranchId, setSelectedBranchId] = useState(null);
@@ -102,6 +108,7 @@ const BranchTable = ({ branches, companies, onEdit, onDelete }) => {
       await createSubBranch(selectedBranch.id, subBranchData); // API çağrısı (branchId ile)
       alert("Alt şube başarıyla eklendi!");
       setIsSubBranchModalOpen(false); // Modalı kapat
+      fetchBranches(); // Güncellemeden sonra şubeleri yeniden fetch et
     } catch (err) {
       alert("Alt şube eklenirken bir hata oluştu: " + err.message);
     }
@@ -130,17 +137,14 @@ const BranchTable = ({ branches, companies, onEdit, onDelete }) => {
   };
   const handleUpdateBranch = async (branchId, updatedData) => {
     try {
-      // Correct API call with branch_id in the URL
-      await updateBranch(branchId, updatedData);
-      fetchBranches(cityFilter, districtFilter, companyFilter); // Şubeleri yeniden yükle
-      alert(
-        "Şube başarıyla güncellendi. Sayfayı yeniledikten sonra yeni veriyi görebilirsiniz."
-      );
-      // Tabloyu yeniden yükleyin veya güncellenen veriyi tabloya yansıtın
+      await updateBranch(branchId, updatedData); // Şube güncelleme API çağrısı
+      alert("Şube başarıyla güncellendi.");
+      fetchBranches(); // Güncellemeden sonra şubeleri yeniden fetch et
     } catch (error) {
-      fetchBranches(cityFilter, districtFilter, companyFilter); // Şubeleri yeniden yükle
+      console.error("Şube güncellenirken hata oluştu:", error);
     }
   };
+
   useEffect(() => {
     const fetchPermissions = async () => {
       try {
@@ -153,35 +157,7 @@ const BranchTable = ({ branches, companies, onEdit, onDelete }) => {
 
     fetchPermissions();
   }, []);
-  const fetchBranches = async (
-    city = cityFilter,
-    district = districtFilter,
-    search = searchFilter,
-    company = companyFilter
-  ) => {
-    try {
-      setBranchLoading(true);
-      console.log("Seçilen İlçe:", district);
-      if (!company) {
-        // Eğer companyFilter boşsa tüm şubeleri getir
-        await fetchAllBranches();
-      } else {
-        // Eğer companyFilter doluysa şirket bazlı şubeleri getir
-        const data = await getBranchesByCompanyId(
-          company,
-          city,
-          district,
-          search
-        );
-        setBranches(data); // Gelen şube verilerini state'e ata
-      }
 
-      setBranchLoading(false);
-    } catch (err) {
-      setBranchError(err.message || "Şubeler alınırken bir hata oluştu.");
-      setBranchLoading(false);
-    }
-  };
   return (
     <>
       <TableContainer component={Paper} sx={tableStyles.tableContainer}>
@@ -352,6 +328,7 @@ BranchTable.propTypes = {
   onEdit: PropTypes.func.isRequired,
   onDelete: PropTypes.func.isRequired,
   cityFilter: PropTypes.string, // Yeni eklenen prop
+  fetchBranches: PropTypes.func.isRequired, // fetchBranches fonksiyonu zorunlu
   districtFilter: PropTypes.string, // Yeni eklenen prop
   searchFilter: PropTypes.string, // Yeni eklenen prop
   companyFilter: PropTypes.string, // Yeni eklenen prop

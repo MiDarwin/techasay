@@ -94,7 +94,16 @@ const BranchManager = () => {
     setDistrictFilter(""); // İl değiştiğinde ilçe filtresini sıfırla
     setAvailableDistricts(turkishCities[selectedCity] || []); // Seçilen ilin ilçelerini getir
   };
-
+  const handleUpdateBranch = async (branchId, updatedData) => {
+    try {
+      await updateBranch(branchId, updatedData);
+      const updatedBranches = await fetchBranches();
+      setBranches(updatedBranches);
+      alert("Şube başarıyla güncellendi.");
+    } catch (error) {
+      console.error("Şube güncellenirken hata oluştu:", error);
+    }
+  };
   const handleDistrictChange = (e) => {
     const selectedDistrict = e.target.value;
     setDistrictFilter(selectedDistrict);
@@ -109,30 +118,6 @@ const BranchManager = () => {
       alert("Şube başarı ile eklendi.");
     } catch (err) {
       setBranchError(err.detail || "Şube eklenirken bir hata oluştu.");
-    }
-  };
-  const handleUpdateBranch = async (branchId, updatedData) => {
-    try {
-      // Şubeyi güncelle
-      await updateBranch(branchId, updatedData);
-
-      // Şubeleri yeniden fetch et
-      await fetchBranches(
-        cityFilter,
-        districtFilter,
-        searchFilter,
-        companyFilter
-      );
-
-      // Hata mesajını temizle
-      setBranchError("");
-
-      // Modalı kapat
-      closeBranchModal();
-
-      alert("Şube başarıyla güncellendi.");
-    } catch (err) {
-      setBranchError(err.detail || "Şube güncellenirken bir hata oluştu.");
     }
   };
 

@@ -44,7 +44,7 @@ const style = {
   p: 4,
 };
 
-const SubBranchTable = ({ subBranches, onReload }) => {
+const SubBranchTable = ({ subBranches }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedSubBranch, setSelectedSubBranch] = useState(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -91,7 +91,6 @@ const SubBranchTable = ({ subBranches, onReload }) => {
       await updateBranch(selectedSubBranch.id, updatedData); // Güncelleme API çağrısı
       alert("Alt şube başarıyla güncellendi!");
       closeModal();
-      onReload(); // Tabloyu yeniden yükle
     } catch (err) {
       alert("Alt şube güncellenirken bir hata oluştu: " + err.message);
     }
@@ -102,7 +101,6 @@ const SubBranchTable = ({ subBranches, onReload }) => {
       await deleteBranch(branchToDelete.id); // Silme API çağrısı
       alert("Alt şube başarıyla silindi!");
       closeDeleteDialog();
-      onReload(); // Tabloyu yeniden yükle
     } catch (err) {
       alert("Alt şube silinirken bir hata oluştu: " + err.message);
     }
@@ -258,7 +256,6 @@ SubBranchTable.propTypes = {
       branch_note: PropTypes.string,
     })
   ).isRequired,
-  onReload: PropTypes.func.isRequired, // Tabloyu yeniden yüklemek için bir fonksiyon
 };
 
 export default SubBranchTable;

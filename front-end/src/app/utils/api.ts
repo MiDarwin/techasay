@@ -169,9 +169,7 @@ export const updateBranch = async (branchId, updateData) => {
     body: JSON.stringify(updateData),
   });
 
-  if (!response.ok) {
-    throw new Error("Güncelleme işlemi başarısız oldu.");
-  }
+  
 };
 
 export const deleteBranch = (branchId) => {
