@@ -19,6 +19,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import BackpackIcon from "@mui/icons-material/Backpack"; // Envanter ikonu
 import LocationOnIcon from "@mui/icons-material/LocationOn"; // Konum ikonu
 import HolidayVillageIcon from "@mui/icons-material/HolidayVillage"; // Alt şube ikonu
+import FavoriteIcon from "@mui/icons-material/Favorite"; // Kırmızı kalp ikonu
 import {
   getInventoryByBranch,
   getcombinedinventoryByBranch,
@@ -72,7 +73,13 @@ const BranchTable = ({
     setInventory(data);
     setOpenInventory(true);
   };
-
+  const renderFavoriteIcon = (isFavorite) => {
+    return isFavorite ? (
+      <FavoriteIcon style={{ color: "red" }} />
+    ) : (
+      <FavoriteIcon style={{ color: "gray" }} />
+    );
+  };
   const handleCloseInventory = () => {
     setOpenInventory(false);
     setSelectedBranchId(null);
@@ -266,6 +273,13 @@ const BranchTable = ({
                         </IconButton>
                       </Tooltip>
                     )}
+                    {/* Favori simgesini ekle */}
+                    <Tooltip title="Favori">
+                      <IconButton aria-label="Favori">
+                        {renderFavoriteIcon(branch.is_favorite)}{" "}
+                        {/* Favori durumu */}
+                      </IconButton>
+                    </Tooltip>
                   </TableCell>
                 </TableRow>
                 {/* Alt Şube Tablosu */}
@@ -336,6 +350,7 @@ BranchTable.propTypes = {
       branch_note: PropTypes.string,
       phone_number_2: PropTypes.string,
       sub_branch: PropTypes.array, // Alt şube durumu
+      is_favorite: PropTypes.bool.isRequired,
     })
   ).isRequired,
   companies: PropTypes.object.isRequired,
