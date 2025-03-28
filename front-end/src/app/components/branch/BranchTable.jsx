@@ -12,6 +12,7 @@ import {
   Paper,
   Modal,
   Box,
+  Snackbar,
   Typography,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
@@ -26,6 +27,8 @@ import {
   getSubBranchesByBranchId,
   updateBranch,
   getAllUsersPermissions,
+  removeFavoriteBranch,
+  addFavoriteBranch,
   createSubBranch, // Alt şube silme API çağrısı
 } from "../../utils/api"; // API'den envanter ve alt şubeleri almak için kullanılan fonksiyonlar
 import UpdateBranchModal from "./UpdateBranchModal";
@@ -66,6 +69,9 @@ const BranchTable = ({
   const [branchError, setBranchError] = useState("");
   const [branchLoading, setBranchLoading] = useState(false);
   const [parentBranchId, setParentBranchId] = useState(null);
+  const [snackbarOpen, setSnackbarOpen] = useState(false); // Snackbar açık mı
+  const [snackbarMessage, setSnackbarMessage] = useState(""); // Snackbar mesajı
+
   const handleOpenInventory = async (branchId, branchName) => {
     setSelectedBranchId(branchId);
     setSelectedBranchName(branchName);
@@ -73,13 +79,30 @@ const BranchTable = ({
     setInventory(data);
     setOpenInventory(true);
   };
-  const renderFavoriteIcon = (isFavorite) => {
-    return isFavorite ? (
-      <FavoriteIcon style={{ color: "red" }} />
-    ) : (
-      <FavoriteIcon style={{ color: "gray" }} />
-    );
+  const handleFavoriteClick = async (branchId, isFavorite) => {
+    try {
+      if (isFavorite) {
+        // Şube favorilerde mevcutsa, favoriden sil
+        await removeFavoriteBranch(branchId);
+        setSnackbarMessage("Favorilerden kaldırıldı!"); // Pop-up mesajı
+      } else {
+        // Şube favorilerde değilse, favorilere ekle
+        await addFavoriteBranch(branchId);
+        setSnackbarMessage("Favorilere eklendi!"); // Pop-up mesajı
+      }
+
+      setSnackbarOpen(true); // Pop-up'ı aç
+      fetchBranches(); // Favori işlemi sonrası şube listesini yenile
+    } catch (error) {
+      setSnackbarMessage("Favori işlemi sırasında bir hata oluştu!"); // Hata mesajı
+      setSnackbarOpen(true); // Pop-up'ı aç
+    }
   };
+
+  const handleSnackbarClose = () => {
+    setSnackbarOpen(false); // Snackbar'ı kapat
+  };
+
   const handleCloseInventory = () => {
     setOpenInventory(false);
     setSelectedBranchId(null);
@@ -173,6 +196,22 @@ const BranchTable = ({
     } catch (error) {
       console.error("Alt şubeler alınırken hata oluştu:", error);
     }
+  };
+  const renderFavoriteIcon = (branch) => {
+    return (
+      <Tooltip
+        title={branch.is_favorite ? "Favoriden Kaldır" : "Favorilere Ekle"}
+      >
+        <IconButton
+          onClick={() => handleFavoriteClick(branch.id, branch.is_favorite)}
+          aria-label="Favori"
+        >
+          <FavoriteIcon
+            style={{ color: branch.is_favorite ? "red" : "gray" }}
+          />
+        </IconButton>
+      </Tooltip>
+    );
   };
   return (
     <>
@@ -275,9 +314,15 @@ const BranchTable = ({
                     )}
                     {/* Favori simgesini ekle */}
                     <Tooltip title="Favori">
-                      <IconButton aria-label="Favori">
-                        {renderFavoriteIcon(branch.is_favorite)}{" "}
-                        {/* Favori durumu */}
+                      <IconButton
+                        onClick={() =>
+                          handleFavoriteClick(branch.id, branch.is_favorite)
+                        }
+                        aria-label="Favori"
+                      >
+                        <FavoriteIcon
+                          style={{ color: branch.is_favorite ? "red" : "gray" }}
+                        />
                       </IconButton>
                     </Tooltip>
                   </TableCell>

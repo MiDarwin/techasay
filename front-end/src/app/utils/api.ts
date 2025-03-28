@@ -298,3 +298,42 @@ export const updateInventoryHelper = async (helperId, updatedData) => {
 export const getArchivedInventory = async () => {
   return apiRequest(`/archived_inventories`, "GET");
 };
+// Favori ekleme API çağrısı
+export const addFavoriteBranch = async (branchId) => {
+  const token = localStorage.getItem("access_token"); // Kullanıcının token'ını al
+  const url = `${BASE_URL}/branches/${branchId}/favorites`;
+
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Authorization": `${token}`, // Bearer token ekle
+      "Content-Type": "application/json", // JSON formatını belirt
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error("Favori ekleme işlemi başarısız oldu.");
+  }
+
+  return await response.json(); // API yanıtını döndür
+};
+
+// Favori silme API çağrısı
+export const removeFavoriteBranch = async (branchId) => {
+  const token = localStorage.getItem("access_token"); // Kullanıcının token'ını al
+  const url = `${BASE_URL}/branches/${branchId}/favorites`;
+
+  const response = await fetch(url, {
+    method: "DELETE",
+    headers: {
+      "Authorization": `${token}`, // Bearer token ekle
+      "Content-Type": "application/json", // JSON formatını belirt
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error("Favori silme işlemi başarısız oldu.");
+  }
+
+  return await response.json(); // API yanıtını döndür
+};

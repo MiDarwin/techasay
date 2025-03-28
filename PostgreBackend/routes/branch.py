@@ -93,8 +93,12 @@ async def get_sub_branches_endpoint(branch_id: int, db: AsyncSession = Depends(g
     return sub_branches
 
 
-@router.post("/branches/favorites")
-async def add_to_favorites(branch_id: int, db: AsyncSession = Depends(get_db), token: str = Depends(oauth2_scheme)):
+@router.post("/branches/{branch_id}/favorites")
+async def add_to_favorites(
+    branch_id: int,
+    db: AsyncSession = Depends(get_db),
+    token: str = Depends(oauth2_scheme)
+):
     # Token'den kullanıcı ID'sini çıkar
     user_id = get_user_id_from_token(token)
     if not user_id:
