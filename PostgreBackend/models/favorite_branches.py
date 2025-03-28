@@ -1,7 +1,8 @@
+# models/favorite.py
 from sqlalchemy import Table, Column, Integer, ForeignKey, DateTime, func
-from sqlalchemy.orm import relationship
 from database import Base
 
+# Ara tablo tanımı
 favorite_branches = Table(
     "favorite_branches",
     Base.metadata,

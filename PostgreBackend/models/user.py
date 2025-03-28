@@ -1,7 +1,7 @@
 # models/user.py
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import relationship
-
+from models.favorite_branches import favorite_branches  # Ara tabloyu içe aktar
 from database import Base
 import bcrypt
 

@@ -1,6 +1,6 @@
 # models/branch.py
 import datetime
-
+from models.favorite_branches import favorite_branches
 from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
 from database import Base
@@ -27,6 +27,11 @@ class Branch(Base):
 
     parent_branch_id = Column(Integer, ForeignKey("branches.id"), nullable=True)
     parent_branch = relationship("Branch", remote_side=[id], backref="sub_branches")
-
+    # Favori Kullanıcılar İlişkisi
+    favorited_by_users = relationship(
+        "User",
+        secondary=favorite_branches,
+        back_populates="favorite_branches"
+    )
 # Import en sona eklendi
 from .inventory import Inventory

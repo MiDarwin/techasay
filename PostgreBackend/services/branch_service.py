@@ -1,13 +1,16 @@
 # services/branch_service.py
+from http.client import HTTPException
 from typing import Optional
 from datetime import datetime
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from models.branch import Branch
 from models.company import Company
+from models.favorite_branches import favorite_branches
+from models.user import User
 from schemas import company
 from schemas.branch import BranchCreate, BranchResponse,BranchUpdate
-from sqlalchemy.orm import joinedload  # Ekle
+from sqlalchemy.orm import joinedload, Session  # Ekle
 from sqlalchemy import or_
 from sqlalchemy.orm import selectinload
 
@@ -218,3 +221,43 @@ async def get_sub_branches(db: AsyncSession, parent_branch_id: int):
         }
         for branch in sub_branches
     ]
+
+
+async def add_favorite_branch(db: AsyncSession, user_id: int, branch_id: int):
+    # Kullanıcıyı asenkron olarak sorgula
+    user_query = select(User).where(User.id == user_id)
+    result_user = await db.execute(user_query)
+    user = result_user.scalars().first()  # İlk sonucu al
+
+    # Şubeyi asenkron olarak sorgula
+    branch_query = select(Branch).where(Branch.id == branch_id)
+    result_branch = await db.execute(branch_query)
+    branch = result_branch.scalars().first()  # İlk sonucu al
+
+    if not user or not branch:
+        raise HTTPException(status_code=404, detail="Kullanıcı veya şube bulunamadı.")
+
+    # Favoriler kontrolü
+    existing_favorite_query = select(favorite_branches).where(
+        favorite_branches.c.user_id == user_id,
+        favorite_branches.c.branch_id == branch_id
+    )
+    result = await db.execute(existing_favorite_query)
+    existing_favorite = result.scalars().first()
+
+    if existing_favorite:
+        return {"message": "Şube zaten favorilerde."}
+
+    # Favori ekleme işlemi
+    insert_query = favorite_branches.insert().values(user_id=user_id, branch_id=branch_id)
+    await db.execute(insert_query)
+    await db.commit()
+    return {"message": "Favori şube başarıyla eklendi."}
+def remove_favorite_branch(db: Session, user_id: int, branch_id: int):
+    user = db.query(User).filter(User.id == user_id).first()
+    branch = db.query(Branch).filter(Branch.id == branch_id).first()
+    if branch in user.favorite_branches:
+        user.favorite_branches.remove(branch)
+        db.commit()
+        return {"message": "Favori şube başarıyla kaldırıldı."}
+    return {"message": "Şube zaten favorilerde değil."}

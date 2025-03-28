@@ -2,11 +2,18 @@
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException,Query
+from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import Session
+
+from dependencies import oauth2_scheme
+from models.user import User
 from schemas.branch import BranchCreate, BranchResponse, BranchUpdate
 from services.branch_service import create_branch, get_branches, update_branch, delete_branch, create_sub_branch, \
-    get_sub_branches
+    get_sub_branches, add_favorite_branch
 from database import get_db
+from utils.bearerToken import get_user_id_from_token
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")  # Token doğrulama şeması
 
 router = APIRouter()
 
@@ -79,3 +86,14 @@ async def get_sub_branches_endpoint(branch_id: int, db: AsyncSession = Depends(g
     if not sub_branches:
         raise HTTPException(status_code=404, detail="Alt şube bulunamadı.")
     return sub_branches
+
+
+@router.post("/branches/favorites")
+async def add_to_favorites(branch_id: int, db: AsyncSession = Depends(get_db), token: str = Depends(oauth2_scheme)):
+    # Token'den kullanıcı ID'sini çıkar
+    user_id = get_user_id_from_token(token)
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Geçersiz veya süresi dolmuş token.")
+
+    # Favori ekleme servisini çağır
+    return await add_favorite_branch(db, user_id, branch_id)
