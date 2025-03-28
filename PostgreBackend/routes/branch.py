@@ -59,13 +59,18 @@ from services.branch_service import create_branch, get_branches, get_all_branche
 async def read_all_branches(
     limit: int = 50,  # Varsayılan limit 50
     city: Optional[str] = None,  # Şehir bilgisi opsiyonel
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    token: str = Depends(oauth2_scheme)
 ):
     """
     Şirket ID olmadan tüm şubeleri getirir. Varsayılan olarak ilk 50 şubeyi döndürür.
     Şehir bilgisi sağlanırsa, sadece o şehirdeki şubeleri döndürür.
     """
-    return await get_all_branches(db, limit=limit, city=city)
+    user_id = get_user_id_from_token(token)
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Geçersiz veya süresi dolmuş token.")
+
+    return await get_all_branches(db, user_id=user_id, limit=limit, city=city)
 # Alt Şube Ekleme (POST)
 @router.post("/branches/{parent_branch_id}/sub-branches", response_model=BranchResponse)
 async def create_sub_branch_endpoint(

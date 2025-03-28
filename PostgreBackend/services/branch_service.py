@@ -13,7 +13,7 @@ from schemas.branch import BranchCreate, BranchResponse,BranchUpdate
 from sqlalchemy.orm import joinedload, Session  # Ekle
 from sqlalchemy import or_
 from sqlalchemy.orm import selectinload
-
+from models.favorite_branches import favorite_branches
 
 async def create_branch(db: AsyncSession, branch: BranchCreate, company_id: int):
     db_branch = Branch(
@@ -123,24 +123,34 @@ async def delete_branch(db: AsyncSession, branch_id: int):
         await db.commit()
         return db_branch
     return None
-async def get_all_branches(db: AsyncSession, limit: int = 50, city: Optional[str] = None):
-    # Sorguyu oluştur
-    query = select(Branch).options(joinedload(Branch.company)).filter(Branch.company_id.isnot(None))
+async def get_all_branches(db: AsyncSession, user_id: int, limit: int = 50, city: Optional[str] = None):
+    # Adım 2: Kullanıcının favori şubelerini al
+    favorite_query = select(favorite_branches.c.branch_id).where(favorite_branches.c.user_id == user_id)
+    favorite_result = await db.execute(favorite_query)
+    favorite_branch_ids = [row.branch_id for row in favorite_result.fetchall()]  # Favori şube ID'lerini çıkar
 
-    # Eğer city parametresi verilmişse, sorguya şehir filtresi ekle
+    # Adım 3: Favori şubelerin bilgilerini al
+    favorite_branches_list = []  # Liste için farklı bir isim kullanıldı
+    if favorite_branch_ids:
+        favorite_branch_query = select(Branch).options(joinedload(Branch.company)).where(Branch.id.in_(favorite_branch_ids))
+        if city:
+            favorite_branch_query = favorite_branch_query.filter(Branch.city == city)
+        favorite_result = await db.execute(favorite_branch_query)
+        favorite_branches_list = favorite_result.scalars().all()
+
+    # Adım 4: Favori olmayan şubeleri sorgula
+    all_branches_query = select(Branch).options(joinedload(Branch.company)).filter(Branch.company_id.isnot(None))
     if city:
-        query = query.filter(Branch.city == city)
+        all_branches_query = all_branches_query.filter(Branch.city == city)
+    if favorite_branch_ids:
+        all_branches_query = all_branches_query.filter(~Branch.id.in_(favorite_branch_ids))  # Favori şubeleri hariç tut
+    all_branches_query = all_branches_query.limit(limit)
+    all_branches_result = await db.execute(all_branches_query)
+    all_branches = all_branches_result.scalars().all()
 
-    # Limiti uygula
-    query = query.limit(limit)
-
-    # Sorguyu çalıştır
-    result = await db.execute(query)
-    branches = result.scalars().all()
-
-    # Şube yanıtlarını oluştur
+    # Adım 5: Favori şubeleri ve diğer şubeleri birleştir
     branch_responses = []
-    for branch in branches:
+    for branch in favorite_branches_list + all_branches:
         # Alt şubeler olup olmadığını kontrol et
         sub_branch_query = select(Branch).filter(Branch.parent_branch_id == branch.id)
         sub_branch_result = await db.execute(sub_branch_query)
@@ -159,11 +169,12 @@ async def get_all_branches(db: AsyncSession, limit: int = 50, city: Optional[str
             "phone_number_2": branch.phone_number_2,
             "branch_note": branch.branch_note if hasattr(branch, 'branch_note') else "",
             "parent_branch_id": branch.parent_branch_id,
-            "has_sub_branches": has_sub_branches,  # Yeni alan eklendi
-            "created_date" : branch.created_date.strftime("%d/%m/%Y")
-
+            "has_sub_branches": has_sub_branches,
+            "created_date": branch.created_date.strftime("%d/%m/%Y"),
+            "is_favorite": branch.id in favorite_branch_ids  # Favori mi kontrolü
         })
 
+    # Adım 6: Sonuçları döndür
     return branch_responses
 
 async def create_sub_branch(db: AsyncSession, branch: BranchCreate, parent_branch_id: int):

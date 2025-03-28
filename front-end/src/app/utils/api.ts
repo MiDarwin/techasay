@@ -121,11 +121,11 @@ export const getAllBranches = async (limit = 50, city = null) => {
   const url = `${BASE_URL}/branches?limit=${limit}${city ? `&city=${city}` : ""}`;
   
   const response = await fetch(url, {
-    method: "GET",
+    method: "GET", // GET isteği
     headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${token}` // Token'ı Authorization header'ına ekle
-    }
+      "Authorization": `${token}`, // Token'ı Authorization başlığına ekle
+      "Content-Type": "application/json", // Verinin türünü belirt
+    },
   });
 
   if (!response.ok) {

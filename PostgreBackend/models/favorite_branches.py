@@ -1,4 +1,4 @@
-# models/favorite.py
+# models/favorit_branches.py
 from sqlalchemy import Table, Column, Integer, ForeignKey, DateTime, func
 from database import Base
 

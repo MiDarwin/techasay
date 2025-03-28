@@ -30,7 +30,7 @@ class BranchResponse(BaseModel):
     parent_branch_id: Optional[int] = None  # Üst şube ilişkisi için
     has_sub_branches: Optional[bool] = None  # Alt şubelerinin olup olmadığını gösteren alan
     created_date: Optional[str] = None  # Eklenilen tarih (Gün/Ay/Yıl)
-
+    is_favorite:Optional[bool] = None
 
     class Config:
         from_attributes = True  # Pydantic v2 için gerekli
