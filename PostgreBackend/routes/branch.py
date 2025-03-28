@@ -10,7 +10,7 @@ from dependencies import oauth2_scheme
 from models.user import User
 from schemas.branch import BranchCreate, BranchResponse, BranchUpdate
 from services.branch_service import create_branch, get_branches, update_branch, delete_branch, create_sub_branch, \
-    get_sub_branches, add_favorite_branch
+    get_sub_branches, add_favorite_branch,remove_favorite_branch
 from database import get_db
 from utils.bearerToken import get_user_id_from_token
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")  # Token doğrulama şeması
@@ -102,3 +102,15 @@ async def add_to_favorites(branch_id: int, db: AsyncSession = Depends(get_db), t
 
     # Favori ekleme servisini çağır
     return await add_favorite_branch(db, user_id, branch_id)
+@router.delete("/branches/{branch_id}/favorites")
+async def remove_favorite_branch_endpoint(
+    branch_id: int,
+    db: AsyncSession = Depends(get_db),
+    token: str = Depends(oauth2_scheme)
+):
+    user_id = get_user_id_from_token(token)
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Geçersiz veya süresi dolmuş token.")
+
+    # Favori şubeyi kaldırma işlemini çağır
+    return await remove_favorite_branch(db, user_id, branch_id)

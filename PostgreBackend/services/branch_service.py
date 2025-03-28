@@ -14,6 +14,7 @@ from sqlalchemy.orm import joinedload, Session  # Ekle
 from sqlalchemy import or_
 from sqlalchemy.orm import selectinload
 from models.favorite_branches import favorite_branches
+from sqlalchemy import delete
 
 async def create_branch(db: AsyncSession, branch: BranchCreate, company_id: int):
     db_branch = Branch(
@@ -264,11 +265,24 @@ async def add_favorite_branch(db: AsyncSession, user_id: int, branch_id: int):
     await db.execute(insert_query)
     await db.commit()
     return {"message": "Favori şube başarıyla eklendi."}
-def remove_favorite_branch(db: Session, user_id: int, branch_id: int):
-    user = db.query(User).filter(User.id == user_id).first()
-    branch = db.query(Branch).filter(Branch.id == branch_id).first()
-    if branch in user.favorite_branches:
-        user.favorite_branches.remove(branch)
-        db.commit()
-        return {"message": "Favori şube başarıyla kaldırıldı."}
-    return {"message": "Şube zaten favorilerde değil."}
+async def remove_favorite_branch(db: AsyncSession, user_id: int, branch_id: int):
+    # Kullanıcı favorisi olup olmadığını kontrol et
+    favorite_query = select(favorite_branches).where(
+        favorite_branches.c.user_id == user_id,
+        favorite_branches.c.branch_id == branch_id
+    )
+    favorite_result = await db.execute(favorite_query)
+    favorite_record = favorite_result.fetchone()  # Favori kaydını al
+
+    if not favorite_record:
+        return {"message": "Şube zaten favori değil."}
+
+    # Favori kaydını sil
+    delete_query = delete(favorite_branches).where(
+        favorite_branches.c.user_id == user_id,
+        favorite_branches.c.branch_id == branch_id
+    )
+    await db.execute(delete_query)
+    await db.commit()  # Değişiklikleri asenkron olarak kaydet
+
+    return {"message": "Favori şube başarıyla kaldırıldı."}
