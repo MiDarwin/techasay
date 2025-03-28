@@ -64,7 +64,7 @@ const BranchTable = ({
   const [permissions, setPermissions] = useState([]); // Kullanıcı izinleri
   const [branchError, setBranchError] = useState("");
   const [branchLoading, setBranchLoading] = useState(false);
-
+  const [parentBranchId, setParentBranchId] = useState(null);
   const handleOpenInventory = async (branchId, branchName) => {
     setSelectedBranchId(branchId);
     setSelectedBranchName(branchName);
@@ -89,6 +89,7 @@ const BranchTable = ({
       // Eğer zaten açık olan satıra tıklanırsa, gizle
       setExpandedRow(null);
       setSubBranches([]);
+
       return;
     }
 
@@ -97,6 +98,7 @@ const BranchTable = ({
       const data = await getSubBranchesByBranchId(branchId); // Backend'den alt şubeleri al
       setSubBranches(data); // Alt şubeleri state'e ata
       setExpandedRow(branchId); // Genişletilmiş satırı güncelle
+      setParentBranchId(branchId); // Üst şube ID'sini ayarla
       setLoading(false);
     } catch (err) {
       alert("Alt şubeler yüklenirken bir hata oluştu.");
@@ -157,7 +159,14 @@ const BranchTable = ({
 
     fetchPermissions();
   }, []);
-
+  const fetchSubBranches = async (parentBranchId) => {
+    try {
+      const subBranchesData = await getSubBranchesByBranchId(parentBranchId);
+      setSubBranches(subBranchesData); // Alt şube listesini güncelle
+    } catch (error) {
+      console.error("Alt şubeler alınırken hata oluştu:", error);
+    }
+  };
   return (
     <>
       <TableContainer component={Paper} sx={tableStyles.tableContainer}>
@@ -266,7 +275,12 @@ const BranchTable = ({
                       {loading ? (
                         <CircularProgress />
                       ) : (
-                        <SubBranchTable subBranches={subBranches} />
+                        <SubBranchTable
+                          subBranches={subBranches}
+                          fetchSubBranches={() =>
+                            fetchSubBranches(parentBranchId)
+                          } // Prop olarak geçiş
+                        />
                       )}
                     </TableCell>
                   </TableRow>

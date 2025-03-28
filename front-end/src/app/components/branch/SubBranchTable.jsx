@@ -44,7 +44,7 @@ const style = {
   p: 4,
 };
 
-const SubBranchTable = ({ subBranches }) => {
+const SubBranchTable = ({ subBranches, fetchSubBranches }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedSubBranch, setSelectedSubBranch] = useState(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -91,6 +91,7 @@ const SubBranchTable = ({ subBranches }) => {
       await updateBranch(selectedSubBranch.id, updatedData); // Güncelleme API çağrısı
       alert("Alt şube başarıyla güncellendi!");
       closeModal();
+      fetchSubBranches(); // Alt şubeleri yeniden yükle
     } catch (err) {
       alert("Alt şube güncellenirken bir hata oluştu: " + err.message);
     }
@@ -101,6 +102,7 @@ const SubBranchTable = ({ subBranches }) => {
       await deleteBranch(branchToDelete.id); // Silme API çağrısı
       alert("Alt şube başarıyla silindi!");
       closeDeleteDialog();
+      fetchSubBranches(); // Alt şubeleri yeniden yükle
     } catch (err) {
       alert("Alt şube silinirken bir hata oluştu: " + err.message);
     }
@@ -118,6 +120,7 @@ const SubBranchTable = ({ subBranches }) => {
     setSelectedBranchId(null);
     setSelectedBranchName("");
   };
+
   return (
     <TableContainer component={Paper} sx={tableStyles.tableContainer}>
       {/* Tablo */}
@@ -256,6 +259,7 @@ SubBranchTable.propTypes = {
       branch_note: PropTypes.string,
     })
   ).isRequired,
+  fetchSubBranches: PropTypes.func.isRequired,
 };
 
 export default SubBranchTable;

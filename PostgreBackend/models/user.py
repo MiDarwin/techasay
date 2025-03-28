@@ -13,7 +13,14 @@ class User(Base):
     surname = Column(String)
     email = Column(String, unique=True)
     phone_number = Column(String)
-    password = Column(String)  # Şifre burada saklanacak
+    password = Column(String)
+
+    # Favori Şubeler İlişkisi
+    favorite_branches = relationship(
+        "Branch",
+        secondary=favorite_branches,
+        back_populates="favorited_by_users"
+    )
 
     permissions = relationship("Permission", back_populates="user", cascade="all, delete-orphan")
 
