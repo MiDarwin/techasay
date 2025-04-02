@@ -327,6 +327,7 @@ const BranchTable = ({
                     </Tooltip>
                   </TableCell>
                 </TableRow>
+
                 {/* Alt Şube Tablosu */}
                 {expandedRow === branch.id && (
                   <TableRow>
@@ -349,6 +350,12 @@ const BranchTable = ({
           </TableBody>
         </Table>
       </TableContainer>
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={3000} // 3 saniye sonra otomatik olarak kapanır
+        onClose={handleSnackbarClose}
+        message={snackbarMessage} // Mesaj içeriği
+      />
       <UpdateBranchModal
         open={isModalOpen}
         onClose={handleCloseModal}
@@ -362,6 +369,7 @@ const BranchTable = ({
         inventory={inventory}
         branchName={selectedBranchName}
       />
+
       {/* Alt Şube Ekleme Modalı */}
       {selectedBranch && (
         <Modal

@@ -18,7 +18,6 @@ export default function LoginPage() {
     try {
       const data = await apiRequest("/user/login", "POST", { email, password });
       localStorage.setItem("access_token", data.access_token); // Token'ı kaydet
-      alert("Giriş başarılı!");
       router.push("/homepage"); // Giriş başarılıysa anasayfaya yönlendir
     } catch (error: any) {
       if (error?.detail) {
@@ -83,7 +82,6 @@ export default function LoginPage() {
               placeholder="Email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              
             />
             {/* Password Input */}
             <TextInput
