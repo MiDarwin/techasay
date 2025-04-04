@@ -22,7 +22,7 @@ app.include_router(inventory_router)
 app.include_router(inventory_helper_router)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://45.132.181.87:3000"],  # Güvenlik için sadece belirli frontend domainlerini ekleyebilirsiniz
+    allow_origins=["http://45.132.181.87:3000","http://localhost:3000"],  # Güvenlik için sadece belirli frontend domainlerini ekleyebilirsiniz
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
