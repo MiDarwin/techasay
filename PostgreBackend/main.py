@@ -22,11 +22,11 @@ app.include_router(inventory_router)
 app.include_router(inventory_helper_router)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Güvenlik için sadece belirli frontend domainlerini ekleyebilirsiniz
+    allow_origins=["http://45.132.181.87:3000"],  # Güvenlik için sadece belirli frontend domainlerini ekleyebilirsiniz
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8000)
