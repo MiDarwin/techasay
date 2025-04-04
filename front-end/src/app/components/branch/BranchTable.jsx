@@ -213,6 +213,11 @@ const BranchTable = ({
       </Tooltip>
     );
   };
+  const handleCopy = (text) => {
+    navigator.clipboard.writeText(text); // Metni kopyala
+    setSnackbarMessage("Kopyalandı!");
+    setSnackbarOpen(true); // Snackbar'ı aç
+  };
   return (
     <>
       <TableContainer component={Paper} sx={tableStyles.tableContainer}>
@@ -234,12 +239,33 @@ const BranchTable = ({
             {branches.map((branch, index) => (
               <React.Fragment key={branch.id}>
                 <TableRow key={branch.id} sx={tableStyles.tableRow}>
-                  <TableCell>{branch.company_name}</TableCell>
-                  <TableCell>{branch.city}</TableCell>
-                  <TableCell>{branch.district || "Yok"}</TableCell>
-                  <TableCell>{branch.name}</TableCell>
-                  <TableCell>{branch.address}</TableCell>
-                  <TableCell>
+                  <TableCell onClick={() => handleCopy(branch.company_name)}>
+                    {branch.company_name}
+                  </TableCell>
+                  <TableCell onClick={() => handleCopy(branch.city)}>
+                    {branch.city}
+                  </TableCell>
+                  <TableCell
+                    onClick={() => handleCopy(branch.district || "Yok")}
+                  >
+                    {branch.district || "Yok"}
+                  </TableCell>
+                  <TableCell onClick={() => handleCopy(branch.name)}>
+                    {branch.name}
+                  </TableCell>
+                  <TableCell onClick={() => handleCopy(branch.address)}>
+                    {branch.address}
+                  </TableCell>
+                  <TableCell
+                    onClick={() =>
+                      handleCopy(
+                        branch.phone_number +
+                          (branch.phone_number_2
+                            ? ` / ${branch.phone_number_2}`
+                            : "")
+                      )
+                    }
+                  >
                     {branch.phone_number}
                     {branch.phone_number_2 ? ` / ${branch.phone_number_2}` : ""}
                   </TableCell>

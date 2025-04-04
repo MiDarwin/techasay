@@ -122,7 +122,7 @@ const BranchForm = ({
             <div>
               <label
                 htmlFor="companyId"
-                className="block text-gray-700 dark:text-gray-200 mb-2 font-medium"
+                className="block text-gray-700  mb-2 font-medium"
               >
                 Şirket Seçin
               </label>
@@ -130,8 +130,8 @@ const BranchForm = ({
                 id="companyId"
                 value={companyId}
                 onChange={(e) => setCompanyId(e.target.value)}
-                className="w-full px-4 py-3 border rounded-lg bg-gray-50 dark:bg-gray-700 dark:border-gray-600 
-                           text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-4 py-3 border rounded-lg bg-gray-50  
+                           text-gray-700  focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 required
               >
                 <option value="" disabled>
@@ -149,7 +149,7 @@ const BranchForm = ({
             <div>
               <label
                 htmlFor="branchName"
-                className="block text-gray-700 dark:text-gray-200 mb-2 font-medium"
+                className="block text-gray-700  mb-2 font-medium"
               >
                 Şube Adı
               </label>
@@ -158,18 +158,17 @@ const BranchForm = ({
                 type="text"
                 value={branchName}
                 onChange={(e) => setBranchName(e.target.value)}
-                className="w-full px-4 py-3 border rounded-lg bg-gray-50 dark:bg-gray-700 dark:border-gray-600 
-                           text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-4 py-3 border rounded-lg bg-gray-50  
+                           text-gray-700  focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 placeholder="Şube Adı Girin"
                 required
               />
             </div>
 
-            {/* Adres */}
             <div>
               <label
                 htmlFor="address"
-                className="block text-gray-700 dark:text-gray-200 mb-2 font-medium"
+                className="block text-gray-700  mb-2 font-medium"
               >
                 Adres
               </label>
@@ -178,18 +177,17 @@ const BranchForm = ({
                 type="text"
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
-                className="w-full px-4 py-3 border rounded-lg bg-gray-50 dark:bg-gray-700 dark:border-gray-600 
-                           text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-4 py-3 border rounded-lg bg-gray-50  
+                           text-gray-700  focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 placeholder="Adres Girin"
                 required
               />
             </div>
 
-            {/* Şehir */}
             <div>
               <label
                 htmlFor="city"
-                className="block text-gray-700 dark:text-gray-200 mb-2 font-medium"
+                className="block text-gray-700  mb-2 font-medium"
               >
                 Şehir
               </label>
@@ -197,8 +195,8 @@ const BranchForm = ({
                 id="city"
                 value={city}
                 onChange={(e) => handleCityChange(e.target.value)}
-                className="w-full px-4 py-3 border rounded-lg bg-gray-50 dark:bg-gray-700 dark:border-gray-600 
-               text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-4 py-3 border rounded-lg bg-gray-50 
+               text-gray-700  focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 required
               >
                 <option value="" disabled>
@@ -212,11 +210,10 @@ const BranchForm = ({
               </select>
             </div>
 
-            {/* İlçe */}
             <div>
               <label
                 htmlFor="district"
-                className="block text-gray-700 dark:text-gray-200 mb-2 font-medium"
+                className="block text-gray-700  mb-2 font-medium"
               >
                 İlçe
               </label>
@@ -224,8 +221,8 @@ const BranchForm = ({
                 id="district"
                 value={district}
                 onChange={(e) => setDistrict(e.target.value)}
-                className="w-full px-4 py-3 border rounded-lg bg-gray-50 dark:bg-gray-700 dark:border-gray-600 
-               text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-4 py-3 border rounded-lg bg-gray-50 
+               text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 required
               >
                 <option value="" disabled>
@@ -239,11 +236,10 @@ const BranchForm = ({
               </select>
             </div>
 
-            {/* Telefon Numarası */}
             <div>
               <label
                 htmlFor="phoneNumber"
-                className="block text-gray-700 dark:text-gray-200 mb-2 font-medium"
+                className="block text-gray-700  mb-2 font-medium"
               >
                 Telefon Numarası
               </label>
@@ -252,18 +248,17 @@ const BranchForm = ({
                 type="text"
                 value={phoneNumber}
                 onChange={(e) => setPhoneNumber(e.target.value)}
-                className="w-full px-4 py-3 border rounded-lg bg-gray-50 dark:bg-gray-700 dark:border-gray-600 
-                           text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-4 py-3 border rounded-lg bg-gray-50  
+                           text-gray-700  focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 placeholder="Telefon Numarası Girin"
                 required
               />
             </div>
 
-            {/* Yedek Telefon Numarası */}
             <div>
               <label
                 htmlFor="phoneNumber2"
-                className="block text-gray-700 dark:text-gray-200 mb-2 font-medium"
+                className="block text-gray-700  mb-2 font-medium"
               >
                 Yedek Telefon Numarası
               </label>
@@ -272,18 +267,17 @@ const BranchForm = ({
                 type="text"
                 value={phoneNumber2}
                 onChange={(e) => setPhoneNumber2(e.target.value)}
-                className="w-full px-4 py-3 border rounded-lg bg-gray-50 dark:bg-gray-700 dark:border-gray-600 
-                 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-4 py-3 border rounded-lg bg-gray-50  
+                 text-gray-700  focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 placeholder="Telefon Numarası Girin"
               />
             </div>
           </div>
 
-          {/* Şube Notu ve Konum Linki */}
           <div>
             <label
               htmlFor="branchNote"
-              className="block text-gray-700 dark:text-gray-200 mb-2 font-medium"
+              className="block text-gray-700  mb-2 font-medium"
             >
               Şube Notu (Opsiyonel)
             </label>
@@ -291,8 +285,8 @@ const BranchForm = ({
               id="branchNote"
               value={branchNote}
               onChange={(e) => setBranchNote(e.target.value)}
-              className="w-full px-4 py-3 border rounded-lg bg-gray-50 dark:bg-gray-700 dark:border-gray-600 
-                         text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-4 py-3 border rounded-lg bg-gray-50  
+                         text-gray-700  focus:outline-none focus:ring-2 focus:ring-indigo-500"
               placeholder="Şube Notu Girin"
             />
           </div>
@@ -300,7 +294,7 @@ const BranchForm = ({
           <div>
             <label
               htmlFor="locationLink"
-              className="block text-gray-700 dark:text-gray-200 mb-2 font-medium"
+              className="block text-gray-700  mb-2 font-medium"
             >
               Şube Konum Linki (Opsiyonel)
             </label>
@@ -309,8 +303,8 @@ const BranchForm = ({
               type="text"
               value={locationLink}
               onChange={(e) => setLocationLink(e.target.value)}
-              className="w-full px-4 py-3 border rounded-lg bg-gray-50 dark:bg-gray-700 dark:border-gray-600 
-                         text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-4 py-3 border rounded-lg bg-gray-50  
+                         text-gray-700  focus:outline-none focus:ring-2 focus:ring-indigo-500"
               placeholder="Şube Konum Linki Girin"
             />
           </div>
@@ -355,7 +349,7 @@ BranchForm.propTypes = {
   ).isRequired,
   initialData: PropTypes.shape({
     company_id: PropTypes.number,
-    name: PropTypes.string, // "branch_name" yerine "name"
+    name: PropTypes.string,
     address: PropTypes.string,
     city: PropTypes.string,
     district: PropTypes.string,

@@ -52,6 +52,7 @@ const tableStyles = {
     padding: "8px",
     marginRight: "8px",
     borderRadius: "8px",
+    color: "black",
   },
   textInput: {
     backgroundColor: "#FFF",
@@ -60,6 +61,7 @@ const tableStyles = {
     padding: "8px",
     marginRight: "8px",
     borderRadius: "8px",
+    color: "black",
   },
   button: {
     backgroundColor: colors.button || "#28a745",
