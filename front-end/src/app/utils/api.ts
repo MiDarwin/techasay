@@ -138,21 +138,31 @@ export const getAllBranches = async (limit = 50, city = null) => {
 export const getBranchById = (branch_id) =>
   apiRequest(`/branches/${branch_id}`, "GET");
 
-export const getBranchesByCompanyId = async (companyId, city = "",districtFilter ="", search = "") => {
+export const getBranchesByCompanyId = async (
+  companyId,
+  limit = 50,
+  city = "",
+  districtFilter = "",
+  search = ""
+) => {
   const token = localStorage.getItem("access_token"); // Token'ı localStorage'dan al
   const params = new URLSearchParams(); // Query parametrelerini oluşturmak için URLSearchParams kullanılır
 
   if (city) params.append("city", city); // Eğer city varsa ekle
   if (search) params.append("textinput", search); // Eğer search varsa ekle
-  if (districtFilter) params.append("district",districtFilter);
+  if (districtFilter) params.append("district", districtFilter);
+  params.append("limit", limit); // Limit parametresini ekle
 
-  const response = await fetch(`${BASE_URL}/companies/${companyId}/branches?${params.toString()}`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${token}` // Token'ı Authorization header'ına ekle
+  const response = await fetch(
+    `${BASE_URL}/companies/${companyId}/branches?${params.toString()}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`, // Token'ı Authorization header'ına ekle
+      },
     }
-  });
+  );
 
   if (!response.ok) {
     throw new Error("Şubelere erişim sağlanırken bir hata oluştu.");

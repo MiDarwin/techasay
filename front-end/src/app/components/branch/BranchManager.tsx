@@ -57,6 +57,7 @@ const BranchManager = () => {
         // Eğer companyFilter doluysa şirket bazlı şubeleri getir
         const data = await getBranchesByCompanyId(
           company,
+          limit,
           city,
           districtFilter,
           search
