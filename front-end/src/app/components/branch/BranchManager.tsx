@@ -29,11 +29,11 @@ const BranchManager = () => {
   const [branchLoading, setBranchLoading] = useState(false);
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [permissions, setPermissions] = useState([]); // Kullanıcı izinleri
-
+  const [limit, setLimit] = useState(15);
   const fetchAllBranches = async () => {
     try {
       setBranchLoading(true); // Yüklenme durumunu göster
-      const data = await getAllBranches(); // API çağrısı
+      const data = await getAllBranches(limit); // limit'i API çağrısına ekle
       setBranches(data); // Gelen şube verilerini state'e ata
       setBranchLoading(false);
     } catch (err) {
@@ -78,7 +78,7 @@ const BranchManager = () => {
     } else {
       fetchBranches(cityFilter, districtFilter, searchFilter, companyFilter);
     }
-  }, [cityFilter, districtFilter, searchFilter, companyFilter]);
+  }, [cityFilter, districtFilter, searchFilter, companyFilter, limit]);
 
   const fetchCompanies = async () => {
     try {
@@ -227,8 +227,18 @@ const BranchManager = () => {
             className="border p-2 mr-2 rounded-lg"
             style={tableStyles.textInput}
           />
+          <select
+            id="limitFilter"
+            value={limit}
+            onChange={(e) => setLimit(Number(e.target.value))}
+            className="border p-2 mr-2 rounded-lg"
+            style={tableStyles.selectInput}
+          >
+            <option value={15}>15</option>
+            <option value={25}>25</option>
+            <option value={40}>40</option>
+          </select>
         </form>
-        {/* Şube Ekle Butonu */}
         {permissions.includes("branchAdd") && (
           <Button
             variant="contained"
