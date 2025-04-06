@@ -74,7 +74,14 @@ export default function LoginPage() {
           </h2>
 
           {/* Form */}
-          <div className="space-y-4">
+          <div
+            className="space-y-4"
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                handleLogin(); // Enter tuşuna basıldığında giriş yap
+              }
+            }}
+          >
             {/* Email Input */}
             <TextInput
               id="email"
