@@ -6,7 +6,8 @@ type TextInputProps = {
   placeholder: string;
   value: string;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onFocus?: () => void; // onFocus özelliği opsiyonel hale getirildi
+  onFocus?: () => void;
+  onBlur?: () => void;
 };
 
 export default function TextInput({
@@ -16,6 +17,7 @@ export default function TextInput({
   value,
   onChange,
   onFocus,
+  onBlur,
 }: TextInputProps) {
   return (
     <input
@@ -24,7 +26,8 @@ export default function TextInput({
       placeholder={placeholder}
       value={value}
       onChange={onChange}
-      onFocus={onFocus} // onFocus özelliği eklendi
+      onFocus={onFocus}
+      onBlur={onBlur}
       className="w-full text-black p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:indigo-600"
     />
   );

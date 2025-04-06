@@ -16,9 +16,12 @@ export default function RegisterPage() {
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [darkMode, setDarkMode] = useState(true);
+  const [loading, setLoading] = useState(false);
+
   const router = useRouter();
 
   const handleRegister = async () => {
+    setLoading(true);
     try {
       const formattedPhoneNumber = phoneNumber.replace(/\D/g, "");
       if (formattedPhoneNumber.length > 11) {
@@ -40,6 +43,8 @@ export default function RegisterPage() {
       } else {
         setErrorMessage("Bilinmeyen bir hata oluştu.");
       }
+    } finally {
+      setLoading(false); // İşlem tamamlandığında yüklenme durumunu kapat
     }
   };
 
@@ -52,7 +57,10 @@ export default function RegisterPage() {
 
     setPhoneNumber(`0${input}`); // Her zaman başında 0 olacak şekilde ayarla
   };
-
+  const isValidEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // Basit bir e-posta regex'i
+    return emailRegex.test(email);
+  };
   return (
     <>
       {/* Google Fonts'u bağlamak için Head öğesini kullanıyoruz */}
@@ -111,6 +119,13 @@ export default function RegisterPage() {
               placeholder="Email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              onBlur={() => {
+                if (!isValidEmail(email)) {
+                  setErrorMessage("Geçerli bir e-posta adresi giriniz.");
+                } else {
+                  setErrorMessage(""); // Hata mesajını temizle
+                }
+              }}
             />
             <TextInput
               id="password"
@@ -122,13 +137,18 @@ export default function RegisterPage() {
           </div>
 
           {/* Kayıt Ol Butonu */}
-          <button
-            onClick={handleRegister}
-            className="w-full mt-4 bg-indigo-600 text-white py-3 rounded-lg hover:bg-indigo-700 transition focus:outline-none"
-          >
-            Kayıt Ol
-          </button>
-
+          {loading ? (
+            <div className="flex justify-center items-center mt-4">
+              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-indigo-600"></div>
+            </div>
+          ) : (
+            <button
+              onClick={handleRegister}
+              className="w-full mt-4 bg-indigo-600 text-white py-3 rounded-lg hover:bg-indigo-700 transition focus:outline-none"
+            >
+              Kayıt Ol
+            </button>
+          )}
           {/* Hata Mesajı */}
           {errorMessage && (
             <div className="mt-4 bg-red-500 text-white text-sm rounded-lg px-4 py-2 text-center shadow-md">
