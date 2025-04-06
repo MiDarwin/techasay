@@ -10,11 +10,13 @@ import Head from "next/head"; // Google Fonts entegrasyonu için Head
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [errorMessage, setErrorMessage] = useState(""); // Hata mesajı için state
-  const [darkMode, setDarkMode] = useState(true); // Tema durumu
+  const [errorMessage, setErrorMessage] = useState("");
+  const [darkMode, setDarkMode] = useState(true);
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   const handleLogin = async () => {
+    setLoading(true); // Yüklenme durumunu başlat
     try {
       const data = await apiRequest("/user/login", "POST", { email, password });
       localStorage.setItem("access_token", data.access_token); // Token'ı kaydet
@@ -36,6 +38,8 @@ export default function LoginPage() {
       } else {
         setErrorMessage("Bilinmeyen bir hata oluştu.");
       }
+    } finally {
+      setLoading(false); // İşlem tamamlandığında yüklenme durumunu kapat
     }
   };
 
@@ -101,12 +105,18 @@ export default function LoginPage() {
           </div>
 
           {/* Giriş Yap Butonu */}
-          <button
-            onClick={handleLogin}
-            className="w-full mt-4 bg-indigo-600 text-white py-3 rounded-lg hover:bg-indigo-700 transition focus:outline-none"
-          >
-            Giriş Yap
-          </button>
+          {loading ? (
+            <div className="flex justify-center items-center mt-4">
+              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-indigo-600"></div>
+            </div>
+          ) : (
+            <button
+              onClick={handleLogin}
+              className="w-full mt-4 bg-indigo-600 text-white py-3 rounded-lg hover:bg-indigo-700 transition focus:outline-none"
+            >
+              Giriş Yap
+            </button>
+          )}
 
           {/* Hata Mesajı */}
           {errorMessage && (
