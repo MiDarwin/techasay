@@ -23,6 +23,7 @@ class User(Base):
     )
 
     permissions = relationship("Permission", back_populates="user", cascade="all, delete-orphan")
+    visits = relationship("Visit", back_populates="user", cascade="all, delete-orphan")
 
 
     def set_password(self, password: str):

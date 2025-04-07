@@ -7,6 +7,7 @@ from routes.branch import router as branch_router
 from routes.inventory import router as inventory_router
 from routes.permissions import router as permissions_router
 from routes.inventoryHelper import router as inventory_helper_router
+from routes.visit import router as visit_router
 app = FastAPI()
 
 @app.on_event("startup")
@@ -20,6 +21,7 @@ app.include_router(company_router)
 app.include_router(branch_router)
 app.include_router(inventory_router)
 app.include_router(inventory_helper_router)
+app.include_router(visit_router)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://45.132.181.87:3000","http://localhost:3000"],  # Güvenlik için sadece belirli frontend domainlerini ekleyebilirsiniz
