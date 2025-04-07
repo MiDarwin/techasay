@@ -97,14 +97,24 @@ export default function RegisterPage() {
               type="text"
               placeholder="İsim"
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) => {
+                const inputValue = e.target.value;
+                const capitalizedValue =
+                  inputValue.charAt(0).toUpperCase() + inputValue.slice(1);
+                setName(capitalizedValue); // İlk harfi büyük hale getirip state'e atıyoruz
+              }}
             />
             <TextInput
               id="surname"
               type="text"
               placeholder="Soyisim"
               value={surname}
-              onChange={(e) => setSurname(e.target.value)}
+              onChange={(e) => {
+                const inputValue = e.target.value;
+                const capitalizedValue =
+                  inputValue.charAt(0).toUpperCase() + inputValue.slice(1);
+                setSurname(capitalizedValue); // İlk harfi büyük hale getirip state'e atıyoruz
+              }}
             />
             <TextInput
               id="phone"
