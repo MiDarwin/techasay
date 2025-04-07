@@ -1,21 +1,22 @@
-# routes/visit.py
-from fastapi import APIRouter, Depends, HTTPException,Header
-from sqlalchemy.orm import Session
+from datetime import datetime
+
+from fastapi import APIRouter, Depends, HTTPException, Header, UploadFile, File, Form
+from sqlalchemy.ext.asyncio import AsyncSession
 from schemas.visit import VisitCreate, VisitResponse
 from services.visit_service import create_visit
 from database import get_db
 from utils.bearerToken import get_user_id_from_token
-from sqlalchemy.ext.asyncio import AsyncSession
 
 router = APIRouter()
-
 
 @router.post("/branches/{branch_id}/visits", response_model=VisitResponse)
 async def add_visit(
         branch_id: int,
-        visit: VisitCreate,
+        note: str = Form(None),  # Form verisi olarak not alınıyor
+        visit_date: str = Form(None),  # Form verisi olarak ziyaret tarihi alınıyor
+        photo: UploadFile = File(None),  # Fotoğraf (isteğe bağlı)
         db: AsyncSession = Depends(get_db),
-        authorization: str = Header(None)  # Authorization header'dan token alıyoruz
+        authorization: str = Header(None)  # Authorization header'dan token alınıyor
 ):
     # Authorization header'dan token çıkar
     if not authorization:
@@ -26,9 +27,24 @@ async def add_visit(
     if not user_id:
         raise HTTPException(status_code=401, detail="Geçersiz token.")
 
+    # Gelen verileri VisitCreate nesnesine dönüştür
+    try:
+        visit_data = VisitCreate(
+            note=note,
+            visit_date=datetime.fromisoformat(visit_date) if visit_date else None
+        )
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Geçersiz tarih formatı.")
+
     # Ziyaret ekleme işlemi
     try:
-        new_visit = await create_visit(branch_id=branch_id, user_id=user_id, visit=visit, db=db)
+        new_visit = await create_visit(
+            branch_id=branch_id,
+            user_id=user_id,
+            visit=visit_data,
+            db=db,
+            photo=photo
+        )
 
         # SQLAlchemy nesnesini manuel olarak dönüştür
         response_data = {
@@ -37,6 +53,7 @@ async def add_visit(
             "user_id": new_visit.user_id,
             "visit_date": new_visit.visit_date,
             "note": new_visit.note,
+            "photo_id": new_visit.photo_id,
         }
         return VisitResponse(**response_data)
     except Exception as e:

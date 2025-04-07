@@ -14,6 +14,7 @@ class VisitResponse(BaseModel):
     user_id: int
     visit_date: datetime
     note: Optional[str]
+    photo_id: Optional[str]
 
     @validator("visit_date", pre=True, always=True)
     def convert_to_local_timezone(cls, value):
