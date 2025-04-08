@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, Header, UploadFile, File,
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from models.user import User
 from models.visit import Visit
 from schemas.visit import VisitCreate, VisitResponse
 from services.visit_service import create_visit
@@ -52,25 +53,40 @@ async def add_visit(
             photo=photo
         )
 
-        # SQLAlchemy nesnesini manuel olarak dönüştür
+        # Kullanıcıyı çek
+        user_query = select(User).where(User.id == user_id)
+        user_result = await db.execute(user_query)
+        user = user_result.scalar_one_or_none()
+
+        if not user:
+            raise HTTPException(status_code=404, detail="Kullanıcı bulunamadı.")
+
         response_data = {
             "id": new_visit.id,
             "branch_id": new_visit.branch_id,
             "user_id": new_visit.user_id,
+            "user_name": user.name,
+            "user_surname": user.surname,
+            "user_phone_number": user.phone_number,
             "visit_date": new_visit.visit_date,
             "note": new_visit.note,
             "photo_id": new_visit.photo_id,
-            "planned_visit_date" : new_visit.planned_visit_date,
+            "planned_visit_date": new_visit.planned_visit_date,
         }
         return VisitResponse(**response_data)
+
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Ziyaret eklenirken bir hata oluştu: {str(e)}")
 @router.get("/branches/{branch_id}/visits", response_model=list[VisitResponse])
 async def get_branch_visits(branch_id: int, db: AsyncSession = Depends(get_db)):
-    # Şubenin ziyaretlerini sorgula
-    query = select(Visit).where(Visit.branch_id == branch_id)
+    # Şubenin ziyaretlerini sorgula ve kullanıcı bilgilerini dahil et
+    query = (
+        select(Visit, User.name, User.surname, User.phone_number)
+        .join(User, User.id == Visit.user_id)  # Visit ile User tablosunu birleştir
+        .where(Visit.branch_id == branch_id)
+    )
     result = await db.execute(query)
-    visits = result.scalars().all()
+    visits = result.fetchall()
 
     # Eğer şubeye ait ziyaret yoksa hata döndür
     if not visits:
@@ -78,13 +94,17 @@ async def get_branch_visits(branch_id: int, db: AsyncSession = Depends(get_db)):
 
     # Yanıtı oluştur
     response_data = []
-    for visit in visits:
+    for visit, name, surname, phone_number in visits:
         response_data.append(VisitResponse(
             id=visit.id,
             branch_id=visit.branch_id,
             user_id=visit.user_id,
+            user_name=name,  # Kullanıcı adı
+            user_surname=surname,  # Kullanıcı soyadı
+            user_phone_number=phone_number,  # Kullanıcı telefon numarası
             visit_date=visit.visit_date,
             note=visit.note,
-            photo_id=visit.photo_id  # Fotoğraf ID'si veya URL'si döndürülür
+            photo_id=visit.photo_id,
+            planned_visit_date=visit.planned_visit_date  # Planlanan ziyaret tarihi
         ))
     return response_data

@@ -12,6 +12,9 @@ class VisitResponse(BaseModel):
     id: int
     branch_id: int
     user_id: int
+    user_name: Optional[str]  # Kullanıcı adı
+    user_surname: Optional[str]  # Kullanıcı soyadı
+    user_phone_number: Optional[str]  # Kullanıcı telefon numarası
     visit_date: datetime
     note: Optional[str]
     photo_id: Optional[str]

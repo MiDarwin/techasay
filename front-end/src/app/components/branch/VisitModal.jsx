@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Modal,
@@ -9,6 +9,7 @@ import {
   Button,
   CircularProgress,
   TextField,
+  MenuItem,
 } from "@mui/material";
 import PropTypes from "prop-types";
 import { getPhotoUrl } from "../../utils/api";
@@ -36,12 +37,62 @@ const VisitModal = ({
   const [showVisitForm, setShowVisitForm] = useState(false);
   const [note, setNote] = useState("");
   const [visitDate, setVisitDate] = useState("");
+  const [plannedVisitDate, setPlannedVisitDate] = useState("");
   const [photo, setPhoto] = useState(null);
+
+  // Varsayılan olarak bugünün tarih ve saatini ayarla
+  useEffect(() => {
+    const now = new Date();
+    const formattedDate = now.toISOString().slice(0, 16); // YYYY-MM-DDTHH:mm formatında
+    setVisitDate(formattedDate);
+  }, []);
+
+  // Ziyaret tarihini güncelleme
+  const handleVisitDateChange = (e) => {
+    const selectedDate = new Date(e.target.value);
+    const now = new Date();
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(now.getDate() - 7); // 7 gün öncesi
+
+    // Kullanıcının seçtiği tarih 7 gün öncesinden daha eskiyse engelle
+    if (selectedDate < sevenDaysAgo) {
+      alert("Ziyaret tarihi en fazla 7 gün geriye gidebilir.");
+      return;
+    }
+
+    setVisitDate(e.target.value);
+  };
+
+  // Planlanan ziyaret tarihini güncelleme
+  const handlePlannedVisitDateChange = (e) => {
+    const selectedDate = new Date(e.target.value);
+    const now = new Date();
+
+    // Kullanıcının seçtiği tarih geçmiş bir tarih ise engelle
+    if (selectedDate < now) {
+      alert("Planlanan ziyaret tarihi geçmiş bir tarih olamaz.");
+      return;
+    }
+
+    setPlannedVisitDate(e.target.value);
+  };
+
+  // Belirli bir gün ekleyerek planlanan ziyaret tarihini ayarla
+  const handlePlannedVisitDays = (days) => {
+    const now = new Date();
+    const futureDate = new Date();
+    futureDate.setDate(now.getDate() + days); // Belirtilen gün sayısını ekle
+    const formattedDate = futureDate.toISOString().slice(0, 16); // YYYY-MM-DDTHH:mm formatında
+    setPlannedVisitDate(formattedDate);
+  };
 
   const handleSubmit = () => {
     const formData = new FormData();
     formData.append("note", note);
     formData.append("visit_date", visitDate);
+    if (plannedVisitDate) {
+      formData.append("planned_visit_date", plannedVisitDate);
+    }
     if (photo) {
       formData.append("photo", photo);
     }
@@ -110,13 +161,36 @@ const VisitModal = ({
               sx={{ mb: 2 }}
             />
             <TextField
-              label="Tarih"
+              label="Ziyaret Tarihi"
               type="datetime-local"
               fullWidth
               value={visitDate}
-              onChange={(e) => setVisitDate(e.target.value)}
+              onChange={handleVisitDateChange}
               sx={{ mb: 2 }}
             />
+            <TextField
+              label="Planlanan Ziyaret Tarihi"
+              type="datetime-local"
+              fullWidth
+              value={plannedVisitDate}
+              onChange={handlePlannedVisitDateChange}
+              sx={{ mb: 2 }}
+            />
+            <Box sx={{ mb: 2 }}>
+              <Typography variant="body2" gutterBottom>
+                Planlanan Ziyaret Tarihini Seç:
+              </Typography>
+              {[10, 20, 30, 40].map((days) => (
+                <Button
+                  key={days}
+                  variant="outlined"
+                  sx={{ mr: 1 }}
+                  onClick={() => handlePlannedVisitDays(days)}
+                >
+                  {days} Gün
+                </Button>
+              ))}
+            </Box>
             <Button variant="contained" component="label" sx={{ mb: 2 }}>
               Fotoğraf Yükle
               <input
