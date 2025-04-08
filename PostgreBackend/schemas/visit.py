@@ -7,7 +7,7 @@ from pytz import timezone
 class VisitCreate(BaseModel):
     note: Optional[str]  # Ziyaret notu isteğe bağlı
     visit_date: Optional[datetime] = datetime.utcnow()  # Varsayılan olarak şu anki zaman
-
+    planned_visit_date: Optional[datetime]
 class VisitResponse(BaseModel):
     id: int
     branch_id: int
@@ -15,7 +15,7 @@ class VisitResponse(BaseModel):
     visit_date: datetime
     note: Optional[str]
     photo_id: Optional[str]
-
+    planned_visit_date: Optional[datetime]
     @validator("visit_date", pre=True, always=True)
     def convert_to_local_timezone(cls, value):
         local_tz = timezone("Europe/Istanbul")  # Yerel saat diliminizi buraya yazın

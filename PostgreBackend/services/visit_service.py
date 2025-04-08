@@ -53,6 +53,7 @@ async def create_visit(branch_id: int, user_id: int, visit: VisitCreate, db: Asy
         visit_date=visit_date,
         note=visit.note,
         photo_id=photo_id,
+        planned_visit_date=visit.planned_visit_date,
     )
     db.add(new_visit)  # Yeni ziyaret kaydını ekle
     await db.flush()  # Asenkron flush işlemi

@@ -1,4 +1,6 @@
 from fastapi import FastAPI
+from starlette.staticfiles import StaticFiles
+
 from database import init_db
 from routes.user import router as user_router
 from routes.company import router as company_router
@@ -22,6 +24,8 @@ app.include_router(branch_router)
 app.include_router(inventory_router)
 app.include_router(inventory_helper_router)
 app.include_router(visit_router)
+app.mount("/visit_images", StaticFiles(directory="visit_images"), name="visit_images")
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://45.132.181.87:3000","http://localhost:3000"],  # Güvenlik için sadece belirli frontend domainlerini ekleyebilirsiniz

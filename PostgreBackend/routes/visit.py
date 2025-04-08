@@ -16,6 +16,7 @@ async def add_visit(
         visit_date: str = Form(None),  # Form verisi olarak ziyaret tarihi alınıyor
         photo: UploadFile = File(None),  # Fotoğraf (isteğe bağlı)
         db: AsyncSession = Depends(get_db),
+        planned_visit_date: str = Form(None),
         authorization: str = Header(None)  # Authorization header'dan token alınıyor
 ):
     # Authorization header'dan token çıkar
@@ -31,7 +32,9 @@ async def add_visit(
     try:
         visit_data = VisitCreate(
             note=note,
-            visit_date=datetime.fromisoformat(visit_date) if visit_date else None
+            visit_date=datetime.fromisoformat(visit_date) if visit_date else None,
+            planned_visit_date = datetime.fromisoformat(planned_visit_date) if planned_visit_date else None
+
         )
     except ValueError:
         raise HTTPException(status_code=400, detail="Geçersiz tarih formatı.")
@@ -54,6 +57,7 @@ async def add_visit(
             "visit_date": new_visit.visit_date,
             "note": new_visit.note,
             "photo_id": new_visit.photo_id,
+            "planned_visit_date" : new_visit.planned_visit_date,
         }
         return VisitResponse(**response_data)
     except Exception as e:

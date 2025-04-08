@@ -14,6 +14,7 @@ class Visit(Base):
     visit_date = Column(TIMESTAMP(timezone=True), default=datetime.datetime.utcnow)  # Zaman dilimi bilgisi dahil
     note = Column(Text, nullable=True)  # Ziyaret sırasında eklenen not
     photo_id = Column(String, nullable=True)  # Fotoğraf dosyasının ID'si (isteğe bağlı)
+    planned_visit_date = Column(TIMESTAMP(timezone=True), nullable=True)  # Planlanan ziyaret tarihi
 
     # İlişkiler
     branch = relationship("Branch", back_populates="visits")  # Şube ile ilişki
