@@ -392,3 +392,11 @@ export const createBranchVisit = async (branchId, formData) => {
 
   return await response.json(); // JSON yanıtını döndür
 };
+export const getPhotoUrl = (photoId) => {
+  if (!photoId) {
+    throw new Error("Fotoğraf ID'si bulunamadı.");
+  }
+
+  // Fotoğraf URL'si backend'den gelen doğru adresle oluşturuluyor
+  return `${BASE_URL}/visit_images/${photoId}`;
+};

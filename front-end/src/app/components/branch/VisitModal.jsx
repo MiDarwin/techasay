@@ -11,6 +11,7 @@ import {
   TextField,
 } from "@mui/material";
 import PropTypes from "prop-types";
+import { getPhotoUrl } from "../../utils/api";
 
 const style = {
   position: "absolute",
@@ -70,9 +71,10 @@ const VisitModal = ({
                   <Button
                     variant="contained"
                     color="primary"
-                    onClick={() =>
-                      window.open(`/visit_images/${visit.photo_id}`, "_blank")
-                    }
+                    onClick={() => {
+                      const photoUrl = getPhotoUrl(visit.photo_id); // Fotoğraf URL'sini al
+                      window.open(photoUrl, "_blank"); // Yeni sekmede aç
+                    }}
                   >
                     Fotoğrafı Gör
                   </Button>
