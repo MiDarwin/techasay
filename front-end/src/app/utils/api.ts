@@ -1,6 +1,6 @@
 import { headers } from "next/headers";
 
-const BASE_URL = "http://45.132.181.87:8000"; //"http://127.0.1:8000""http://45.132.181.87:8000"
+const BASE_URL = "http://127.0.1:8000"; //"http://127.0.1:8000""http://45.132.181.87:8000"
 
 export async function apiRequest(
   endpoint,
@@ -346,4 +346,49 @@ export const removeFavoriteBranch = async (branchId) => {
   }
 
   return await response.json(); // API yanıtını döndür
+};
+// Şube Ziyaretlerini Getirme
+export const getBranchVisits = async (branchId) => {
+  const token = localStorage.getItem("access_token"); // Token'ı al
+  if (!token) {
+    throw new Error("Erişim tokenı bulunamadı. Lütfen giriş yapın.");
+  }
+
+  const response = await fetch(`${BASE_URL}/branches/${branchId}/visits`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`, // Token'ı Authorization başlığına ekle
+      "Content-Type": "application/json", // JSON formatını belirt
+    },
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.detail || "Ziyaret verileri alınamadı.");
+  }
+
+  return await response.json(); // JSON yanıtını döndür
+};
+
+// Şube Ziyareti Oluşturma
+export const createBranchVisit = async (branchId, formData) => {
+  const token = localStorage.getItem("access_token"); // Token'ı al
+  if (!token) {
+    throw new Error("Erişim tokenı bulunamadı. Lütfen giriş yapın.");
+  }
+
+  const response = await fetch(`${BASE_URL}/branches/${branchId}/visits`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`, // Token'ı Authorization başlığına ekle
+    },
+    body: formData, // FormData kullanıldığı için Content-Type otomatik ayarlanır
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.detail || "Ziyaret oluşturulamadı.");
+  }
+
+  return await response.json(); // JSON yanıtını döndür
 };

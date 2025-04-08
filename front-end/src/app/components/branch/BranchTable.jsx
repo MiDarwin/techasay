@@ -29,13 +29,18 @@ import {
   getAllUsersPermissions,
   removeFavoriteBranch,
   addFavoriteBranch,
+  getBranchVisits,
+  createBranchVisit,
   createSubBranch, // Alt şube silme API çağrısı
 } from "../../utils/api"; // API'den envanter ve alt şubeleri almak için kullanılan fonksiyonlar
 import UpdateBranchModal from "./UpdateBranchModal";
 import SubBranchTable from "./SubBranchTable"; // Alt şube tablosu bileşeni
 import SubBranchForm from "./SubBranchForm"; // Alt şube ekleme formu
 import InventoryModal from "./InventoryModal"; // Envanter Modalı Component
+import InfoIcon from "@mui/icons-material/Info";
 import tableStyles from "../../styles/tableStyles";
+import VisitModal from "./VisitModal";
+
 const style = {
   position: "absolute",
   top: "50%",
@@ -71,6 +76,10 @@ const BranchTable = ({
   const [parentBranchId, setParentBranchId] = useState(null);
   const [snackbarOpen, setSnackbarOpen] = useState(false); // Snackbar açık mı
   const [snackbarMessage, setSnackbarMessage] = useState(""); // Snackbar mesajı
+  const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
+  const [selectedBranchForInfo, setSelectedBranchForInfo] = useState(null);
+  const [branchVisits, setBranchVisits] = useState([]);
+  const [isLoadingVisits, setIsLoadingVisits] = useState(false);
 
   const handleOpenInventory = async (branchId, branchName) => {
     setSelectedBranchId(branchId);
@@ -197,6 +206,43 @@ const BranchTable = ({
       console.error("Alt şubeler alınırken hata oluştu:", error);
     }
   };
+  const handleInfoClick = async (branch) => {
+    setSelectedBranchForInfo(branch);
+    setIsInfoModalOpen(true);
+    setIsLoadingVisits(true);
+
+    try {
+      const visits = await getBranchVisits(
+        branch.id,
+        localStorage.getItem("token")
+      );
+      setBranchVisits(visits);
+    } catch (error) {
+      console.error("Hata:", error);
+    } finally {
+      setIsLoadingVisits(false);
+    }
+  };
+
+  const handleCloseInfoModal = () => {
+    setIsInfoModalOpen(false);
+    setSelectedBranchForInfo(null);
+    setBranchVisits([]);
+  };
+
+  const handleCreateVisit = async (branchId, formData) => {
+    try {
+      const newVisit = await createBranchVisit(
+        branchId,
+        formData,
+        localStorage.getItem("token")
+      );
+      setBranchVisits((prev) => [...prev, newVisit]);
+    } catch (error) {
+      console.error("Hata:", error);
+    }
+  };
+
   const renderFavoriteIcon = (branch) => {
     return (
       <Tooltip
@@ -273,6 +319,15 @@ const BranchTable = ({
                   <TableCell>{branch.created_date}</TableCell>
 
                   <TableCell>
+                    <Tooltip title="Şube Bilgileri" key={branch.id}>
+                      <IconButton
+                        onClick={() => handleInfoClick(branch)}
+                        color="info"
+                        aria-label="Şube Bilgileri"
+                      >
+                        <InfoIcon />
+                      </IconButton>
+                    </Tooltip>
                     {branch.location_link && (
                       <Tooltip title="Konum Göster">
                         <IconButton
@@ -411,6 +466,16 @@ const BranchTable = ({
             />
           </Box>
         </Modal>
+      )}
+      {selectedBranchForInfo && (
+        <VisitModal
+          branch={selectedBranchForInfo}
+          isOpen={isInfoModalOpen}
+          onClose={handleCloseInfoModal}
+          branchVisits={branchVisits}
+          isLoading={isLoadingVisits}
+          onCreateVisit={handleCreateVisit}
+        />
       )}
     </>
   );
