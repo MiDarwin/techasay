@@ -8,6 +8,8 @@ from routes.inventory import router as inventory_router
 from routes.permissions import router as permissions_router
 from routes.inventoryHelper import router as inventory_helper_router
 from routes.visit import router as visit_router
+from fastapi.staticfiles import StaticFiles
+
 app = FastAPI()
 
 @app.on_event("startup")
@@ -21,6 +23,8 @@ app.include_router(company_router)
 app.include_router(branch_router)
 app.include_router(inventory_router)
 app.include_router(inventory_helper_router)
+app.mount("/visit_images", StaticFiles(directory="visit_images"), name="visit_images")
+
 app.include_router(visit_router)
 app.add_middleware(
     CORSMiddleware,

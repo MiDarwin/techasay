@@ -1,6 +1,6 @@
 import { headers } from "next/headers";
 
-const BASE_URL = "http://45.132.181.87:8000"; //"http://127.0.1:8000""http://45.132.181.87:8000"
+const BASE_URL = "http://localhost:8000"; //"http://127.0.1:8000""http://45.132.181.87:8000"
 
 export async function apiRequest(
   endpoint,
@@ -346,4 +346,34 @@ export const removeFavoriteBranch = async (branchId) => {
   }
 
   return await response.json(); // API yanıtını döndür
+};
+export const getBranchVisits = async (branchId, token) => {
+  const response = await fetch(`/branches/${branchId}/visits`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error("Ziyaret verileri alınamadı.");
+  }
+
+  return await response.json();
+};
+
+export const createBranchVisit = async (branchId, formData, token) => {
+  const response = await fetch(`/branches/${branchId}/visits`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    body: formData,
+  });
+
+  if (!response.ok) {
+    throw new Error("Ziyaret oluşturulamadı.");
+  }
+
+  return await response.json();
 };

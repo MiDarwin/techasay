@@ -1,7 +1,13 @@
 from datetime import datetime
+from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Header, UploadFile, File, Form
+from pydantic import BaseModel, validator
+from pytz import timezone
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from models.visit import Visit
 from schemas.visit import VisitCreate, VisitResponse
 from services.visit_service import create_visit
 from database import get_db
@@ -58,3 +64,30 @@ async def add_visit(
         return VisitResponse(**response_data)
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Ziyaret eklenirken bir hata oluştu: {str(e)}")
+
+@router.get("/branches/{branch_id}/visits", response_model=list[VisitResponse])
+async def get_branch_visits(branch_id: int, db: AsyncSession = Depends(get_db)):
+    # Şubenin ziyaretlerini sorgula
+    query = select(Visit).where(Visit.branch_id == branch_id)
+    result = await db.execute(query)
+    visits = result.scalars().all()
+
+    # Eğer şubeye ait ziyaret yoksa hata döndür
+    if not visits:
+        raise HTTPException(status_code=404, detail="Bu şubeye ait ziyaret bulunamadı.")
+
+    # Yanıtı oluştur
+    response_data = []
+    for visit in visits:
+        # Fotoğraf URL'sini oluştur
+        photo_url = f"http://localhost:8000/visit_images/{visit.photo_id}" if visit.photo_id else None
+        response_data.append(VisitResponse(
+            id=visit.id,
+            branch_id=visit.branch_id,
+            user_id=visit.user_id,
+            visit_date=visit.visit_date,
+            note=visit.note,
+            photo_id=visit.photo_id,  # Fotoğraf ID'si
+            photo_url=photo_url  # Fotoğraf URL'si
+        ))
+    return response_data
