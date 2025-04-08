@@ -15,7 +15,7 @@ class VisitResponse(BaseModel):
     visit_date: datetime
     note: Optional[str]
     photo_id: Optional[str]
-    planned_visit_date: Optional[datetime]
+    planned_visit_date: Optional[datetime] = None  # Varsayılan olarak None
     @validator("visit_date", pre=True, always=True)
     def convert_to_local_timezone(cls, value):
         local_tz = timezone("Europe/Istanbul")  # Yerel saat diliminizi buraya yazın
