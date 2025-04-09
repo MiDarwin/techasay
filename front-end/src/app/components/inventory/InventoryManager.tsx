@@ -78,7 +78,7 @@ const InventoryManager = () => {
     try {
       setInventoriesLoading(true);
 
-      if (!permissions.includes("inventoryViewing")) {
+      if (permissions.includes("inventoryViewing")) {
         setInventoriesError(
           "Envanter bilgilerini görüntüleme yetkiniz yok. Lütfen sistem yöneticisi ile iletişime geçin."
         );

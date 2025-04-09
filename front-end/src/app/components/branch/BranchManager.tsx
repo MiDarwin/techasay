@@ -32,7 +32,7 @@ const BranchManager = () => {
   const [limit, setLimit] = useState(15);
   const fetchAllBranches = async () => {
     try {
-      if (!permissions.includes("Şube_Görüntüleme")) {
+      if (permissions.includes("branchViewing")) {
         setBranchError(
           "Şube bilgilerini görüntüleme yetkiniz yok. Lütfen sistem yöneticisi ile iletişime geçin."
         );
@@ -54,7 +54,7 @@ const BranchManager = () => {
     company = ""
   ) => {
     try {
-      if (!permissions.includes("branchViewing")) {
+      if (permissions.includes("branchViewing")) {
         setBranchError(
           "Şube bilgilerini görüntüleme yetkiniz yok. Lütfen sistem yöneticisi ile iletişime geçin."
         );
