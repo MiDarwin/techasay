@@ -27,7 +27,7 @@ const CompanyManager = () => {
 
   const fetchCompanies = async () => {
     try {
-      if (permissions.includes("CompanyViewing")) {
+      if (!permissions.includes("companyViewing")) {
         setCompanyError(
           "Şirket bilgilerini görüntüleme yetkiniz yok. Lütfen sistem yöneticisi ile iletişime geçin."
         );
@@ -41,8 +41,11 @@ const CompanyManager = () => {
   };
 
   useEffect(() => {
-    fetchCompanies();
-  }, []);
+    if (permissions.length > 0) {
+      // İzinler yüklendi mi kontrol et
+      fetchCompanies();
+    }
+  }, [permissions]);
 
   const handleAddCompany = async (companyData) => {
     try {
@@ -95,8 +98,8 @@ const CompanyManager = () => {
   useEffect(() => {
     const fetchPermissions = async () => {
       try {
-        const userPermissions = await getAllUsersPermissions(); // Kullanıcı izinlerini al
-        setPermissions(userPermissions); // İzinleri state'e ata
+        const userPermissions = await getAllUsersPermissions();
+        setPermissions(userPermissions);
       } catch (error) {
         console.error("Kullanıcı izinleri alınırken hata oluştu:", error);
       }
