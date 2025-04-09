@@ -32,6 +32,12 @@ const BranchManager = () => {
   const [limit, setLimit] = useState(15);
   const fetchAllBranches = async () => {
     try {
+      if (!permissions.includes("Şube_Görüntüleme")) {
+        setBranchError(
+          "Şube bilgilerini görüntüleme yetkiniz yok. Lütfen sistem yöneticisi ile iletişime geçin."
+        );
+        return;
+      }
       setBranchLoading(true); // Yüklenme durumunu göster
       const data = await getAllBranches(limit); // limit'i API çağrısına ekle
       setBranches(data); // Gelen şube verilerini state'e ata
@@ -48,6 +54,12 @@ const BranchManager = () => {
     company = ""
   ) => {
     try {
+      if (!permissions.includes("Şube_Görüntüleme")) {
+        setBranchError(
+          "Şube bilgilerini görüntüleme yetkiniz yok. Lütfen sistem yöneticisi ile iletişime geçin."
+        );
+        return;
+      }
       setBranchLoading(true);
       console.log("Seçilen İlçe:", districtFilter);
       if (!company) {
@@ -256,7 +268,6 @@ const BranchManager = () => {
         )}
       </div>
 
-      {/* Şube Ekleme Modalı */}
       <Modal isOpen={isFormVisible} onClose={closeBranchModal}>
         <BranchForm
           onSubmit={currentBranch ? handleUpdateBranch : handleAddBranch}
@@ -268,7 +279,7 @@ const BranchManager = () => {
       </Modal>
 
       {branchError && (
-        <div className="bg-red-500 text-white p-3 rounded mt-4">
+        <div className="bg-red-500 text-white p-2 rounded mt-3">
           {branchError}
         </div>
       )}
