@@ -30,6 +30,14 @@ const BranchManager = () => {
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [permissions, setPermissions] = useState([]); // Kullanıcı izinleri
   const [limit, setLimit] = useState(15);
+  const fetchPermissions = async () => {
+    try {
+      const userPermissions = await getAllUsersPermissions(); // Kullanıcı izinlerini al
+      setPermissions(userPermissions); // İzinleri state'e ata
+    } catch (error) {
+      console.error("Kullanıcı izinleri alınırken hata oluştu:", error);
+    }
+  };
   const fetchAllBranches = async () => {
     try {
       if (!permissions.includes("branchViewing")) {
@@ -38,6 +46,8 @@ const BranchManager = () => {
         );
         return;
       }
+      setBranchError(""); // Hata mesajını temizle
+
       setBranchLoading(true); // Yüklenme durumunu göster
       const data = await getAllBranches(limit); // limit'i API çağrısına ekle
       setBranches(data); // Gelen şube verilerini state'e ata
@@ -60,6 +70,7 @@ const BranchManager = () => {
         );
         return;
       }
+      setBranchError(""); // Hata mesajını temizle
       setBranchLoading(true);
       console.log("Seçilen İlçe:", districtFilter);
       if (!company) {
@@ -163,21 +174,17 @@ const BranchManager = () => {
   };
 
   useEffect(() => {
-    fetchCompanies();
-    fetchAllBranches();
-  }, []);
-  useEffect(() => {
-    const fetchPermissions = async () => {
-      try {
-        const userPermissions = await getAllUsersPermissions(); // Kullanıcı izinlerini al
-        setPermissions(userPermissions); // İzinleri state'e ata
-      } catch (error) {
-        console.error("Kullanıcı izinleri alınırken hata oluştu:", error);
-      }
-    };
+    if (permissions.length > 0) {
+      // İzinler yüklendikten sonra fetch et
+      fetchCompanies();
+      fetchAllBranches();
+    }
+  }, [permissions]);
 
+  useEffect(() => {
     fetchPermissions();
   }, []);
+
   return (
     <div className="flex flex-col">
       <div
@@ -277,6 +284,7 @@ const BranchManager = () => {
           companies={companies}
         />
       </Modal>
+      {branchLoading && <div>Yükleniyor...</div>}
 
       {branchError && (
         <div className="bg-red-500 text-white p-2 rounded mt-3">
