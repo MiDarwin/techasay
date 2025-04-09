@@ -27,6 +27,12 @@ const CompanyManager = () => {
 
   const fetchCompanies = async () => {
     try {
+      if (!permissions.includes("Şirket_Görüntüleme")) {
+        setCompanyError(
+          "Şirket bilgilerini görüntüleme yetkiniz yok. Lütfen sistem yöneticisi ile iletişime geçin."
+        );
+        return;
+      }
       const data = await getAllCompanies();
       setCompanies(data);
     } catch (err) {
@@ -143,7 +149,11 @@ const CompanyManager = () => {
       </Modal>
 
       {/* Hata mesajı */}
-      {companyError && <div className="error">{companyError}</div>}
+      {companyError && (
+        <div className="bg-red-500 text-white p-2 rounded mt-3">
+          {companyError}
+        </div>
+      )}
 
       {/* Liste */}
       <CompanyTable
