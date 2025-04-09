@@ -17,6 +17,7 @@ import {
 import InfoIcon from "@mui/icons-material/Info";
 import PropTypes from "prop-types";
 import { getPhotoUrl } from "../../utils/api";
+import PhotoIcon from "@mui/icons-material/Photo";
 
 const style = {
   position: "absolute",
@@ -46,7 +47,14 @@ const VisitModal = ({
   const [plannedVisitDate, setPlannedVisitDate] = useState("");
   const [photo, setPhoto] = useState(null);
   const [preview, setPreview] = useState(null);
-
+  const getCurrentDateTimeLocal = () => {
+    const now = new Date();
+    const offset = now.getTimezoneOffset();
+    const localTime = new Date(now.getTime() - offset * 60000)
+      .toISOString()
+      .slice(0, 16);
+    return localTime;
+  };
   const handlePhotoChange = (e) => {
     const file = e.target.files[0];
     setPhoto(file);
@@ -175,16 +183,17 @@ const VisitModal = ({
                     secondary={`Not: ${visit.note}`}
                   />
                   {visit.photo_id && (
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      onClick={() => {
-                        const photoUrl = getPhotoUrl(visit.photo_id); // Fotoğraf URL'sini al
-                        window.open(photoUrl, "_blank"); // Yeni sekmede aç
-                      }}
-                    >
-                      Fotoğrafı Gör
-                    </Button>
+                    <Tooltip title="Fotoğrafı Gör">
+                      <IconButton
+                        color="primary"
+                        onClick={() => {
+                          const photoUrl = getPhotoUrl(visit.photo_id);
+                          window.open(photoUrl, "_blank");
+                        }}
+                      >
+                        <PhotoIcon />
+                      </IconButton>
+                    </Tooltip>
                   )}
                   {visit.planned_visit_date && (
                     <Tooltip
@@ -261,18 +270,29 @@ const VisitModal = ({
               type="datetime-local"
               label="Ziyaret Tarihi"
               value={visitDate}
-              onChange={(e) => setVisitDate(e.target.value)}
+              onChange={handleVisitDateChange}
               margin="normal"
               InputLabelProps={{ shrink: true }}
+              InputProps={{
+                inputProps: {
+                  min: getCurrentDateTimeLocal(), // Geçerli tarih ve saat
+                },
+              }}
             />
+
             <TextField
               fullWidth
               type="datetime-local"
               label="Planlanan Ziyaret Tarihi"
               value={plannedVisitDate}
-              onChange={(e) => setPlannedVisitDate(e.target.value)}
+              onChange={handlePlannedVisitDateChange}
               margin="normal"
               InputLabelProps={{ shrink: true }}
+              InputProps={{
+                inputProps: {
+                  min: getCurrentDateTimeLocal(), // Geçerli tarih ve saat
+                },
+              }}
             />
             <Typography variant="body2" gutterBottom>
               Planlanan Ziyaret Tarihini Seç:
