@@ -113,7 +113,10 @@ const InventoryManager = () => {
       setInventoriesLoading(false);
     }
   };
-
+  useEffect(() => {
+    fetchCompanies();
+    fetchAllInventories();
+  }, []);
   useEffect(() => {
     if (selectedCompanyId) {
       const selectedCompany = companies.find(
