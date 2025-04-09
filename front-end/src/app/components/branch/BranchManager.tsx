@@ -54,7 +54,7 @@ const BranchManager = () => {
     company = ""
   ) => {
     try {
-      if (!permissions.includes("Şube_Görüntüleme")) {
+      if (!permissions.includes("branchViewing")) {
         setBranchError(
           "Şube bilgilerini görüntüleme yetkiniz yok. Lütfen sistem yöneticisi ile iletişime geçin."
         );

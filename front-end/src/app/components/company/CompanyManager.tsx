@@ -27,7 +27,7 @@ const CompanyManager = () => {
 
   const fetchCompanies = async () => {
     try {
-      if (!permissions.includes("Şirket_Görüntüleme")) {
+      if (!permissions.includes("companyViewing")) {
         setCompanyError(
           "Şirket bilgilerini görüntüleme yetkiniz yok. Lütfen sistem yöneticisi ile iletişime geçin."
         );

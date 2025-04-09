@@ -112,6 +112,9 @@ const AdminPanelPage = () => {
                 <td style={adminPanelStyles.tableCell}>{user.email}</td>
                 <td style={adminPanelStyles.tableCell}>
                   {[
+                    "companyViewing",
+                    "branchViewing",
+                    "inventoryViewing",
                     "permission_management",
                     "companyAdd",
                     "companyDelete",

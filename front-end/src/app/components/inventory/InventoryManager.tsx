@@ -78,24 +78,28 @@ const InventoryManager = () => {
     try {
       setInventoriesLoading(true);
 
+      if (!permissions.includes("inventoryViewing")) {
+        setInventoriesError(
+          "Envanter bilgilerini görüntüleme yetkiniz yok. Lütfen sistem yöneticisi ile iletişime geçin."
+        );
+        setAllInventories([]); // Tablo boş olacak
+        setFilteredInventories([]); // Filtrelenmiş de boş olacak
+        return; // Alttaki kodlar çalışmasın
+      }
+
       let allInventories = [];
 
-      // Seçilen şube bilgilerini bul
       const selectedBranchDetails = branches.find(
         (branch) => branch.name === branchName
       );
 
       if (selectedBranchDetails) {
         if (selectedBranchDetails.has_sub_branches) {
-          // Eğer şube alt şubelere sahipse getInventoryByBranch çağır
           allInventories = await getInventoryByBranch(selectedBranchDetails.id);
-          console.log("Filtered Inventories:", filteredInventories);
         } else {
-          // Normal şubeler için getAllInventory çağır
           allInventories = await getAllInventory(companyName, branchName);
         }
       } else {
-        // Eğer şube seçilmemişse tüm envanteri çek
         allInventories = await getAllInventory(companyName, branchName);
       }
 
@@ -111,15 +115,11 @@ const InventoryManager = () => {
   };
 
   useEffect(() => {
-    fetchCompanies();
-    fetchAllInventories();
-  }, []);
-
-  useEffect(() => {
     if (selectedCompanyId) {
       const selectedCompany = companies.find(
         (company) => company.company_id === selectedCompanyId
       );
+
       fetchAllInventories(selectedCompany?.name || "");
       fetchBranches(selectedCompanyId);
     } else {
@@ -292,7 +292,9 @@ const InventoryManager = () => {
               {inventoriesLoading ? (
                 <CircularProgress />
               ) : inventoriesError ? (
-                <Typography color="error">{inventoriesError}</Typography>
+                <div className="bg-red-500 text-white p-2 rounded mt-3">
+                  {inventoriesError}
+                </div>
               ) : (
                 <InventoryList
                   inventories={filteredInventories}
