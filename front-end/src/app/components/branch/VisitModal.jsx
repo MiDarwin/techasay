@@ -47,6 +47,7 @@ const VisitModal = ({
   const [plannedVisitDate, setPlannedVisitDate] = useState("");
   const [photo, setPhoto] = useState(null);
   const [preview, setPreview] = useState(null);
+  const [customDays, setCustomDays] = useState("");
   const getCurrentDateTimeLocal = () => {
     const now = new Date();
     const offset = now.getTimezoneOffset();
@@ -119,7 +120,25 @@ const VisitModal = ({
 
     setPlannedVisitDate(e.target.value);
   };
+  const handleCustomDaysChange = (e) => {
+    const value = e.target.value;
+    // Sadece pozitif tam sayıları kabul et
+    if (/^\d*$/.test(value)) {
+      setCustomDays(value);
+    }
+  };
 
+  // Kullanıcının özel gün sayısını gönderip planlanan ziyaret tarihini ayarlama
+  // customDays değiştiğinde planlanan ziyaret tarihini güncelle
+  useEffect(() => {
+    const days = parseInt(customDays, 10);
+    if (!isNaN(days) && days > 0) {
+      handlePlannedVisitDays(days);
+    } else if (customDays === "") {
+      // Eğer kullanıcı girişi temizlerse, planlanan ziyaret tarihini sıfırla veya istediğiniz şekilde yönetebilirsiniz
+      setPlannedVisitDate("");
+    }
+  }, [customDays]);
   // Belirli bir gün ekleyerek planlanan ziyaret tarihini ayarla
   const handlePlannedVisitDays = (days) => {
     const now = new Date();
@@ -307,6 +326,15 @@ const VisitModal = ({
                 {days} Gün
               </Button>
             ))}
+            <TextField
+              label="Özel Gün Sayısı"
+              type="number"
+              value={customDays}
+              onChange={handleCustomDaysChange}
+              InputProps={{ inputProps: { min: 1 } }}
+              size="small"
+              sx={{ width: 150, mr: 1, mb: 1, marginTop: 1 }}
+            />
             <Box mt={2} display="flex" alignItems="center" gap={2}>
               <Button variant="outlined" component="label">
                 Fotoğraf Seç

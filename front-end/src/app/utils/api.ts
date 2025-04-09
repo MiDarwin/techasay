@@ -362,6 +362,11 @@ export const getBranchVisits = async (branchId) => {
     },
   });
 
+  if (response.status === 404) {
+    // Eğer 404 dönüyorsa, şubeye ait ziyaret bulunmamaktadır.
+    return []; // Boş bir dizi döndür
+  }
+
   if (!response.ok) {
     const error = await response.json();
     throw new Error(error.detail || "Ziyaret verileri alınamadı.");
