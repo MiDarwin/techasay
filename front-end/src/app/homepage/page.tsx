@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Breadcrumbs from "@mui/material/Breadcrumbs";
 import Link from "@mui/material/Link";
 import Box from "@mui/material/Box"; // Box bileşeni eklendi
@@ -11,10 +11,24 @@ import StoreIcon from "@mui/icons-material/Store"; // Şube ikonu
 import BackpackIcon from "@mui/icons-material/Backpack"; // Envanter ikonu
 import SettingsIcon from "@mui/icons-material/Settings"; // Çark simgesi (Ayarlar)
 import { useRouter } from "next/navigation";
+import CircularProgress from "@mui/material/CircularProgress"; // Yükleme göstergesi
+
 const HomePage = () => {
   const [activeTab, setActiveTab] = useState("branch");
   const router = useRouter(); // Router instance
+  const [isLoading, setIsLoading] = useState(true); // Yükleme durumu
+  useEffect(() => {
+    // Token kontrolü
+    const token = localStorage.getItem("access_token");
 
+    if (!token) {
+      // Token yoksa login sayfasına yönlendir
+      router.replace("/auth/login");
+    } else {
+      // Token varsa yükleme tamamlandı
+      setIsLoading(false);
+    }
+  }, [router]);
   const handleTabChange = (tab) => {
     setActiveTab(tab);
   };
@@ -34,6 +48,22 @@ const HomePage = () => {
         return null;
     }
   };
+  // Yükleme durumu için geri dönüş
+  if (isLoading) {
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "100vh",
+          backgroundColor: "#E7F6F2",
+        }}
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   return (
     <div style={{ backgroundColor: "#E7F6F2", flexGrow: 1 }}>
