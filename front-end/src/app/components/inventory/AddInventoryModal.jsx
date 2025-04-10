@@ -47,9 +47,15 @@ const AddInventoryModal = ({
   const [selectedSubBranchId, setSelectedSubBranchId] = useState(""); // Seçilen alt şube ID'si
 
   // Şirket değiştiğinde şubeleri yükleme
-  const fetchBranches = async (companyId, city, district) => {
+  const fetchBranches = async (companyId, city = "", district = "") => {
     try {
-      const data = await getBranchesByCompanyId(companyId, city, district);
+      const limit = 50; // İsteğe bağlı olarak limit değerini ayarlayın
+      const data = await getBranchesByCompanyId(
+        companyId,
+        limit,
+        city,
+        district
+      );
       setBranches(data);
     } catch (err) {
       console.error("Şubeler alınırken bir hata oluştu:", err);
