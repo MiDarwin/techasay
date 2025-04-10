@@ -45,24 +45,23 @@ const InventoryManager = () => {
   const [selectedBranch, setSelectedBranch] = useState("");
   const [isInventoryAddModalOpen, setIsInventoryAddModalOpen] = useState(false);
   const [permissions, setPermissions] = useState([]); // Kullanıcı izinleri
+  const [permissionsLoaded, setPermissionsLoaded] = useState(false);
   const [archivedInventories, setArchivedInventories] = useState([]);
   const [isArchiveDrawerOpen, setIsArchiveDrawerOpen] = useState(false);
 
-  // Arşivlenmiş envanterleri çekme fonksiyonu
-  const fetchArchivedInventories = async () => {
+  // İzinleri çekme fonksiyonu
+  const fetchPermissions = async () => {
     try {
-      const archivedData = await getArchivedInventory();
-      setArchivedInventories(archivedData);
-    } catch (err) {
-      console.error("Arşivlenmiş envanterler alınırken hata oluştu:", err);
+      const userPermissions = await getAllUsersPermissions(); // Kullanıcı izinlerini al
+      setPermissions(userPermissions); // İzinleri state'e ata
+    } catch (error) {
+      console.error("Kullanıcı izinleri alınırken hata oluştu:", error);
+    } finally {
+      setPermissionsLoaded(true); // İzinlerin yüklendiğini belirt
     }
   };
 
-  // Kum saati simgesine tıklanınca arşiv çek ve drawer aç
-  const handleOpenArchive = async () => {
-    await fetchArchivedInventories();
-    setIsArchiveDrawerOpen(true);
-  };
+  // Şirketleri çekme fonksiyonu
   const fetchCompanies = async () => {
     try {
       const companyData = await getAllCompanies();
@@ -74,18 +73,34 @@ const InventoryManager = () => {
     }
   };
 
+  // Şubeleri çekme fonksiyonu
+  const fetchBranches = async (companyId) => {
+    try {
+      const branchData = await getBranchesByCompanyId(companyId);
+      setBranches(branchData);
+    } catch (err) {
+      console.error("Şubeler alınırken hata oluştu:", err);
+    }
+  };
+
+  // Envanterleri çekme fonksiyonu
   const fetchAllInventories = async (companyName = "", branchName = "") => {
+    if (!permissionsLoaded) {
+      // İzinler henüz yüklenmedi, bekleyin veya erken çıkın
+      return;
+    }
+
+    if (!permissions.includes("inventoryViewing")) {
+      setInventoriesError(
+        "Envanter bilgilerini görüntüleme yetkiniz yok. Lütfen sistem yöneticisi ile iletişime geçin."
+      );
+      setAllInventories([]); // Tablo boş olacak
+      setFilteredInventories([]); // Filtrelenmiş de boş olacak
+      return; // Alttaki kodlar çalışmasın
+    }
+
     try {
       setInventoriesLoading(true);
-
-      if (!permissions.includes("inventoryViewing")) {
-        setInventoriesError(
-          "Envanter bilgilerini görüntüleme yetkiniz yok. Lütfen sistem yöneticisi ile iletişime geçin."
-        );
-        setAllInventories([]); // Tablo boş olacak
-        setFilteredInventories([]); // Filtrelenmiş de boş olacak
-        return; // Alttaki kodlar çalışmasın
-      }
 
       let allInventories = [];
 
@@ -113,32 +128,24 @@ const InventoryManager = () => {
       setInventoriesLoading(false);
     }
   };
-  useEffect(() => {
-    fetchCompanies();
-    fetchAllInventories();
-  }, []);
-  useEffect(() => {
-    if (selectedCompanyId) {
-      const selectedCompany = companies.find(
-        (company) => company.company_id === selectedCompanyId
-      );
 
-      fetchAllInventories(selectedCompany?.name || "");
-      fetchBranches(selectedCompanyId);
-    } else {
-      setBranches([]);
-      fetchAllInventories();
+  // Arşivlenmiş envanterleri çekme fonksiyonu
+  const fetchArchivedInventories = async () => {
+    try {
+      const archivedData = await getArchivedInventory();
+      setArchivedInventories(archivedData);
+    } catch (err) {
+      console.error("Arşivlenmiş envanterler alınırken hata oluştu:", err);
     }
-  }, [selectedCompanyId]);
+  };
 
-  useEffect(() => {
-    if (selectedCompanyId && selectedBranch) {
-      const selectedCompany = companies.find(
-        (company) => company.company_id === selectedCompanyId
-      );
-      fetchAllInventories(selectedCompany?.name || "", selectedBranch);
-    }
-  }, [selectedBranch]);
+  // Kum saati simgesine tıklanınca arşiv çek ve drawer aç
+  const handleOpenArchive = async () => {
+    await fetchArchivedInventories();
+    setIsArchiveDrawerOpen(true);
+  };
+
+  // Envanteri silme fonksiyonu
   const handleDeleteInventory = async (inventoryId) => {
     if (!inventoryId) {
       console.error("Silme işlemi için geçersiz envanter ID'si:", inventoryId);
@@ -160,41 +167,57 @@ const InventoryManager = () => {
       }
     }
   };
+
+  // İzinleri ve ardından şirketleri/envanterleri çek
   useEffect(() => {
-    if (selectedBranch === "") {
-      // Şube seçimi "Tüm Şubeler" olduğunda sadece şirkete göre filtreleme yap
-      const selectedCompany = companies.find(
-        (company) => company.company_id === selectedCompanyId
-      );
-      fetchAllInventories(selectedCompany?.name || "");
-    } else if (selectedCompanyId && selectedBranch) {
-      // Belirli bir şube seçildiğinde filtreleme yap
+    fetchPermissions();
+  }, []);
+
+  useEffect(() => {
+    if (permissionsLoaded) {
+      if (permissions.includes("inventoryViewing")) {
+        fetchCompanies();
+        fetchAllInventories();
+      } else {
+        setInventoriesError(
+          "Envanter bilgilerini görüntüleme yetkiniz yok. Lütfen sistem yöneticisi ile iletişime geçin."
+        );
+      }
+    }
+  }, [permissionsLoaded, permissions]);
+
+  // Şirket seçimi değiştiğinde şubeleri ve envanterleri çek
+  useEffect(() => {
+    if (permissionsLoaded && permissions.includes("inventoryViewing")) {
+      if (selectedCompanyId) {
+        const selectedCompany = companies.find(
+          (company) => company.company_id === selectedCompanyId
+        );
+
+        fetchAllInventories(selectedCompany?.name || "");
+        fetchBranches(selectedCompanyId);
+      } else {
+        setBranches([]);
+        fetchAllInventories();
+      }
+    }
+  }, [selectedCompanyId, permissionsLoaded, permissions]);
+
+  // Şube seçimi değiştiğinde envanterleri tekrar çek
+  useEffect(() => {
+    if (
+      permissionsLoaded &&
+      permissions.includes("inventoryViewing") &&
+      selectedCompanyId &&
+      selectedBranch
+    ) {
       const selectedCompany = companies.find(
         (company) => company.company_id === selectedCompanyId
       );
       fetchAllInventories(selectedCompany?.name || "", selectedBranch);
     }
-  }, [selectedBranch]);
-  const fetchBranches = async (companyId) => {
-    try {
-      const branchData = await getBranchesByCompanyId(companyId);
-      setBranches(branchData);
-    } catch (err) {
-      console.error("Şubeler alınırken hata oluştu:", err);
-    }
-  };
-  useEffect(() => {
-    const fetchPermissions = async () => {
-      try {
-        const userPermissions = await getAllUsersPermissions(); // Kullanıcı izinlerini al
-        setPermissions(userPermissions); // İzinleri state'e ata
-      } catch (error) {
-        console.error("Kullanıcı izinleri alınırken hata oluştu:", error);
-      }
-    };
+  }, [selectedBranch, selectedCompanyId, permissionsLoaded, permissions]);
 
-    fetchPermissions();
-  }, []);
   return (
     <div>
       <main>
