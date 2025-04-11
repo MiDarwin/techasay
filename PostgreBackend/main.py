@@ -29,7 +29,7 @@ app.mount("/api/visit_images", StaticFiles(directory="visit_images"), name="visi
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://45.132.181.87:3000","https://0.0.0.0:8000","https://45.132.181.87:8000","https://127.0.1:8000","https://localhost:8000/","https://gemtech.net.tr", "https://www.gemtech.net.tr"],  # Güvenlik için sadece belirli frontend domainlerini ekleyebilirsiniz
+    allow_origins=["https://45.132.181.87:3000","http://localhost:3000","https://0.0.0.0:8000","https://45.132.181.87:8000","https://127.0.1:8000","https://localhost:8000/","https://gemtech.net.tr", "https://www.gemtech.net.tr"],  # Güvenlik için sadece belirli frontend domainlerini ekleyebilirsiniz
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

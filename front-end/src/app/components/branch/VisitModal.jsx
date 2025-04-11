@@ -172,7 +172,7 @@ const VisitModal = ({
   return (
     <Modal open={isOpen} onClose={onClose}>
       <Box sx={style}>
-        <Typography variant="h6" mb={2}>
+        <Typography variant="h6" mb={2} style={{ color: "black" }}>
           Ziyaretler
         </Typography>
 
@@ -196,6 +196,7 @@ const VisitModal = ({
                   }}
                 >
                   <ListItemText
+                    style={{ color: "black" }}
                     primary={`Tarih: ${new Date(
                       visit.visit_date
                     ).toLocaleString()}`}

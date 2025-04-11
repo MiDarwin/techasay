@@ -154,7 +154,7 @@ const InventoryManagerPage = () => {
           <h2>Modeller</h2>
           {selectedDeviceType ? (
             <>
-              <ul className="models-list">
+              <ul className="models-list" style={{ color: "black" }}>
                 {selectedDeviceType.device_models.map((model, index) => (
                   <li key={index} className="model-item">
                     {model}
