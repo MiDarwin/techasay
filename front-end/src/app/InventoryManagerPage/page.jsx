@@ -114,7 +114,7 @@ const InventoryManagerPage = () => {
         {/* Sol taraf: Cihaz Türleri */}
         <div className="inventory-left">
           <h2>Cihaz Türleri</h2>
-          <div className="add-device-type">
+          <div className="add-device-type" style={{ color: "black" }}>
             <input
               type="text"
               placeholder="Yeni cihaz türü ekle"
@@ -128,7 +128,7 @@ const InventoryManagerPage = () => {
           ) : error ? (
             <p style={{ color: "red" }}>{error}</p>
           ) : (
-            <ul className="device-types-list">
+            <ul className="device-types-list" style={{ color: "black" }}>
               {deviceTypes.map((type) => (
                 <li
                   key={type.id}
@@ -167,12 +167,13 @@ const InventoryManagerPage = () => {
                   placeholder="Yeni model ekle"
                   value={newModelName}
                   onChange={(e) => setNewModelName(e.target.value)}
+                  style={{ color: "black" }}
                 />
                 <button onClick={handleAddModel}>Ekle</button>
               </div>
             </>
           ) : (
-            <p>Lütfen bir cihaz türü seçin.</p>
+            <p style={{ color: "black" }}>Lütfen bir cihaz türü seçin.</p>
           )}
         </div>
       </div>
