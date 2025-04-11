@@ -29,6 +29,8 @@ const BranchManager = () => {
   const [branchLoading, setBranchLoading] = useState(false);
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [permissions, setPermissions] = useState([]); // Kullanıcı izinleri
+  const [showPopup, setShowPopup] = useState(true); // Popup başlangıçta görünsün
+
   const [limit, setLimit] = useState(15);
   const fetchPermissions = async () => {
     try {
@@ -184,9 +186,27 @@ const BranchManager = () => {
   useEffect(() => {
     fetchPermissions();
   }, []);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowPopup(false);
+    }, 4000); // 4 saniye sonra popup'u kapat
 
+    return () => clearTimeout(timer);
+  }, []);
+
+  const handleClosePopup = () => {
+    setShowPopup(false);
+  };
   return (
     <div className="flex flex-col">
+      {showPopup && (
+        <div
+          className="fixed top-4 right-4 bg-blue-500 text-white px-4 py-2 rounded shadow-lg cursor-pointer"
+          onClick={handleClosePopup}
+        >
+          Filtreleme işlemleri için bir şirket seçmeniz lazım.
+        </div>
+      )}
       <div
         className="flex items-center mb-4 p-4 rounded-lg shadow-lg border border-gray-300"
         style={tableStyles.tableHeaderBackground}

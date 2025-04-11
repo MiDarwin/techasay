@@ -15,6 +15,9 @@ from sqlalchemy import or_
 from sqlalchemy.orm import selectinload
 from models.favorite_branches import favorite_branches
 from sqlalchemy import delete
+from tempfile import NamedTemporaryFile
+from openpyxl import Workbook
+
 
 async def create_branch(db: AsyncSession, branch: BranchCreate, company_id: int):
     db_branch = Branch(
@@ -286,3 +289,63 @@ async def remove_favorite_branch(db: AsyncSession, user_id: int, branch_id: int)
     await db.commit()  # Değişiklikleri asenkron olarak kaydet
 
     return {"message": "Favori şube başarıyla kaldırıldı."}
+async def get_filtered_branches(db: AsyncSession, company_id=None, city=None, district=None):
+    """
+    Filtreleme kriterlerine göre şubeleri getirir.
+    """
+    query = select(Branch).options(joinedload(Branch.company))  # Şirket bilgilerini yükle
+
+    if company_id:
+        query = query.filter(Branch.company_id == company_id)
+
+    if city:
+        query = query.filter(Branch.city.ilike(f"%{city}%"))
+
+    if district:
+        query = query.filter(Branch.district.ilike(f"%{district}%"))
+
+    result = await db.execute(query)
+    return result.scalars().all()
+
+async def create_excel_file(branches):
+    """
+    Şube bilgilerini kullanarak bir Excel dosyası oluşturur.
+    """
+    # Excel dosyasını oluştur
+    workbook = Workbook()
+    sheet = workbook.active
+    sheet.title = "Şubeler"
+
+    # Başlıkları ekle
+    headers = [
+        "Şube Adı",
+        "Şirket Adı",
+        "Şehir",
+        "İlçe",
+        "Telefon Numarası",
+        "Telefon Numarası 2",
+        "Şube Notu",
+        "Konum Bağlantısı",
+        "Oluşturulma Tarihi"
+    ]
+    sheet.append(headers)
+
+    # Şubeleri Excel'e yaz
+    for branch in branches:
+        sheet.append([
+            branch.branch_name,
+            branch.company.name if branch.company else "Bilinmiyor",
+            branch.city,
+            branch.district,
+            branch.phone_number,
+            branch.phone_number_2,
+            branch.branch_note,
+            branch.location_link,
+            branch.created_date.strftime("%d/%m/%Y") if branch.created_date else None
+        ])
+
+    # Geçici bir dosyaya yaz
+    temp_file = NamedTemporaryFile(delete=False, suffix=".xlsx")
+    workbook.save(temp_file.name)
+    temp_file.close()
+    return temp_file.name

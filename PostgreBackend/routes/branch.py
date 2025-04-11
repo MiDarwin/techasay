@@ -1,16 +1,15 @@
 # routes/branch.py
 from typing import Optional
-
+from fastapi.responses import FileResponse
 from fastapi import APIRouter, Depends, HTTPException,Query
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
-
 from dependencies import oauth2_scheme
 from models.user import User
 from schemas.branch import BranchCreate, BranchResponse, BranchUpdate
 from services.branch_service import create_branch, get_branches, update_branch, delete_branch, create_sub_branch, \
-    get_sub_branches, add_favorite_branch,remove_favorite_branch
+    get_sub_branches,get_filtered_branches, add_favorite_branch,remove_favorite_branch,create_excel_file
 from database import get_db
 from utils.bearerToken import get_user_id_from_token
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")  # Token doğrulama şeması
@@ -118,3 +117,25 @@ async def remove_favorite_branch_endpoint(
 
     # Favori şubeyi kaldırma işlemini çağır
     return await remove_favorite_branch(db, user_id, branch_id)
+@router.get("/branches/export", response_description="Excel dosyası olarak şubeleri indir")
+async def export_branches(
+    company_id: int = Query(None),
+    city: str = Query(None),
+    district: str = Query(None),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Şubeleri filtreleyerek Excel dosyası olarak kullanıcıya gönderir.
+    """
+    # Şubeleri filtrele
+    branches = await get_filtered_branches(db, company_id=company_id, city=city, district=district)
+
+    # Excel dosyasını oluştur
+    temp_file_name = await create_excel_file(branches)
+
+    # Excel dosyasını kullanıcıya gönder
+    return FileResponse(
+        temp_file_name,
+        filename="subeler.xlsx",
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
