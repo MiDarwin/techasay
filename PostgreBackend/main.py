@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from starlette.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware
 
 from database import init_db
 from routes.user import router as user_router
@@ -16,23 +17,23 @@ app = FastAPI()
 async def startup():
     await init_db()
 
-app.include_router(user_router, prefix="/user", tags=["User"])
-app.include_router(permissions_router, prefix="/permissions", tags=["permissions"])
+app.include_router(user_router, prefix="/api/user", tags=["User"])
+app.include_router(permissions_router, prefix="/api/permissions", tags=["Permissions"])
 
-app.include_router(company_router)
-app.include_router(branch_router)
-app.include_router(inventory_router)
-app.include_router(inventory_helper_router)
-app.include_router(visit_router)
-app.mount("/visit_images", StaticFiles(directory="visit_images"), name="visit_images")
+app.include_router(company_router, prefix="/api/companies", tags=["Companies"])
+app.include_router(branch_router, prefix="/api/branches", tags=["Branches"])
+app.include_router(inventory_router, prefix="/api/inventory", tags=["Inventory"])
+app.include_router(inventory_helper_router, prefix="/api/inventory-helper", tags=["Inventory Helper"])
+app.include_router(visit_router,prefix="/api/visits",tags=["Visits"])
+app.mount("/api/visit_images", StaticFiles(directory="visit_images"), name="visit_images")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://45.132.181.87:3000","http://localhost:3000"],  # Güvenlik için sadece belirli frontend domainlerini ekleyebilirsiniz
+    allow_origins=["https://45.132.181.87:3000","https://0.0.0.0:8000","https://45.132.181.87:8000","https://127.0.1:8000","https://localhost:8000/","https://gemtech.net.tr", "https://www.gemtech.net.tr"],  # Güvenlik için sadece belirli frontend domainlerini ekleyebilirsiniz
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="127.0.0.1", port=8000)

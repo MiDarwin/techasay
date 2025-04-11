@@ -135,7 +135,7 @@ const SettingsPage = () => {
           </div>
         </div>
         <div style={settingsStyles.changePassword}>
-          <span>Şifre Değiştir</span>
+        <span style={{color:"black"}}>Şifre Değiştir</span>
           <div style={settingsStyles.iconWrapper}>
             <EditIcon
               style={settingsStyles.editIcon}

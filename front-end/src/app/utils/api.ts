@@ -1,6 +1,6 @@
 import { headers } from "next/headers";
 
-const BASE_URL = "http://127.0.1:8000"; //"http://127.0.1:8000""http://45.132.181.87:8000"
+const BASE_URL = "https://gemtech.net.tr"; //"http://127.0.1:8000""http://45.132.181.87:8000"
 
 export async function apiRequest(
   endpoint,
@@ -42,11 +42,11 @@ export async function apiRequest(
 
 // Kullanıcı oluşturma (kayıt)
 export const registerUser = (userData) =>
-  apiRequest("/register", "POST", userData);
+  apiRequest("/api/user/register", "POST", userData);
 
 // Kullanıcı giriş yapma (login)
 export const loginUser = (email, password) =>
-  apiRequest("/login", "POST", { email, password });
+  apiRequest("/api/user/login", "POST", { email, password });
 
 // Mevcut kullanıcı bilgilerini alma
 export const getCurrentUser = () => {
@@ -54,24 +54,24 @@ export const getCurrentUser = () => {
   if (!token) {
     throw new Error("Erişim tokenı bulunamadı. Lütfen giriş yapın.");
   }
-  return apiRequest("/user/users/me", "GET", null, token); // Token'ı apiRequest'e gönder
+  return apiRequest("/api/user/users/me", "GET", null, token); // Token'ı apiRequest'e gönder
 };
 export const updatePassword = (passwordData) =>
-  apiRequest("/user/users/update-password", "PUT", passwordData);
+  apiRequest("/api/user/users/update-password", "PUT", passwordData);
 // Tüm kullanıcıları getirme
 export const getAllUsers = async () => {
   const token = localStorage.getItem("access_token"); // Token'ı localStorage'dan al
   if (!token) {
     throw new Error("Erişim tokenı bulunamadı. Lütfen giriş yapın.");
   }
-  return apiRequest("/user/users/with-permissions", "GET", null, token); // Tüm kullanıcıları getiren API
+  return apiRequest("/api/user/users/with-permissions", "GET", null, token); // Tüm kullanıcıları getiren API
 };
 export const getAllUsersPermissions = async () => {
   const token = localStorage.getItem("access_token"); // Token'ı localStorage'dan al
   if (!token) {
     throw new Error("Erişim tokenı bulunamadı. Lütfen giriş yapın.");
   }
-  return apiRequest("/permissions/permissionss", "GET", null, token); // Tüm kullanıcıları getiren API
+  return apiRequest('/api/permissions/permissionss', "GET", null, token); // Tüm kullanıcıları getiren API
 };
 // Kullanıcının yetkilerini getirme
 export const getUserPermissions = (searchValue = "") => {
@@ -81,7 +81,7 @@ export const getUserPermissions = (searchValue = "") => {
   }
 
   const queryParam = searchValue ? `?search=${searchValue}` : ""; // Arama parametresi ekle
-  return apiRequest(`/user/users/with-permissions${queryParam}`, "GET", null, token); // Yetki API'sine istek
+  return apiRequest(`/api/user/users/with-permissions${queryParam}`, "GET", null, token); // Yetki API'sine istek
 };
 export const updateUserPermissions = (userId, permissions) => {
   const token = localStorage.getItem("access_token"); // Token'ı localStorage'dan al
@@ -90,7 +90,7 @@ export const updateUserPermissions = (userId, permissions) => {
   }
 
   return apiRequest(
-    `/user/users/${userId}/permissions`, // API endpoint
+    `/api/user/users/${userId}/permissions`, // API endpoint
     "PUT", // HTTP yöntemi
     { permissions }, // Gövde (body)
     token // Authorization token
@@ -98,27 +98,27 @@ export const updateUserPermissions = (userId, permissions) => {
 };
 // Şirket CRUD İstekleri
 export const createCompany = (companyData) =>
-  apiRequest("/companies/", "POST", companyData);
+  apiRequest('/api/companies/companies', "POST", companyData);
 
-export const getAllCompanies = () => apiRequest("/companies/", "GET");
+export const getAllCompanies = () => apiRequest('/api/companies/companies', "GET");
 
-export const getCompanyById = (_id) => apiRequest(`/companies/${_id}`, "GET");
+export const getCompanyById = (_id) => apiRequest(`/api/companies/companies/${_id}`, "GET");
 
 export const getCompanyByCompanyId = (company_id) =>
-  apiRequest(`/companies/by_company_id/${company_id}`, "GET");
+  apiRequest(`/api/companies/companies/by_company_id/${company_id}`, "GET");
 
 export const updateCompany = (company_id, updateData) =>
-  apiRequest(`/companies/${company_id}`, "PUT", updateData);
+  apiRequest(`/api/companies/companies/${company_id}`, "PUT", updateData);
 
 export const deleteCompany = (company_id) =>
-  apiRequest(`/companies/${company_id}`, "DELETE");
+  apiRequest(`/api/companies/companies/${company_id}`, "DELETE");
 
 // Şube CRUD İstekleri
 export const createBranch = (companyId, branchData) => 
-  apiRequest(`/companies/${companyId}/branches`, "POST", branchData);
+  apiRequest(`/api/branches/companies/${companyId}/branches`, "POST", branchData);
 export const getAllBranches = async (limit = 50, city = null) => {
   const token = localStorage.getItem("access_token"); // Token'ı localStorage'dan al
-  const url = `${BASE_URL}/branches?limit=${limit}${city ? `&city=${city}` : ""}`;
+  const url = `${BASE_URL}/api/branches/branches?limit=${limit}${city ? `&city=${city}` : ""}`;
   
   const response = await fetch(url, {
     method: "GET", // GET isteği
@@ -135,8 +135,10 @@ export const getAllBranches = async (limit = 50, city = null) => {
   return await response.json();
 };
 
+  
+
 export const getBranchById = (branch_id) =>
-  apiRequest(`/branches/${branch_id}`, "GET");
+  apiRequest(`/api/branches/branches/${branch_id}`, "GET");
 
 export const getBranchesByCompanyId = async (
   companyId,
@@ -154,7 +156,7 @@ export const getBranchesByCompanyId = async (
   params.append("limit", limit); // Limit parametresini ekle
 
   const response = await fetch(
-    `${BASE_URL}/companies/${companyId}/branches?${params.toString()}`,
+    `${BASE_URL}/api/branches/companies/${companyId}/branches?${params.toString()}`,
     {
       method: "GET",
       headers: {
@@ -171,7 +173,7 @@ export const getBranchesByCompanyId = async (
   return response.json();
 };
 export const updateBranch = async (branchId, updateData) => {
-  const response = await fetch(`${BASE_URL}/branches/${branchId}`, {
+  const response = await fetch(`${BASE_URL}/api/branches/branches/${branchId}`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
@@ -183,24 +185,24 @@ export const updateBranch = async (branchId, updateData) => {
 };
 
 export const deleteBranch = (branchId) => {
-  return apiRequest(`/branches/${branchId}`, "DELETE");
+  return apiRequest(`/api/branches/branches/${branchId}`, "DELETE");
 };
 
 // ** Envanter CRUD İstekleri **
 export const createInventory = (branchId, inventoryData) =>
-  apiRequest(`/branches/${branchId}/inventories`, "POST", inventoryData);
+  apiRequest(`/api/inventory/branches/${branchId}/inventories`, "POST", inventoryData);
 
 export const getInventoryByBranch = (branch_id) =>
-  apiRequest(`/branches/${branch_id}/inventory`, "GET");
+  apiRequest(`/api/inventory/branches/${branch_id}/inventory`, "GET");
 
 export const getcombinedinventoryByBranch = (branch_id) =>
-  apiRequest(`/branches/${branch_id}/combined-inventory`, "GET");
+  apiRequest(`/api/inventory/branches/${branch_id}/combined-inventory`, "GET");
 
 export const updateInventory = (inventoryId, updateData) =>
-  apiRequest(`/inventories/${inventoryId}`, "PUT", updateData);
+  apiRequest(`/api/inventory/inventories/${inventoryId}`, "PUT", updateData);
 
 export const deleteInventory = (inventoryId) =>
-  apiRequest(`/inventories/${inventoryId}`, "DELETE");
+  apiRequest(`/api/inventory/inventories/${inventoryId}`, "DELETE");
 
 export const getAllInventory = (companyName = "", branchName = "") => {
   const params = new URLSearchParams();
@@ -208,11 +210,11 @@ export const getAllInventory = (companyName = "", branchName = "") => {
   if (companyName) params.append("company_name", companyName); // Şirket adı
   if (branchName) params.append("branch_name", branchName); // Şube adı
 
-  return apiRequest(`/inventories?${params.toString()}`, "GET");
+  return apiRequest(`/api/inventory/inventories?${params.toString()}`, "GET");
 };
 // ** Alt Şube CRUD İstekleri **
 export const createSubBranch = async (branchId, subBranchData) => {
-  const response = await fetch(`${BASE_URL}/branches/${branchId}/sub-branches`, {
+  const response = await fetch(`${BASE_URL}/api/branches/branches/${branchId}/sub-branches`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -231,7 +233,7 @@ export const createSubBranch = async (branchId, subBranchData) => {
 
 export const getSubBranchesByBranchId = async (branchId) => {
   const token = localStorage.getItem("access_token"); // Token'ı localStorage'dan al
-  const response = await fetch(`${BASE_URL}/branches/${branchId}/sub-branches`, {
+  const response = await fetch(`${BASE_URL}/api/branches/branches/${branchId}/sub-branches`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
@@ -249,7 +251,7 @@ export const getSubBranchesByBranchId = async (branchId) => {
 // Alt Şube Güncelleme ve Silme İstekleri
 export const updateSubBranch = async (subBranchId, updateData) => {
   const token = localStorage.getItem("access_token");
-  const response = await fetch(`${BASE_URL}/branches/sub-branches/${subBranchId}`, {
+  const response = await fetch(`${BASE_URL}/api/branches/branches/sub-branches/${subBranchId}`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
@@ -268,7 +270,7 @@ export const updateSubBranch = async (subBranchId, updateData) => {
 
 export const deleteSubBranch = async (subBranchId) => {
   const token = localStorage.getItem("access_token");
-  const response = await fetch(`${BASE_URL}/branches/sub-branches/${subBranchId}`, {
+  const response = await fetch(`${BASE_URL}/api/branches/branches/sub-branches/${subBranchId}`, {
     method: "DELETE",
     headers: {
       "Authorization": `Bearer ${token}`
@@ -283,35 +285,35 @@ export const deleteSubBranch = async (subBranchId) => {
 };
 // Envanter modellerini ve türlerini getir
 export const getInventoryHelpers = async () => {
-  return apiRequest("/inventory-helpers", "GET");
+  return apiRequest("/api/inventory-helper/inventory-helpers", "GET");
 };
 
 // Belirli bir modele göre türleri getir
 export const getModelsByDeviceType = async (deviceType) => {
-  return apiRequest(`/inventory-helpers`, "GET");
+  return apiRequest(`/api/inventory-helper/inventory-helpers`, "GET");
 };
 
 // Yeni bir envanter türü ekle
 export const createDeviceType = async (deviceType) => {
-  return apiRequest("/inventory-helpers/types", "POST", { device_type: deviceType });
+  return apiRequest("/api/inventory-helper/inventory-helpers/types", "POST", { device_type: deviceType });
 };
 
 // Yeni bir modeli belirli bir cihaz türüne ekle
 export const addModelToDeviceType = async (deviceTypeId, modelName) => {
-  return apiRequest(`/inventory-helpers/${deviceTypeId}/models`, "POST", { model_name: modelName });
+  return apiRequest(`/api/inventory-helper/inventory-helpers/${deviceTypeId}/models`, "POST", { model_name: modelName });
 };
 
 // Bir modeli ve altındaki türleri güncelle
 export const updateInventoryHelper = async (helperId, updatedData) => {
-  return apiRequest(`/inventory-helpers/${helperId}`, "PUT", updatedData);
+  return apiRequest(`/api/inventory-helper/inventory-helpers/${helperId}`, "PUT", updatedData);
 };
 export const getArchivedInventory = async () => {
-  return apiRequest(`/archived_inventories`, "GET");
+  return apiRequest(`/api/inventory/archived_inventories`, "GET");
 };
 // Favori ekleme API çağrısı
 export const addFavoriteBranch = async (branchId) => {
   const token = localStorage.getItem("access_token"); // Kullanıcının token'ını al
-  const url = `${BASE_URL}/branches/${branchId}/favorites`;
+  const url = `${BASE_URL}/api/branches/branches/${branchId}/favorites`;
 
   const response = await fetch(url, {
     method: "POST",
@@ -331,7 +333,7 @@ export const addFavoriteBranch = async (branchId) => {
 // Favori silme API çağrısı
 export const removeFavoriteBranch = async (branchId) => {
   const token = localStorage.getItem("access_token"); // Kullanıcının token'ını al
-  const url = `${BASE_URL}/branches/${branchId}/favorites`;
+  const url = `${BASE_URL}/api/branches/branches/${branchId}/favorites`;
 
   const response = await fetch(url, {
     method: "DELETE",
@@ -354,7 +356,7 @@ export const getBranchVisits = async (branchId) => {
     throw new Error("Erişim tokenı bulunamadı. Lütfen giriş yapın.");
   }
 
-  const response = await fetch(`${BASE_URL}/branches/${branchId}/visits`, {
+  const response = await fetch(`${BASE_URL}/api/visits/branches/${branchId}/visits`, {
     method: "GET",
     headers: {
       Authorization: `Bearer ${token}`, // Token'ı Authorization başlığına ekle
@@ -382,7 +384,7 @@ export const createBranchVisit = async (branchId, formData) => {
     throw new Error("Erişim tokenı bulunamadı. Lütfen giriş yapın.");
   }
 
-  const response = await fetch(`${BASE_URL}/branches/${branchId}/visits`, {
+  const response = await fetch(`${BASE_URL}/api/visits/branches/${branchId}/visits`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${token}`, // Token'ı Authorization başlığına ekle
@@ -403,5 +405,5 @@ export const getPhotoUrl = (photoId) => {
   }
 
   // Fotoğraf URL'si backend'den gelen doğru adresle oluşturuluyor
-  return `${BASE_URL}/visit_images/${photoId}`;
+  return `${BASE_URL}/api/visit_images/${photoId}`;
 };

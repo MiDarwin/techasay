@@ -28,7 +28,7 @@ export default function RegisterPage() {
         setErrorMessage("Telefon numarası en fazla 11 karakter olabilir.");
         return;
       }
-      const data = await apiRequest("/user/register", "POST", {
+      const data = await apiRequest("/api/user/register", "POST", {
         email,
         name,
         surname,

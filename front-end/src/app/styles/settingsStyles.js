@@ -21,6 +21,9 @@ const settingsStyles = {
     padding: "5px 10px", // İç boşluk
     gap: "10px", // Simge ve isim arasındaki boşluk
   },
+  adminPanelButton:{
+    color:"black",
+  },
   iconContainer: {
     marginBottom: "20px", // Yazılarla simge arasına boşluk ekle
     display: "flex",
@@ -143,6 +146,7 @@ const settingsStyles = {
     justifyContent: "space-between", // Yazı ve simgeyi iki yana dağıt
     padding: "10px 0",
     borderBottom: "1px solid #ddd", // Alt çizgi
+    
   },
   editIcon: {
     fontSize: "20px", // Kalem simgesi boyutu
@@ -217,6 +221,26 @@ const settingsStyles = {
     borderRadius: "5px",
     cursor: "pointer",
     fontWeight: "bold",
+  },
+  changePasswordContainer: {
+    display: 'flex',
+    alignItems: 'center',
+    padding: '10px 15px',
+  },
+  passwordText: {
+    flexGrow: 1,
+    fontSize: '16px',
+    color: '#333',
+    fontWeight: 'normal',
+  },
+  iconWrapper: {
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+  },
+  editIcon: {
+    color: '#007bff',
+    fontSize: '24px',
   },
 };
 

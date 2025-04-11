@@ -233,7 +233,7 @@ const InventoryManager = () => {
                 <div>
                   <label
                     htmlFor="companyFilter"
-                    style={{ marginRight: "10px" }}
+                    style={{ marginRight: "10px",color:"black" }}
                   >
                     Şirket Seçin:
                   </label>
@@ -256,7 +256,7 @@ const InventoryManager = () => {
                 </div>
                 {/* Şube Seçimi */}
                 <div>
-                  <label htmlFor="branchFilter" style={{ marginRight: "10px" }}>
+                  <label htmlFor="branchFilter" style={{ marginRight: "10px",color:"black" }}>
                     Şube Seçin:
                   </label>
                   <select

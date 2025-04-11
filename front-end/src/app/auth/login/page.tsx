@@ -18,7 +18,7 @@ export default function LoginPage() {
   const handleLogin = async () => {
     setLoading(true); // Yüklenme durumunu başlat
     try {
-      const data = await apiRequest("/user/login", "POST", { email, password });
+      const data = await apiRequest("/api/user/login", "POST", { email, password });
       localStorage.setItem("access_token", data.access_token); // Token'ı kaydet
       router.push("/homepage"); // Giriş başarılıysa anasayfaya yönlendir
     } catch (error: any) {
