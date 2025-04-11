@@ -1,5 +1,5 @@
 from typing import List
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends,status
 from sqlalchemy.future import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from models.InventoryHelper import InventoryHelper
@@ -63,5 +63,42 @@ async def add_model_to_device_type(helper_id: int, model: ModelNameSchema, db: A
         await db.refresh(helper)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Veritabanı güncellemesi sırasında hata oluştu: {str(e)}")
+
+    return helper
+# 4. Türe bağlı bir modeli silme
+@router.delete(
+    "/inventory-helpers/{helper_id}/models/{model_name}",
+    response_model=InventoryHelperSchema,
+    status_code=status.HTTP_200_OK
+)
+async def delete_model_from_device_type(
+    helper_id: int,
+    model_name: str,
+    db: AsyncSession = Depends(get_db)
+):
+    # İlgili cihaz türünü veritabanından sorgula
+    query = select(InventoryHelper).where(InventoryHelper.id == helper_id)
+    result = await db.execute(query)
+    helper = result.scalar_one_or_none()
+
+    if not helper:
+        raise HTTPException(status_code=404, detail="Cihaz türü bulunamadı.")
+
+    # device_models listesinden model_name'in var olup olmadığını kontrol et
+    if not helper.device_models or model_name not in helper.device_models:
+        raise HTTPException(status_code=404, detail="Belirtilen model bulunamadı.")
+
+    # model_name'i device_models listesinden çıkar
+    updated_models = [model for model in helper.device_models if model != model_name]
+    setattr(helper, "device_models", updated_models)
+
+    try:
+        await db.commit()
+        await db.refresh(helper)
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Veritabanı güncellemesi sırasında hata oluştu: {str(e)}"
+        )
 
     return helper
