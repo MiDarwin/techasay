@@ -1,8 +1,9 @@
 # routes/branch.py
 from typing import Optional
 from fastapi.responses import FileResponse
-from fastapi import APIRouter, Depends, HTTPException,Query
+from fastapi import APIRouter, Depends, HTTPException,Query,Header
 from fastapi.security import OAuth2PasswordBearer
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 from dependencies import oauth2_scheme
@@ -13,6 +14,7 @@ from services.branch_service import create_branch, get_branches, update_branch, 
 from database import get_db
 from utils.bearerToken import get_user_id_from_token
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")  # Token doğrulama şeması
+from models.permissions import Permission
 
 router = APIRouter()
 
@@ -122,11 +124,32 @@ async def export_branches(
     company_id: int = Query(None),
     city: str = Query(None),
     district: str = Query(None),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    authorization: str = Header(None)  # Authorization header'dan token alınıyor
 ):
     """
     Şubeleri filtreleyerek Excel dosyası olarak kullanıcıya gönderir.
+    Kullanıcının 'branchViewing' izni kontrol edilir.
     """
+    # Authorization header'dan token çıkar
+    if not authorization:
+        raise HTTPException(status_code=401, detail="Authorization header eksik.")
+
+    # Kullanıcı ID'sini token'dan al
+    try:
+        user_id = get_user_id_from_token(authorization.replace("Bearer ", ""))
+    except HTTPException as e:
+        raise HTTPException(status_code=401, detail="Geçersiz token.") from e
+
+    # Kullanıcının izinlerini kontrol et
+    permission = await db.execute(
+        select(Permission).filter(Permission.user_id == user_id)
+    )
+    permission_data = permission.scalars().first()
+    if not permission_data or "branchViewing" not in permission_data.permissions:
+        raise HTTPException(
+            status_code=403, detail="Şube bilgilerini görüntüleme yetkiniz yok."
+        )
     # Şubeleri filtrele
     branches = await get_filtered_branches(db, company_id=company_id, city=city, district=district)
 
