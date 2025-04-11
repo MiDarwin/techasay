@@ -187,7 +187,37 @@ export const updateBranch = async (branchId, updateData) => {
 export const deleteBranch = (branchId) => {
   return apiRequest(`/api/branches/branches/${branchId}`, "DELETE");
 };
+export const exportBranches = async (company = "", city = "", district = "") => {
+  const token = localStorage.getItem("access_token"); // Token'ı localStorage'dan al
+  const params = new URLSearchParams(); // Query parametrelerini oluşturmak için URLSearchParams kullanılır
 
+  if (company) params.append("company_id", company); // Eğer şirket belirtilmişse ekle
+  if (city) params.append("city", city); // Eğer şehir belirtilmişse ekle
+  if (district) params.append("district", district); // Eğer ilçe belirtilmişse ekle
+
+  const url = `${BASE_URL}/api/branches/branches/export?${params.toString()}`; // API URL'sini oluştur
+
+  const response = await fetch(url, {
+    method: "GET", // GET isteği
+    headers: {
+      Authorization: `Bearer ${token}`, // Token'ı Authorization başlığına ekle
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error("Excel dosyası indirilirken bir hata oluştu."); // Hata durumunda bir mesaj at
+  }
+
+  // Gelen dosyayı indirmek için bir Blob oluştur
+  const blob = await response.blob();
+  const downloadUrl = window.URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = downloadUrl;
+  link.download = "subeler.xlsx"; // Dosya adı
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+};
 // ** Envanter CRUD İstekleri **
 export const createInventory = (branchId, inventoryData) =>
   apiRequest(`/api/inventory/branches/${branchId}/inventories`, "POST", inventoryData);

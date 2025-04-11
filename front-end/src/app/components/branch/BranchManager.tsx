@@ -11,11 +11,14 @@ import {
   getAllCompanies,
   getAllBranches,
   getAllUsersPermissions,
+  exportBranches,
 } from "../../utils/api";
 import AddBusinessIcon from "@mui/icons-material/AddBusiness";
 import Button from "@mui/material/Button";
 import tableStyles from "@/app/styles/tableStyles";
-
+import FileDownloadIcon from "@mui/icons-material/FileDownload";
+import IconButton from "@mui/material/IconButton";
+import Tooltip from "@mui/material/Tooltip";
 const BranchManager = () => {
   const [branches, setBranches] = useState([]);
   const [branchError, setBranchError] = useState("");
@@ -30,7 +33,7 @@ const BranchManager = () => {
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [permissions, setPermissions] = useState([]); // Kullanıcı izinleri
   const [showPopup, setShowPopup] = useState(true); // Popup başlangıçta görünsün
-
+  const [loading, setLoading] = useState(false); // İndirme sırasında loading durumu
   const [limit, setLimit] = useState(15);
   const fetchPermissions = async () => {
     try {
@@ -197,6 +200,19 @@ const BranchManager = () => {
   const handleClosePopup = () => {
     setShowPopup(false);
   };
+
+  const handleExport = async () => {
+    try {
+      setLoading(true); // İndirme işlemi başladı
+      await exportBranches(companyFilter, cityFilter, districtFilter); // Excel dosyasını indir
+      alert("Excel dosyası başarıyla indirildi!");
+    } catch (err) {
+      console.error(err.message);
+      alert(err.message || "Excel dosyası indirilirken bir hata oluştu.");
+    } finally {
+      setLoading(false); // İndirme işlemi bitti
+    }
+  };
   return (
     <div className="flex flex-col">
       {showPopup && (
@@ -278,6 +294,23 @@ const BranchManager = () => {
             <option value={25}>25</option>
             <option value={40}>40</option>
           </select>
+          <Tooltip
+            title={loading ? "İndiriliyor..." : "Excel Olarak İndir"}
+            arrow
+          >
+            <span>
+              <IconButton
+                onClick={handleExport}
+                disabled={loading} // İndirme sırasında buton devre dışı
+                style={{
+                  color: loading ? "#ddd" : "#007bff",
+                  cursor: loading ? "not-allowed" : "pointer",
+                }}
+              >
+                <FileDownloadIcon />
+              </IconButton>
+            </span>
+          </Tooltip>
         </form>
         {permissions.includes("branchAdd") && (
           <Button
