@@ -102,3 +102,44 @@ async def delete_model_from_device_type(
         )
 
     return helper
+# Yeni: Cihaz türünü silme endpoint'i
+@router.delete(
+    "/inventory-helpers/{helper_id}",
+    response_model=dict,
+    status_code=status.HTTP_200_OK
+)
+async def delete_device_type(
+    helper_id: int,
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Belirtilen helper_id'ye sahip cihaz türünü siler.
+    Silme işlemi, cihaz türünün altında herhangi bir device_model kaydı yoksa gerçekleştirilir.
+    """
+    # 1. İlgili cihaz türünü veritabanından sorgula
+    query = select(InventoryHelper).where(InventoryHelper.id == helper_id)
+    result = await db.execute(query)
+    helper = result.scalar_one_or_none()
+
+    if not helper:
+        raise HTTPException(status_code=404, detail="Cihaz türü bulunamadı.")
+
+    # 2. device_models listesinin boş olup olmadığını kontrol et
+    if helper.device_models and len(helper.device_models) > 0:
+        raise HTTPException(
+            status_code=400,
+            detail="Bu cihaz türünün altında kayıtlı modeller olduğu için silinemiyor."
+        )
+
+    # 3. InventoryHelper kaydını sil
+    await db.delete(helper)
+
+    try:
+        await db.commit()
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Veritabanı güncellemesi sırasında hata oluştu: {str(e)}"
+        )
+
+    return {"detail": "Cihaz türü başarıyla silindi."}
