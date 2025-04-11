@@ -6,9 +6,12 @@ import {
   getModelsByDeviceType,
   createDeviceType,
   addModelToDeviceType,
+  deleteDeviceType,
+  deleteModelFromDeviceType,
 } from "../utils/api";
 import "../styles/styles.css";
-
+import { IconButton, Tooltip } from "@mui/material";
+import DeleteIcon from "@mui/icons-material/Delete";
 const InventoryManagerPage = () => {
   const [deviceTypes, setDeviceTypes] = useState([]); // Cihaz türleri
   const [selectedDeviceType, setSelectedDeviceType] = useState(null); // Seçilen cihaz türü
@@ -103,7 +106,70 @@ const InventoryManagerPage = () => {
       setLoading(false);
     }
   };
+  // Cihaz Türünü Silme Handler'ı
+  const handleDeleteDeviceType = async (helperId) => {
+    if (!window.confirm("Bu cihaz türünü silmek istediğinize emin misiniz?")) {
+      return;
+    }
 
+    try {
+      setLoading(true);
+      await deleteDeviceType(helperId);
+      const updatedDeviceTypes = deviceTypes.filter(
+        (type) => type.id !== helperId
+      );
+      setDeviceTypes(updatedDeviceTypes);
+      alert("Cihaz türü başarıyla silindi.");
+
+      // Eğer silinen tür seçiliyse seçimi kaldır veya başka bir türü seç
+      if (selectedDeviceType && selectedDeviceType.id === helperId) {
+        if (updatedDeviceTypes.length > 0) {
+          setSelectedDeviceType(updatedDeviceTypes[0]); // İlk türü seç
+        } else {
+          setSelectedDeviceType(null); // Hiç cihaz türü kalmadıysa seçimi kaldır
+        }
+      }
+    } catch (err) {
+      console.error("Cihaz türü silinemedi:", err);
+      alert("Cihaz türü silinemedi. Altında kayıtlı modeller olabilir."); // Sunucudan gelen hata mesajını da kullanabilirsiniz
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Cihaz Modelini Silme Handler'ı
+  const handleDeleteModel = async (helperId, modelName) => {
+    if (
+      !window.confirm(
+        `"${modelName}" modelini silmek istediğinize emin misiniz?`
+      )
+    ) {
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const updatedType = await deleteModelFromDeviceType(helperId, modelName);
+
+      // Cihaz Türlerini güncelle
+      const updatedDeviceTypes = deviceTypes.map((type) =>
+        type.id === updatedType.id ? updatedType : type
+      );
+      setDeviceTypes(updatedDeviceTypes);
+      alert(`"${modelName}" modeli başarıyla silindi.`);
+
+      // Seçili cihaz türünü tekrar bul ve set et
+      const updatedSelectedType = updatedDeviceTypes.find(
+        (type) => type.id === helperId
+      );
+      setSelectedDeviceType(updatedSelectedType || null);
+    } catch (err) {
+      console.error("Model silinemedi:", err);
+      alert("Model silinemedi. Bu model başka kayıtlarla ilişkili olabilir.");
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <div className="inventory-container" style={{ backgroundColor: "#903749" }}>
       <h1 className="inventory-title" style={{ color: "#fff" }}>
@@ -137,7 +203,19 @@ const InventoryManagerPage = () => {
                   }`}
                   onClick={() => setSelectedDeviceType(type)}
                 >
-                  {type.device_type}
+                  <span>{type.device_type}</span>
+                  <Tooltip title="Sil">
+                    <IconButton
+                      onClick={(e) => {
+                        e.stopPropagation(); // Liste öğesinin seçilmesini engellemek için
+                        handleDeleteDeviceType(type.id);
+                      }}
+                      color="error"
+                      aria-label="Sil"
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                  </Tooltip>
                 </li>
               ))}
             </ul>
@@ -157,7 +235,18 @@ const InventoryManagerPage = () => {
               <ul className="models-list" style={{ color: "black" }}>
                 {selectedDeviceType.device_models.map((model, index) => (
                   <li key={index} className="model-item">
-                    {model}
+                    <span>{model}</span>
+                    <Tooltip title="Sil">
+                      <IconButton
+                        onClick={() => {
+                          handleDeleteModel(selectedDeviceType.id, model);
+                        }}
+                        color="error"
+                        aria-label="Sil"
+                      >
+                        <DeleteIcon />
+                      </IconButton>
+                    </Tooltip>
                   </li>
                 ))}
               </ul>

@@ -302,7 +302,12 @@ export const createDeviceType = async (deviceType) => {
 export const addModelToDeviceType = async (deviceTypeId, modelName) => {
   return apiRequest(`/api/inventory-helper/inventory-helpers/${deviceTypeId}/models`, "POST", { model_name: modelName });
 };
-
+export const deleteDeviceType = async (helperId) => {
+  return apiRequest(`/api/inventory-helper/inventory-helpers/${helperId}`, "DELETE");
+};
+export const deleteModelFromDeviceType = async (helperId, modelName) => {
+  return apiRequest(`/api/inventory-helper/inventory-helpers/${helperId}/models/${encodeURIComponent(modelName)}`, "DELETE");
+};
 // Bir modeli ve altındaki türleri güncelle
 export const updateInventoryHelper = async (helperId, updatedData) => {
   return apiRequest(`/api/inventory-helper/inventory-helpers/${helperId}`, "PUT", updatedData);
