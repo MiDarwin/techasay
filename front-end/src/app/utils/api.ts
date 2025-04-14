@@ -218,6 +218,28 @@ export const exportBranches = async (company = "", city = "", district = "") => 
   link.click();
   link.remove();
 };
+export const uploadBranches = async (file) => {
+  const token = localStorage.getItem("access_token"); // Token'ı localStorage'dan al
+  const url = `${BASE_URL}/api/branches/branches/import`; // API URL'sini ayarla
+
+  const formData = new FormData();
+  formData.append("file", file); // Excel dosyasını formData'ya ekle
+
+  const response = await fetch(url, {
+    method: "POST", // POST isteği
+    headers: {
+      Authorization: `Bearer ${token}`, // Token'ı Authorization başlığına ekle
+    },
+    body: formData, // FormData'yı body olarak gönder
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json(); // Hata mesajını al
+    throw new Error(errorData.detail || "Şubeler yüklenirken bir hata oluştu."); // Hata durumunda bir mesaj at
+  }
+
+  return await response.json(); // Başarılı olursa sonucu dön
+};
 // ** Envanter CRUD İstekleri **
 export const createInventory = (branchId, inventoryData) =>
   apiRequest(`/api/inventory/branches/${branchId}/inventories`, "POST", inventoryData);

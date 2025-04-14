@@ -12,6 +12,7 @@ import {
   getAllBranches,
   getAllUsersPermissions,
   exportBranches,
+  uploadBranches,
 } from "../../utils/api";
 import AddBusinessIcon from "@mui/icons-material/AddBusiness";
 import Button from "@mui/material/Button";
@@ -19,6 +20,8 @@ import tableStyles from "@/app/styles/tableStyles";
 import FileDownloadIcon from "@mui/icons-material/FileDownload";
 import IconButton from "@mui/material/IconButton";
 import Tooltip from "@mui/material/Tooltip";
+import UploadBranchesModal from "./UploadBranchesModal";
+import FileUploadIcon from "@mui/icons-material/FileUpload";
 const BranchManager = () => {
   const [branches, setBranches] = useState([]);
   const [branchError, setBranchError] = useState("");
@@ -35,6 +38,8 @@ const BranchManager = () => {
   const [showPopup, setShowPopup] = useState(true); // Popup başlangıçta görünsün
   const [loading, setLoading] = useState(false); // İndirme sırasında loading durumu
   const [limit, setLimit] = useState(15);
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+
   const fetchPermissions = async () => {
     try {
       const userPermissions = await getAllUsersPermissions(); // Kullanıcı izinlerini al
@@ -213,16 +218,10 @@ const BranchManager = () => {
       setLoading(false); // İndirme işlemi bitti
     }
   };
+  const openModal = () => setIsUploadModalOpen(true);
+  const closeModal = () => setIsUploadModalOpen(false);
   return (
     <div className="flex flex-col">
-      {showPopup && (
-        <div
-          className="fixed top-4 right-4 bg-blue-500 text-white px-4 py-2 rounded shadow-lg cursor-pointer"
-          onClick={handleClosePopup}
-        >
-          Filtreleme işlemleri için bir şirket seçmeniz lazım.
-        </div>
-      )}
       <div
         className="flex items-center mb-4 p-4 rounded-lg shadow-lg border border-gray-300"
         style={tableStyles.tableHeaderBackground}
@@ -310,6 +309,23 @@ const BranchManager = () => {
                 <FileDownloadIcon />
               </IconButton>
             </span>
+          </Tooltip>
+          <Tooltip title="Excel dosyası ile şube ekle" arrow>
+            <span>
+              <IconButton
+                onClick={openModal}
+                style={{
+                  color: "#4CAF50", // Yeşil renk
+                  cursor: "pointer",
+                }}
+              >
+                <FileUploadIcon />
+              </IconButton>
+            </span>
+            <UploadBranchesModal
+              isOpen={isUploadModalOpen}
+              onClose={closeModal}
+            />
           </Tooltip>
         </form>
         {permissions.includes("branchAdd") && (
