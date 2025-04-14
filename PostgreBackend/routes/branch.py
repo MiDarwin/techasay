@@ -1,7 +1,7 @@
 # routes/branch.py
 from typing import Optional
 from fastapi.responses import FileResponse
-from fastapi import APIRouter, Depends, HTTPException,Query,Header
+from fastapi import APIRouter, Depends, HTTPException, Query, Header, UploadFile, File
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -10,7 +10,8 @@ from dependencies import oauth2_scheme
 from models.user import User
 from schemas.branch import BranchCreate, BranchResponse, BranchUpdate
 from services.branch_service import create_branch, get_branches, update_branch, delete_branch, create_sub_branch, \
-    get_sub_branches,get_filtered_branches, add_favorite_branch,remove_favorite_branch,create_excel_file
+    get_sub_branches, get_filtered_branches, add_favorite_branch, remove_favorite_branch, create_excel_file, \
+    process_excel_file
 from database import get_db
 from utils.bearerToken import get_user_id_from_token
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")  # Token doğrulama şeması
@@ -162,3 +163,42 @@ async def export_branches(
         filename="subeler.xlsx",
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
+@router.post("/branches/import", response_description="Excel dosyasını işleyerek şubeleri ekle")
+async def import_branches(
+    file: UploadFile = File(...),
+    db: AsyncSession = Depends(get_db),
+    authorization: str = Header(None)
+):
+    """
+    Excel dosyasını işleyerek şubeleri ekler veya günceller.
+    Kullanıcının 'branchAdd' izni kontrol edilir.
+    """
+    # Authorization header'dan token çıkar
+    if not authorization:
+        raise HTTPException(status_code=401, detail="Authorization header eksik.")
+
+    user_id = get_user_id_from_token(authorization.replace("Bearer ", ""))
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Geçersiz token.")
+
+    # Kullanıcının izinlerini kontrol et
+    permission = await db.execute(
+        select(Permission).filter(Permission.user_id == user_id)
+    )
+    permission_data = permission.scalars().first()
+    if not permission_data or "branchAdd" not in permission_data.permissions:
+        raise HTTPException(
+            status_code=403, detail="Şube ekleme yetkiniz yok."
+        )
+
+    # Excel dosyasını işleyerek şubeleri ekle
+    try:
+        result = await process_excel_file(file, db, user_id)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+    return {
+        "message": f"{result['added_count']} yeni şube başarıyla eklendi, "
+                   f"{result['updated_count']} şube güncellendi, "
+                   f"{result['skipped_count']} şube eklenmedi (Zaten var)."
+    }

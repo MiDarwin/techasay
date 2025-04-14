@@ -17,6 +17,7 @@ from models.favorite_branches import favorite_branches
 from sqlalchemy import delete
 from tempfile import NamedTemporaryFile
 from openpyxl import Workbook
+import pandas as pd
 
 
 async def create_branch(db: AsyncSession, branch: BranchCreate, company_id: int):
@@ -29,8 +30,7 @@ async def create_branch(db: AsyncSession, branch: BranchCreate, company_id: int)
         branch_note=branch.branch_note,
         location_link=branch.location_link,
         company_id=company_id,
-        phone_number_2=branch.phone_number_2,
-    created_date = datetime.utcnow()
+        phone_number_2=branch.phone_number_2
     )
 
     db.add(db_branch)
@@ -349,3 +349,105 @@ async def create_excel_file(branches):
     workbook.save(temp_file.name)
     temp_file.close()
     return temp_file.name
+async def process_excel_file(file, db: AsyncSession, user_id: int):
+    """
+    Excel dosyasını işleyerek şubeleri ekler veya günceller.
+
+    Args:
+        file: Upload edilen Excel dosyası.
+        db: Veritabanı oturumu.
+        user_id: Token'dan alınan kullanıcı ID'si.
+
+    Returns:
+        dict: İşlem sonucu, eklenen, güncellenen ve eklenmeyen şube sayıları.
+    """
+    # Excel dosyasını oku
+    try:
+        # Excel dosyasını oku
+        df = pd.read_excel(file.file, dtype=str)  # Excel dosyasını pandas ile oku
+        df = df.replace({pd.NA: None, "nan": None})  # Pandas'ın `nan` ve `pd.NA` değerlerini `None` ile değiştir
+    except Exception as e:
+        raise ValueError("Excel dosyası okunamadı, lütfen dosyayı kontrol edin.")
+
+    required_columns = ["branch_name", "address", "city", "district",
+                        "phone_number", "company_id"]
+    for column in required_columns:
+        if column not in df.columns:
+            raise ValueError(f"Excel dosyasında '{column}' sütunu eksik.")
+
+    added_count = 0
+    updated_count = 0
+    skipped_count = 0
+
+    for index, row in df.iterrows():
+        try:
+            company_id = int(row["company_id"])  # company_id'yi int'e dönüştür
+        except ValueError:
+            skipped_count += 1
+            continue  # Geçersiz company_id varsa satırı atla
+
+        # Şirket ID'nin varlığını kontrol et
+        company = await db.execute(select(Company).filter(Company.id == company_id))
+        company = company.scalars().first()
+
+        if not company:
+            skipped_count += 1
+            continue  # Şirket yoksa bu satır atlanır
+
+        # Şube var mı kontrol et
+        existing_branch = await db.execute(
+            select(Branch).filter(
+                Branch.branch_name == row["branch_name"],
+                Branch.city == row["city"],
+                Branch.district == row["district"],
+                Branch.company_id == company_id
+            )
+        )
+        existing_branch = existing_branch.scalars().first()
+
+        if existing_branch:
+            updated = False
+            if existing_branch.address != row["address"]:
+                existing_branch.address = row["address"]
+                updated = True
+            if existing_branch.phone_number != row["phone_number"]:
+                existing_branch.phone_number = row["phone_number"]
+                updated = True
+            if existing_branch.phone_number_2 != row.get("phone_number_2"):
+                existing_branch.phone_number_2 = row.get("phone_number_2")
+                updated = True
+            if existing_branch.branch_note != row.get("branch_note"):
+                existing_branch.branch_note = row.get("branch_note")
+                updated = True
+            if existing_branch.location_link != row.get("location_link"):
+                existing_branch.location_link = row.get("location_link")
+                updated = True
+
+            if updated:
+                updated_count += 1
+            else:
+                skipped_count += 1
+        else:
+            # Yeni şube ekle
+            new_branch = Branch(
+                branch_name=row["branch_name"],
+                address=row["address"],
+                city=row["city"],
+                district=row["district"],
+                phone_number=row["phone_number"],
+                phone_number_2=row.get("phone_number_2"),
+                branch_note=row.get("branch_note"),
+                location_link=row.get("location_link"),
+                company_id=company_id
+            )
+            db.add(new_branch)
+            added_count += 1
+
+    # Veritabanı değişikliklerini kaydet
+    await db.commit()
+
+    return {
+        "added_count": added_count,
+        "updated_count": updated_count,
+        "skipped_count": skipped_count
+    }

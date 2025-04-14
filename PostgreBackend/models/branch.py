@@ -1,5 +1,5 @@
 # models/branch.py
-import datetime
+from datetime import datetime
 from models.favorite_branches import favorite_branches
 from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Boolean
 from sqlalchemy.orm import relationship
@@ -18,7 +18,7 @@ class Branch(Base):
     location_link = Column(String, index=True)
     phone_number_2 = Column(String, index=True)
 
-    created_date = Column(DateTime, default=datetime)  # Varsayılan olarak şu anki zaman
+    created_date = Column(DateTime, default=datetime.now)  # Varsayılan olarak şu anki zaman
 
     visited = Column(Boolean, default=False)  # Varsayılan olarak gidilmedi
     last_visitor_id = Column(Integer, ForeignKey("users.id"), nullable=True)  # En son ziyareti yapan kullanıcı
