@@ -6,11 +6,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from models.branch import Branch
 from models.company import Company
-from models.favorite_branches import favorite_branches
 from models.user import User
-from schemas import company
 from schemas.branch import BranchCreate, BranchResponse,BranchUpdate
-from sqlalchemy.orm import joinedload, Session  # Ekle
+from sqlalchemy.orm import joinedload
 from sqlalchemy import or_
 from sqlalchemy.orm import selectinload
 from models.favorite_branches import favorite_branches
@@ -318,15 +316,17 @@ async def create_excel_file(branches):
 
     # Başlıkları ekle
     headers = [
-        "Şube Adı",
-        "Şirket Adı",
-        "Şehir",
-        "İlçe",
-        "Telefon Numarası",
-        "Telefon Numarası 2",
-        "Şube Notu",
-        "Konum Bağlantısı",
-        "Oluşturulma Tarihi"
+        "branch_name",
+        "company_name",
+        "company_id",
+        "city",
+        "district",
+        "address",
+        "phone_number",
+        "phone_number_2",
+        "branch_note",
+        "location_link",
+        "created_date"
     ]
     sheet.append(headers)
 
@@ -335,8 +335,10 @@ async def create_excel_file(branches):
         sheet.append([
             branch.branch_name,
             branch.company.name if branch.company else "Bilinmiyor",
+            branch.company_id,
             branch.city,
             branch.district,
+            branch.address,
             branch.phone_number,
             branch.phone_number_2,
             branch.branch_note,
