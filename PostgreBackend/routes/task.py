@@ -1,10 +1,12 @@
+from typing import Optional
+
 from fastapi import APIRouter, Depends, HTTPException, Header
 from sqlalchemy.ext.asyncio import AsyncSession
-from services.task_service import create_task, update_task_status
-from schemas.task import TaskCreate, TaskUpdate, TaskResponse
+from services.task_service import create_task, update_task_status, get_tasks_service
+from schemas.task import TaskCreate, TaskUpdate, TaskResponse, TaskListResponse
 from database import get_db
 from utils.bearerToken import get_user_id_from_token
-
+from fastapi import Query
 router = APIRouter(prefix="/tasks", tags=["tasks"])
 
 @router.post("/", response_model=TaskResponse)
@@ -31,3 +33,29 @@ async def update_task(
         return await update_task_status(db, task_id, user_id, update_data)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+@router.get("/", response_model=TaskListResponse)
+async def get_tasks(
+    status: Optional[str] = Query(None),
+    assignee_id: Optional[int] = Query(None),
+    task_type: Optional[str] = Query(None),
+    page: int = Query(1, ge=1),
+    limit: int = Query(10, ge=1, le=100),
+    db: AsyncSession = Depends(get_db),
+    authorization: str = Header(...)
+):
+    try:
+        current_user_id = get_user_id_from_token(authorization.replace("Bearer ", ""))
+        result = await get_tasks_service(
+            db=db,
+            current_user_id=current_user_id,
+            status=status,
+            assignee_id=assignee_id,
+            task_type=task_type,
+            page=page,
+            limit=limit
+        )
+        return result
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

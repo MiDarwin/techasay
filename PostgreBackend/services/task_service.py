@@ -1,6 +1,10 @@
+from typing import Optional
+
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update
-
+from sqlalchemy import select, and_, or_, func
+from sqlalchemy.orm import selectinload
+from sqlalchemy.exc import SQLAlchemyError
 from models.branch import Branch
 from models.task import Task, TaskStatus, TaskType
 from datetime import datetime
@@ -99,3 +103,69 @@ async def _create_visit_from_task(db: AsyncSession, task: Task):
     )
     db.add(visit)
     await db.commit()
+
+
+async def get_tasks_service(
+        db: AsyncSession,
+        current_user_id: int,
+        status: Optional[str] = None,
+        assignee_id: Optional[int] = None,
+        assigner_id: Optional[int] = None,
+        task_type: Optional[str] = None,
+        page: int = 1,
+        limit: int = 10
+):
+    try:
+        # Base query
+        query = select(Task).options(
+            selectinload(Task.assigner),
+            selectinload(Task.assignee),
+            selectinload(Task.branch)
+        )
+
+        # Apply filters
+        filters = []
+        if status:
+            filters.append(Task.status == status)
+        if assignee_id:
+            filters.append(Task.assignee_id == assignee_id)
+        if assigner_id:
+            filters.append(Task.assigner_id == assigner_id)
+        if task_type:
+            filters.append(Task.task_type == task_type)
+
+        # Security filter - users can only see tasks they created or were assigned
+        filters.append(
+            or_(
+                Task.assigner_id == current_user_id,
+                Task.assignee_id == current_user_id
+            )
+        )
+
+        # Execute query
+        result = await db.execute(
+            query.where(and_(*filters))
+            .offset((page - 1) * limit)
+            .limit(limit)
+        )
+
+        tasks = result.scalars().all()
+
+        # Get total count for pagination
+        count_result = await db.execute(
+            select(func.count()).select_from(Task).where(and_(*filters))
+        )
+        total = count_result.scalar_one()
+
+        return {
+            "data": tasks,
+            "total": total,
+            "page": page,
+            "limit": limit
+        }
+
+    except SQLAlchemyError as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Database error: {str(e)}"
+        )

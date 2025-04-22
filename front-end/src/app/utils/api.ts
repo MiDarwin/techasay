@@ -464,3 +464,25 @@ export const getPhotoUrl = (photoId) => {
   // Fotoğraf URL'si backend'den gelen doğru adresle oluşturuluyor
   return `${BASE_URL}/api/visit_images/${photoId}`;
 };
+export const createTask = async (taskData) => {
+  const token = localStorage.getItem("access_token")
+  return apiRequest('${BASE_URL}/api/tasks/tasks', "POST", taskData, token)
+}
+export const updateTaskStatus = async (taskId, updateData) => {
+  const token = localStorage.getItem("access_token")
+  return apiRequest(`${BASE_URL}/api/tasks/tasks/${taskId}`, "PATCH", updateData, token)
+}
+export const getTasks =async ()=>{
+  const token = localStorage.getItem("access_token"); 
+  if (!token) {
+    throw new Error("Erişim tokenı bulunamadı. Lütfen giriş yapın.");
+  }
+  const response = await fetch(`${BASE_URL}/api/tasks/tasks`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`, // Token'ı Authorization başlığına ekle
+      "Content-Type": "application/json", // JSON formatını belirt
+    },
+  });
+  return await response.json();
+}

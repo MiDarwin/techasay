@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field
 from datetime import datetime
-from typing import Optional
+from typing import Optional,List
 from enum import Enum
 
 
@@ -30,9 +30,18 @@ class TaskUpdate(BaseModel):
     return_reason: Optional[str] = None
 
 
+
+class UserSimple(BaseModel):
+    id: int
+    name: str
+    surname: str
+    email: str
+
+
 class TaskResponse(BaseModel):
     id: int
     title: str
+    description: Optional[str]
     status: TaskStatus
     task_type: TaskType
     assigner_id: int
@@ -40,6 +49,20 @@ class TaskResponse(BaseModel):
     branch_id: Optional[int]
     created_at: datetime
     completed_at: Optional[datetime]
+    approved_at: Optional[datetime]
+    return_reason: Optional[str]
+
+    # Include nested user details
+    assigner: Optional[UserSimple]
+    assignee: Optional[UserSimple]
 
     class Config:
         from_attributes = True
+
+
+class TaskListResponse(BaseModel):
+    data: List[TaskResponse]
+    total: int
+    page: int
+    limit: int
+
