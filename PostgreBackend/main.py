@@ -11,6 +11,7 @@ from routes.inventory import router as inventory_router
 from routes.permissions import router as permissions_router
 from routes.inventoryHelper import router as inventory_helper_router
 from routes.visit import router as visit_router
+from routes.task import router as task_router
 app = FastAPI()
 
 @app.on_event("startup")
@@ -26,7 +27,7 @@ app.include_router(inventory_router, prefix="/api/inventory", tags=["Inventory"]
 app.include_router(inventory_helper_router, prefix="/api/inventory-helper", tags=["Inventory Helper"])
 app.include_router(visit_router,prefix="/api/visits",tags=["Visits"])
 app.mount("/api/visit_images", StaticFiles(directory="visit_images"), name="visit_images")
-
+app.include_router(task_router, prefix="/api/tasks", tags=["Tasks"])
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["https://45.132.181.87:3000","http://localhost:3000","https://0.0.0.0:8000","https://45.132.181.87:8000","https://127.0.1:8000","https://localhost:8000/","https://gemtech.net.tr", "https://www.gemtech.net.tr"],  # Güvenlik için sadece belirli frontend domainlerini ekleyebilirsiniz

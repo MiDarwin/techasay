@@ -4,6 +4,7 @@ from sqlalchemy.orm import relationship
 from models.favorite_branches import favorite_branches  # Ara tabloyu içe aktar
 from database import Base
 import bcrypt
+from models.task import Task
 
 class User(Base):
     __tablename__ = "users"
@@ -25,7 +26,9 @@ class User(Base):
     permissions = relationship("Permission", back_populates="user", cascade="all, delete-orphan")
     visits = relationship("Visit", back_populates="user", cascade="all, delete-orphan")
 
-
+    # Add to User class:
+    assigned_tasks = relationship("Task", foreign_keys="Task.assigner_id", back_populates="assigner")
+    received_tasks = relationship("Task", foreign_keys="Task.assignee_id", back_populates="assignee")
     def set_password(self, password: str):
         """ Şifreyi hash'leyip saklar. """
         self.password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')

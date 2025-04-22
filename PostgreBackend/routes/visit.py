@@ -1,18 +1,14 @@
 from datetime import datetime
-
 from fastapi import APIRouter, Depends, HTTPException, Header, UploadFile, File, Form
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-
 from models.user import User
 from models.visit import Visit
 from schemas.visit import VisitCreate, VisitResponse
 from services.visit_service import create_visit
 from database import get_db
 from utils.bearerToken import get_user_id_from_token
-
 router = APIRouter()
-
 @router.post("/branches/{branch_id}/visits", response_model=VisitResponse)
 async def add_visit(
         branch_id: int,

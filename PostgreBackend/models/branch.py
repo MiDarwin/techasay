@@ -22,6 +22,7 @@ class Branch(Base):
 
     visited = Column(Boolean, default=False)  # Varsayılan olarak gidilmedi
     last_visitor_id = Column(Integer, ForeignKey("users.id"), nullable=True)  # En son ziyareti yapan kullanıcı
+    tasks = relationship("Task", back_populates="branch", cascade="all, delete-orphan")
 
     company_id = Column(Integer, ForeignKey("companies.company_id"))
     company = relationship("Company", back_populates="branches")

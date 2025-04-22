@@ -352,18 +352,6 @@ async def create_excel_file(branches):
     temp_file.close()
     return temp_file.name
 async def process_excel_file(file, db: AsyncSession, user_id: int):
-    """
-    Excel dosyasını işleyerek şubeleri ekler veya günceller.
-
-    Args:
-        file: Upload edilen Excel dosyası.
-        db: Veritabanı oturumu.
-        user_id: Token'dan alınan kullanıcı ID'si.
-
-    Returns:
-        dict: İşlem sonucu, eklenen, güncellenen ve eklenmeyen şube sayıları.
-    """
-    # Excel dosyasını oku
     try:
         # Excel dosyasını oku
         df = pd.read_excel(file.file, dtype=str)  # Excel dosyasını pandas ile oku
