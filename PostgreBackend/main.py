@@ -28,7 +28,7 @@ app.include_router(inventory_router, prefix="/api/inventory", tags=["Inventory"]
 app.include_router(inventory_helper_router, prefix="/api/inventory-helper", tags=["Inventory Helper"])
 app.include_router(visit_router,prefix="/api/visits",tags=["Visits"])
 app.mount("/api/visit_images", StaticFiles(directory="visit_images"), name="visit_images")
-app.include_router(route_router, prefix="/api/routes", tags=["Routes"])
+app.include_router(route_router, prefix="/api/route",  tags=["Route"])
 app.include_router(task_router, prefix="/api/tasks", tags=["Tasks"])
 app.add_middleware(
     CORSMiddleware,

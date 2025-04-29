@@ -5,8 +5,7 @@ from typing import List, Tuple
 from services.route_service import optimize_branch_route
 from dependencies import get_db
 
-router = APIRouter(prefix="/route", tags=["route"])
-
+router = APIRouter(prefix="",         tags=["route"])
 
 class RouteRequest(BaseModel):
     start: conlist(float)

@@ -1,6 +1,6 @@
 import { headers } from "next/headers";
 
-const BASE_URL = "http://127.0.1:8000"; //"http://127.0.1:8000""http://45.132.181.87:8000"
+const BASE_URL = ""; //"http://127.0.1:8000""http://45.132.181.87:8000"
 
 export async function apiRequest(
   endpoint,
@@ -503,11 +503,11 @@ export const getBranchCoords = async (link: string) => {
   // { latitude: number, longitude: number }
   return await response.json();
 };
-export const optimizeRoute = async ({ 
-  start, 
-  end, 
-  branch_ids, 
-  priority_branch_ids 
+export const optimizeRoute = async ({
+  start,
+  end,
+  branch_ids,
+  priority_branch_ids
 }: {
   start: [number, number];
   end: [number, number];
@@ -515,7 +515,8 @@ export const optimizeRoute = async ({
   priority_branch_ids: number[];
 }) => {
   const token = localStorage.getItem("access_token");
-  const res = await fetch(`${BASE_URL}/api/routes/route`, {
+  // 2) Mutlak URL yerine göreli path kullanıyoruz:
+  const res = await fetch(`/api/route/`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
