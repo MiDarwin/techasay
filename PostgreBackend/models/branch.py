@@ -1,7 +1,7 @@
 # models/branch.py
 from datetime import datetime
 from models.favorite_branches import favorite_branches
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Boolean
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime,Float , Boolean
 from sqlalchemy.orm import relationship
 from database import Base
 
@@ -17,7 +17,8 @@ class Branch(Base):
     branch_note = Column(String, index=True)
     location_link = Column(String, index=True)
     phone_number_2 = Column(String, index=True)
-
+    latitude = Column(Float, nullable=True)
+    longitude = Column(Float, nullable=True)
     created_date = Column(DateTime, default=datetime.now)  # Varsayılan olarak şu anki zaman
 
     visited = Column(Boolean, default=False)  # Varsayılan olarak gidilmedi

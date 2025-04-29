@@ -10,7 +10,8 @@ class BranchBase(BaseModel):
     branch_note: Optional[str] = None  # Opsiyonel hale getirildi
     location_link: Optional[str] = None  # Opsiyonel hale getirildi
     phone_number_2: Optional[str] = None  # Opsiyonel hale getirildi
-
+    latitude:  Optional[float] = None
+    longitude: Optional[float] = None
 class BranchCreate(BranchBase):
     parent_branch_id: Optional[int] = None  # Alt şube oluşturmak için parent_branch_id ekledik
     class Config:
@@ -45,6 +46,7 @@ class BranchUpdate(BaseModel):
     branch_note: Optional[str] = None
     location_link: Optional[str] = None
     parent_branch_id: Optional[int] = None  # Alt şube ilişkisi güncellenebilir
-
+    latitude: Optional[float]
+    longitude: Optional[float]
     class Config:
         from_attributes = True  # Pydantic v2 için gerekli

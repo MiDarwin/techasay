@@ -28,7 +28,10 @@ async def create_branch(db: AsyncSession, branch: BranchCreate, company_id: int)
         branch_note=branch.branch_note,
         location_link=branch.location_link,
         company_id=company_id,
-        phone_number_2=branch.phone_number_2
+        phone_number_2=branch.phone_number_2,
+        latitude=branch.latitude,
+        longitude=branch.longitude
+
     )
 
     db.add(db_branch)
@@ -109,14 +112,16 @@ async def get_branch_by_id(db: AsyncSession, branch_id: int):
 
 async def update_branch(db: AsyncSession, branch_id: int, branch_data: BranchUpdate):
     db_branch = await get_branch_by_id(db, branch_id)
-    if db_branch:
-        # Sadece gönderilen (set edilmiş) alanları al
-        for key, value in branch_data.dict(exclude_unset=True).items():
-            setattr(db_branch, key, value)
-        await db.commit()
-        await db.refresh(db_branch)
-        return db_branch
-    return None
+    if not db_branch:
+        return None
+
+        # Sadece gönderilen alanları alıp set ediyoruz
+    for key, value in branch_data.dict(exclude_unset=True).items():
+        setattr(db_branch, key, value)
+
+    await db.commit()
+    await db.refresh(db_branch)
+    return db_branch
 
 async def delete_branch(db: AsyncSession, branch_id: int):
     db_branch = await get_branch_by_id(db, branch_id)
@@ -306,15 +311,10 @@ async def get_filtered_branches(db: AsyncSession, company_id=None, city=None, di
     return result.scalars().all()
 
 async def create_excel_file(branches):
-    """
-    Şube bilgilerini kullanarak bir Excel dosyası oluşturur.
-    """
-    # Excel dosyasını oluştur
     workbook = Workbook()
     sheet = workbook.active
     sheet.title = "Şubeler"
 
-    # Başlıkları ekle
     headers = [
         "branch_name",
         "company_name",
@@ -326,11 +326,12 @@ async def create_excel_file(branches):
         "phone_number_2",
         "branch_note",
         "location_link",
+        "latitude",
+        "longitude",
         "created_date"
     ]
     sheet.append(headers)
 
-    # Şubeleri Excel'e yaz
     for branch in branches:
         sheet.append([
             branch.branch_name,
@@ -343,6 +344,8 @@ async def create_excel_file(branches):
             branch.phone_number_2,
             branch.branch_note,
             branch.location_link,
+            branch.latitude,
+            branch.longitude,
             branch.created_date.strftime("%d/%m/%Y") if branch.created_date else None
         ])
 
@@ -354,38 +357,57 @@ async def create_excel_file(branches):
 async def process_excel_file(file, db: AsyncSession, user_id: int):
     try:
         # Excel dosyasını oku
-        df = pd.read_excel(file.file, dtype=str)  # Excel dosyasını pandas ile oku
-        df = df.replace({pd.NA: None, "nan": None})  # Pandas'ın `nan` ve `pd.NA` değerlerini `None` ile değiştir
-    except Exception as e:
+        df = pd.read_excel(file.file, dtype=str)
+        df = df.replace({pd.NA: None, "nan": None})
+    except Exception:
         raise ValueError("Excel dosyası okunamadı, lütfen dosyayı kontrol edin.")
 
-    required_columns = ["branch_name", "address", "city", "district",
-                        "phone_number", "company_id"]
-    for column in required_columns:
-        if column not in df.columns:
-            raise ValueError(f"Excel dosyasında '{column}' sütunu eksik.")
+    # Zorunlu sütunlar
+    required_columns = [
+        "branch_name", "address", "city", "district",
+        "phone_number", "company_id"
+    ]
+    for col in required_columns:
+        if col not in df.columns:
+            raise ValueError(f"Excel dosyasında '{col}' sütunu eksik.")
 
-    added_count = 0
-    updated_count = 0
-    skipped_count = 0
+    # Latitude/Longitude opsiyonel
+    has_lat = "latitude" in df.columns
+    has_lon = "longitude" in df.columns
 
-    for index, row in df.iterrows():
+    added_count = updated_count = skipped_count = 0
+
+    for _, row in df.iterrows():
+        # company_id parse
         try:
-            company_id = int(row["company_id"])  # company_id'yi int'e dönüştür
-        except ValueError:
+            company_id = int(row["company_id"])
+        except (ValueError, TypeError):
             skipped_count += 1
-            continue  # Geçersiz company_id varsa satırı atla
+            continue
 
-        # Şirket ID'nin varlığını kontrol et
-        company = await db.execute(select(Company).filter(Company.id == company_id))
-        company = company.scalars().first()
-
+        # şirket kontrolü
+        res = await db.execute(select(Company).filter(Company.id == company_id))
+        company = res.scalars().first()
         if not company:
             skipped_count += 1
-            continue  # Şirket yoksa bu satır atlanır
+            continue
 
-        # Şube var mı kontrol et
-        existing_branch = await db.execute(
+        # optional koordinatlar
+        lat = None
+        lon = None
+        if has_lat and row.get("latitude") not in (None, ""):
+            try:
+                lat = float(row["latitude"])
+            except ValueError:
+                pass
+        if has_lon and row.get("longitude") not in (None, ""):
+            try:
+                lon = float(row["longitude"])
+            except ValueError:
+                pass
+
+        # mevcut şube kontrolü
+        res = await db.execute(
             select(Branch).filter(
                 Branch.branch_name == row["branch_name"],
                 Branch.city == row["city"],
@@ -393,49 +415,51 @@ async def process_excel_file(file, db: AsyncSession, user_id: int):
                 Branch.company_id == company_id
             )
         )
-        existing_branch = existing_branch.scalars().first()
+        existing = res.scalars().first()
 
-        if existing_branch:
+        if existing:
             updated = False
-            if existing_branch.address != row["address"]:
-                existing_branch.address = row["address"]
-                updated = True
-            if existing_branch.phone_number != row["phone_number"]:
-                existing_branch.phone_number = row["phone_number"]
-                updated = True
-            if existing_branch.phone_number_2 != row.get("phone_number_2"):
-                existing_branch.phone_number_2 = row.get("phone_number_2")
-                updated = True
-            if existing_branch.branch_note != row.get("branch_note"):
-                existing_branch.branch_note = row.get("branch_note")
-                updated = True
-            if existing_branch.location_link != row.get("location_link"):
-                existing_branch.location_link = row.get("location_link")
-                updated = True
+            # var olan alan güncellemeleri
+            if existing.address != row["address"]:
+                existing.address = row["address"]; updated = True
+            if existing.phone_number != row["phone_number"]:
+                existing.phone_number = row["phone_number"]; updated = True
+            if existing.phone_number_2 != row.get("phone_number_2"):
+                existing.phone_number_2 = row.get("phone_number_2"); updated = True
+            if existing.branch_note != row.get("branch_note"):
+                existing.branch_note = row.get("branch_note"); updated = True
+            if existing.location_link != row.get("location_link"):
+                existing.location_link = row.get("location_link"); updated = True
+            # yeni koordinat güncellemeleri
+            if has_lat and existing.latitude != lat:
+                existing.latitude = lat; updated = True
+            if has_lon and existing.longitude != lon:
+                existing.longitude = lon; updated = True
 
             if updated:
                 updated_count += 1
             else:
                 skipped_count += 1
+
         else:
-            # Yeni şube ekle
+            # yeni şube
             new_branch = Branch(
-                branch_name=row["branch_name"],
-                address=row["address"],
-                city=row["city"],
-                district=row["district"],
-                phone_number=row["phone_number"],
-                phone_number_2=row.get("phone_number_2"),
-                branch_note=row.get("branch_note"),
-                location_link=row.get("location_link"),
-                company_id=company_id
+                branch_name   = row["branch_name"],
+                address       = row["address"],
+                city          = row["city"],
+                district      = row["district"],
+                phone_number  = row["phone_number"],
+                phone_number_2= row.get("phone_number_2"),
+                branch_note   = row.get("branch_note"),
+                location_link = row.get("location_link"),
+                company_id    = company_id,
+                latitude      = lat,
+                longitude     = lon
             )
             db.add(new_branch)
             added_count += 1
 
-    # Veritabanı değişikliklerini kaydet
     await db.commit()
-
     return {
         "added_count": added_count,
         "updated_count": updated_count,
