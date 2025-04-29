@@ -113,16 +113,14 @@ async def get_branch_by_id(db: AsyncSession, branch_id: int):
 
 async def update_branch(db: AsyncSession, branch_id: int, branch_data: BranchUpdate):
     db_branch = await get_branch_by_id(db, branch_id)
-    if not db_branch:
-        return None
-
-        # Sadece gönderilen alanları alıp set ediyoruz
-    for key, value in branch_data.dict(exclude_unset=True).items():
-        setattr(db_branch, key, value)
-
-    await db.commit()
-    await db.refresh(db_branch)
-    return db_branch
+    if db_branch:
+        # Sadece gönderilen (set edilmiş) alanları al
+        for key, value in branch_data.dict(exclude_unset=True).items():
+            setattr(db_branch, key, value)
+        await db.commit()
+        await db.refresh(db_branch)
+        return db_branch
+    return None
 
 async def delete_branch(db: AsyncSession, branch_id: int):
     db_branch = await get_branch_by_id(db, branch_id)

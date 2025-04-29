@@ -7,8 +7,11 @@ import {
   Button,
   Typography,
   MenuItem,
+  CircularProgress,
 } from "@mui/material";
 import { turkishCities } from "./cities";
+import { MapPin } from "lucide-react";
+import { getBranchCoords } from "../../utils/api";
 
 const style = {
   position: "absolute",
@@ -21,9 +24,9 @@ const style = {
   boxShadow: 24,
   p: 4,
 };
+
 const UpdateBranchModal = ({ open, onClose, branchData, onUpdate }) => {
   const [districts, setDistricts] = useState([]);
-
   const [formData, setFormData] = useState({
     id: "",
     name: "",
@@ -31,50 +34,74 @@ const UpdateBranchModal = ({ open, onClose, branchData, onUpdate }) => {
     city: "",
     district: "",
     phone_number: "",
+    phone_number_2: "",
     branch_note: "",
     location_link: "",
-    phone_number_2: "",
   });
+  const [coordsLoading, setCoordsLoading] = useState(false);
+  const [latitude, setLatitude] = useState("");
+  const [longitude, setLongitude] = useState("");
+  const [showCoords, setShowCoords] = useState(false);
 
   useEffect(() => {
-    // Eğer branchData varsa, formu doldur
     if (branchData) {
       setFormData({
-        id: branchData.id || branchData._id || "", // Burada branch_id alınıyor
+        id: branchData.id || branchData._id || "",
         name: branchData.name || "",
         address: branchData.address || "",
         city: branchData.city || "",
         district: branchData.district || "",
         phone_number: branchData.phone_number || "",
-        phone_number_2: branchData.phone_number_2 || "", // Burada phone_number_2 ekleniyor
+        phone_number_2: branchData.phone_number_2 || "",
         branch_note: branchData.branch_note || "",
         location_link: branchData.location_link || "",
       });
-      // Şehir varsa, ilgili ilçeleri güncelle
       if (branchData.city) {
         setDistricts(turkishCities[branchData.city] || []);
       }
+      if (branchData.latitude != null && branchData.longitude != null) {
+        setLatitude(branchData.latitude);
+        setLongitude(branchData.longitude);
+        setShowCoords(true);
+      } else {
+        setShowCoords(false);
+      }
     }
   }, [branchData]);
+
   const handleCityChange = (selectedCity) => {
-    setFormData((prevData) => ({
-      ...prevData,
+    setFormData((prev) => ({
+      ...prev,
       city: selectedCity,
-      district: "", // İlçe seçimini sıfırla
+      district: "",
     }));
-    setDistricts(turkishCities[selectedCity] || []); // Şehre göre ilçeleri güncelle
+    setDistricts(turkishCities[selectedCity] || []);
   };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prevData) => ({
-      ...prevData,
-      [name]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleCoordsExtract = async () => {
+    if (!formData.location_link) return;
+    try {
+      setCoordsLoading(true);
+      const { latitude: lat, longitude: lng } = await getBranchCoords(
+        formData.location_link
+      );
+      setLatitude(lat);
+      setLongitude(lng);
+      setShowCoords(true);
+    } catch (err) {
+      console.error("Koordinat alınırken hata:", err);
+    } finally {
+      setCoordsLoading(false);
+    }
   };
 
   const handleSubmit = async () => {
     try {
-      // API çağrısı
       await onUpdate(formData.id, {
         branch_name: formData.name,
         address: formData.address,
@@ -84,16 +111,13 @@ const UpdateBranchModal = ({ open, onClose, branchData, onUpdate }) => {
         branch_note: formData.branch_note,
         location_link: formData.location_link,
         phone_number_2: formData.phone_number_2,
+        ...(showCoords
+          ? { latitude: parseFloat(latitude), longitude: parseFloat(longitude) }
+          : {}),
       });
-
-      // Modalı kapat
       onClose();
-
-      // Güncelleme sonrası şubelerin yeniden fetch edildiğinden emin olun
       if (typeof onUpdate === "function") {
         await onUpdate();
-      } else {
-        console.error("onUpdate bir fonksiyon değil!");
       }
     } catch (error) {
       console.error("Şube güncellenirken hata oluştu:", error);
@@ -106,23 +130,18 @@ const UpdateBranchModal = ({ open, onClose, branchData, onUpdate }) => {
       <Box
         sx={{
           ...style,
-          backgroundColor: "#f5f5f5", // Arka plan rengi
-          borderRadius: "10px", // Köşeleri yuvarlatma
-          boxShadow: "0px 4px 10px rgba(0, 0, 0.2)", // Gölge efekti
+          backgroundColor: "#f5f5f5",
+          borderRadius: "10px",
+          boxShadow: "0px 4px 10px rgba(0, 0, 0.2)",
           padding: "20px",
-          maxHeight: "90vh", // Maksimum yükseklik
-          overflow: "auto", // Scroll özelliği
+          maxHeight: "90vh",
+          overflow: "auto",
         }}
       >
         <Typography
           variant="h6"
           component="h2"
-          sx={{
-            mb: 2,
-            color: "gray", // Başlık rengi
-            textAlign: "center", // Ortalanmış başlık
-            fontWeight: "bold",
-          }}
+          sx={{ mb: 2, color: "gray", textAlign: "center", fontWeight: "bold" }}
         >
           Şube Güncelle
         </Typography>
@@ -137,12 +156,8 @@ const UpdateBranchModal = ({ open, onClose, branchData, onUpdate }) => {
             required
             sx={{
               "& .MuiOutlinedInput-root": {
-                "& fieldset": {
-                  borderColor: "gray", // Border rengi
-                },
-                "&:hover fieldset": {
-                  borderColor: "gray", // Hover border rengi
-                },
+                "& fieldset": { borderColor: "gray" },
+                "&:hover fieldset": { borderColor: "gray" },
               },
             }}
           />
@@ -156,12 +171,8 @@ const UpdateBranchModal = ({ open, onClose, branchData, onUpdate }) => {
             required
             sx={{
               "& .MuiOutlinedInput-root": {
-                "& fieldset": {
-                  borderColor: "gray",
-                },
-                "&:hover fieldset": {
-                  borderColor: "gray",
-                },
+                "& fieldset": { borderColor: "gray" },
+                "&:hover fieldset": { borderColor: "gray" },
               },
             }}
           />
@@ -207,12 +218,8 @@ const UpdateBranchModal = ({ open, onClose, branchData, onUpdate }) => {
             required
             sx={{
               "& .MuiOutlinedInput-root": {
-                "& fieldset": {
-                  borderColor: "gray",
-                },
-                "&:hover fieldset": {
-                  borderColor: "gray",
-                },
+                "& fieldset": { borderColor: "gray" },
+                "&:hover fieldset": { borderColor: "gray" },
               },
             }}
           />
@@ -223,19 +230,13 @@ const UpdateBranchModal = ({ open, onClose, branchData, onUpdate }) => {
             onChange={handleChange}
             fullWidth
             margin="normal"
-            required
             sx={{
               "& .MuiOutlinedInput-root": {
-                "& fieldset": {
-                  borderColor: "gray",
-                },
-                "&:hover fieldset": {
-                  borderColor: "gray",
-                },
+                "& fieldset": { borderColor: "gray" },
+                "&:hover fieldset": { borderColor: "gray" },
               },
             }}
           />
-
           <TextField
             label="Şube Notu"
             name="branch_note"
@@ -245,12 +246,8 @@ const UpdateBranchModal = ({ open, onClose, branchData, onUpdate }) => {
             margin="normal"
             sx={{
               "& .MuiOutlinedInput-root": {
-                "& fieldset": {
-                  borderColor: "gray",
-                },
-                "&:hover fieldset": {
-                  borderColor: "gray",
-                },
+                "& fieldset": { borderColor: "gray" },
+                "&:hover fieldset": { borderColor: "gray" },
               },
             }}
           />
@@ -263,28 +260,58 @@ const UpdateBranchModal = ({ open, onClose, branchData, onUpdate }) => {
             margin="normal"
             sx={{
               "& .MuiOutlinedInput-root": {
-                "& fieldset": {
-                  borderColor: "gray",
-                },
-                "&:hover fieldset": {
-                  borderColor: "gray",
-                },
+                "& fieldset": { borderColor: "gray" },
+                "&:hover fieldset": { borderColor: "gray" },
               },
             }}
           />
           <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 2 }}>
             <Button
               variant="outlined"
-              onClick={onClose}
+              onClick={handleCoordsExtract}
+              disabled={coordsLoading}
+              sx={{ mr: 1 }}
+            >
+              {coordsLoading ? (
+                <CircularProgress size={20} />
+              ) : (
+                <MapPin style={{ marginRight: "8px" }} />
+              )}
+              Koordinat Çıkar
+            </Button>
+          </Box>
+          {showCoords && (
+            <Box
               sx={{
-                color: "black",
-                borderColor: "gray",
-                "&:hover": {
-                  borderColor: "gray",
-                  backgroundColor: "#f5f5f5",
-                },
-                mr: 1,
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: 2,
+                mt: 2,
               }}
+            >
+              <TextField
+                label="Enlem"
+                name="latitude"
+                value={latitude}
+                onChange={(e) => setLatitude(e.target.value)}
+                fullWidth
+                margin="normal"
+              />
+              <TextField
+                label="Boylam"
+                name="longitude"
+                value={longitude}
+                onChange={(e) => setLongitude(e.target.value)}
+                fullWidth
+                margin="normal"
+              />
+            </Box>
+          )}
+          <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 2 }}>
+            <Button
+              variant="outlined"
+              onClick={onClose}
+              sx={{ color: "black", borderColor: "gray", mr: 1 }}
             >
               İptal
             </Button>
@@ -309,19 +336,22 @@ const UpdateBranchModal = ({ open, onClose, branchData, onUpdate }) => {
 };
 
 UpdateBranchModal.propTypes = {
-  open: PropTypes.bool.isRequired, // Modalın açık/kapalı durumu
-  onClose: PropTypes.func.isRequired, // Modalı kapatma fonksiyonu
+  open: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
   branchData: PropTypes.shape({
-    id: PropTypes.string, // Şube id'si
+    id: PropTypes.string,
     name: PropTypes.string,
     address: PropTypes.string,
     city: PropTypes.string,
+    district: PropTypes.string,
     phone_number: PropTypes.string,
     branch_note: PropTypes.string,
     location_link: PropTypes.string,
     phone_number_2: PropTypes.string,
-  }), // Düzenlenecek şube verisi
-  onUpdate: PropTypes.func.isRequired, // Güncelleme API çağrısı
+    latitude: PropTypes.number,
+    longitude: PropTypes.number,
+  }),
+  onUpdate: PropTypes.func.isRequired,
 };
 
 export default UpdateBranchModal;

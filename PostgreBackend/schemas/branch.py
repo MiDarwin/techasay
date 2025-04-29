@@ -46,8 +46,8 @@ class BranchUpdate(BaseModel):
     branch_note: Optional[str] = None
     location_link: Optional[str] = None
     parent_branch_id: Optional[int] = None  # Alt şube ilişkisi güncellenebilir
-    latitude: Optional[float]
-    longitude: Optional[float]
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
     class Config:
         from_attributes = True  # Pydantic v2 için gerekli
 class LinkSchema(BaseModel):

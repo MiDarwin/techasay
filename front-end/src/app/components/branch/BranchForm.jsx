@@ -2,6 +2,9 @@ import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import { turkishCities } from "./cities";
 import { Box } from "@mui/material";
+import { MapPin } from "lucide-react";
+import { getBranchCoords } from "../../utils/api";
+
 const style = {
   position: "absolute",
   top: "50%",
@@ -26,6 +29,11 @@ const BranchForm = ({
   const [city, setCity] = useState(initialData.city || "");
   const [district, setDistrict] = useState(initialData.district || ""); // İlçeyi ekledik
   const [districts, setDistricts] = useState([]); // Seçilen şehre göre ilçeler
+  const [coordsLoading, setCoordsLoading] = useState(false);
+  const [latitude, setLatitude] = useState(initialData.latitude || "");
+  const [longitude, setLongitude] = useState(initialData.longitude || "");
+  const [showCoords, setShowCoords] = useState(!!initialData.latitude);
+
   const [phoneNumber, setPhoneNumber] = useState(
     initialData.phone_number || ""
   );
@@ -78,6 +86,8 @@ const BranchForm = ({
         branch_note: branchNote,
         location_link: locationLink,
         phone_number_2: phoneNumber2,
+        latitude: showCoords ? parseFloat(latitude) : undefined,
+        longitude: showCoords ? parseFloat(longitude) : undefined,
       });
     } catch (submissionError) {
       setError("Şubeyi eklerken veya güncellerken bir hata oluştu.");
@@ -308,7 +318,79 @@ const BranchForm = ({
               placeholder="Şube Konum Linki Girin"
             />
           </div>
-
+          <div className="mt-4 flex items-center gap-2">
+            <button
+              type="button"
+              onClick={async () => {
+                if (!locationLink) return setError("Önce link girin.");
+                try {
+                  setError("");
+                  setCoordsLoading(true);
+                  const { latitude: lat, longitude: lng } =
+                    await getBranchCoords(locationLink);
+                  setLatitude(lat);
+                  setLongitude(lng);
+                  setShowCoords(true);
+                } catch (err) {
+                  setError(err.message);
+                } finally {
+                  setCoordsLoading(false);
+                }
+              }}
+              className="flex items-center px-3 py-2 bg-indigo-500 text-white rounded hover:bg-indigo-600 transition"
+            >
+              {coordsLoading ? (
+                <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8v8z"
+                  />
+                </svg>
+              ) : (
+                <MapPin className="h-5 w-5 mr-1" />
+              )}
+              Koordinat Çıkar
+            </button>
+          </div>
+          {showCoords && (
+            <div className="grid grid-cols-2 gap-4 mt-4">
+              <div>
+                <label htmlFor="latitude" className="block text-gray-700 mb-1">
+                  Enlem
+                </label>
+                <input
+                  id="latitude"
+                  type="text"
+                  value={latitude}
+                  onChange={(e) => setLatitude(e.target.value)}
+                  className="w-full px-3 py-2 border rounded"
+                  placeholder="Latitude"
+                />
+              </div>
+              <div>
+                <label htmlFor="longitude" className="block text-gray-700 mb-1">
+                  Boylam
+                </label>
+                <input
+                  id="longitude"
+                  type="text"
+                  value={longitude}
+                  onChange={(e) => setLongitude(e.target.value)}
+                  className="w-full px-3 py-2 border rounded"
+                  placeholder="Longitude"
+                />
+              </div>
+            </div>
+          )}
           {/* Form Düğmeleri */}
           <div className="flex justify-between mt-6">
             {isEditMode && (
