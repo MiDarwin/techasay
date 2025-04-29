@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import BranchForm from "./BranchForm";
 import BranchTable from "./BranchTable";
 import Modal from "./Modal";
+import { Button, Tooltip } from "@mui/material";
 import { turkishCities } from "./cities";
 import {
   createBranch,
@@ -15,14 +16,16 @@ import {
   uploadBranches,
 } from "../../utils/api";
 import AddBusinessIcon from "@mui/icons-material/AddBusiness";
-import Button from "@mui/material/Button";
 import tableStyles from "@/app/styles/tableStyles";
 import FileDownloadIcon from "@mui/icons-material/FileDownload";
 import IconButton from "@mui/material/IconButton";
-import Tooltip from "@mui/material/Tooltip";
 import UploadBranchesModal from "./UploadBranchesModal";
 import FileUploadIcon from "@mui/icons-material/FileUpload";
+import DirectionsIcon from "@mui/icons-material/Directions";
+import { useRouter } from "next/navigation";
+
 const BranchManager = () => {
+  const router = useRouter();
   const [branches, setBranches] = useState([]);
   const [branchError, setBranchError] = useState("");
   const [currentBranch, setCurrentBranch] = useState(null);
@@ -328,6 +331,20 @@ const BranchManager = () => {
             />
           </Tooltip>
         </form>
+        {permissions.includes("branchViewing") && (
+          <Tooltip title="Rota Oluştur" arrow>
+            <Button
+              variant="contained"
+              color="primary"
+              startIcon={<DirectionsIcon />}
+              onClick={() => router.push("/route")}
+              sx={{ mr: 1 }}
+            >
+              Rota
+            </Button>
+          </Tooltip>
+        )}
+
         {permissions.includes("branchAdd") && (
           <Button
             variant="contained"

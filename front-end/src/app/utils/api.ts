@@ -503,3 +503,27 @@ export const getBranchCoords = async (link: string) => {
   // { latitude: number, longitude: number }
   return await response.json();
 };
+export const optimizeRoute = async ({ 
+  start, 
+  end, 
+  branch_ids, 
+  priority_branch_ids 
+}: {
+  start: [number, number];
+  end: [number, number];
+  branch_ids: number[];
+  priority_branch_ids: number[];
+}) => {
+  const token = localStorage.getItem("access_token");
+  const res = await fetch(`${BASE_URL}/api/routes/route`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`,
+    },
+    body: JSON.stringify({ start, end, branch_ids, priority_branch_ids }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.detail || "Rota oluşturulamadı");
+  return data;
+};
