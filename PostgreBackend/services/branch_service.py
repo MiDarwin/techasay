@@ -1,6 +1,6 @@
 # services/branch_service.py
 from http.client import HTTPException
-from typing import Optional
+from typing import Optional,Tuple
 from datetime import datetime
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
@@ -16,7 +16,8 @@ from sqlalchemy import delete
 from tempfile import NamedTemporaryFile
 from openpyxl import Workbook
 import pandas as pd
-
+import re
+import httpx
 
 async def create_branch(db: AsyncSession, branch: BranchCreate, company_id: int):
     db_branch = Branch(
@@ -465,3 +466,32 @@ async def process_excel_file(file, db: AsyncSession, user_id: int):
         "updated_count": updated_count,
         "skipped_count": skipped_count
     }
+async def _parse_coords_from_url(url: str) -> Optional[Tuple[float, float]]:
+    # 1) !3dlat!4dlng
+    m = re.search(r'!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)', url)
+    if m:
+        return float(m.group(1)), float(m.group(2))
+
+    # 2) @lat,lon
+    m2 = re.search(r'@(-?\d+\.\d+),\s*(-?\d+\.\d+)', url)
+    if m2:
+        return float(m2.group(1)), float(m2.group(2))
+
+    # 3) /search/lat,lon
+    m3 = re.search(r'/search/(-?\d+\.\d+),\+?(-?\d+\.\d+)', url)
+    if m3:
+        return float(m3.group(1)), float(m3.group(2))
+
+    return None
+
+async def resolve_coords_from_link(link: str) -> Tuple[float, float]:
+    """
+    maps.app.goo.gl gibi kısaltmaları takip edip, final URL’den lat/lng döner.
+    """
+    async with httpx.AsyncClient(follow_redirects=True) as client:
+        resp = await client.get(link, timeout=10.0)
+    final = str(resp.url)
+    coords = await _parse_coords_from_url(final)
+    if not coords:
+        raise ValueError("Koordinatlar alınamadı: " + final)
+    return coords

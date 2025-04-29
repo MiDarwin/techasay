@@ -5,13 +5,10 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Header, UploadFile
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import Session
-from dependencies import oauth2_scheme
-from models.user import User
-from schemas.branch import BranchCreate, BranchResponse, BranchUpdate
+from schemas.branch import BranchCreate, BranchResponse, BranchUpdate,LinkSchema, CoordSchema
 from services.branch_service import create_branch, get_branches, update_branch, delete_branch, create_sub_branch, \
     get_sub_branches, get_filtered_branches, add_favorite_branch, remove_favorite_branch, create_excel_file, \
-    process_excel_file
+    process_excel_file,resolve_coords_from_link
 from database import get_db
 from utils.bearerToken import get_user_id_from_token
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")  # Token doğrulama şeması
@@ -202,3 +199,13 @@ async def import_branches(
                    f"{result['updated_count']} şube güncellendi, "
                    f"{result['skipped_count']} şube eklenmedi (Zaten var)."
     }
+@router.post("/coords", response_model=CoordSchema)
+async def get_branch_coords(
+    payload: LinkSchema,
+    db: AsyncSession = Depends(get_db),  # eğer izin kontrolü istersen ekle
+):
+    try:
+        lat, lng = await resolve_coords_from_link(payload.link)
+        return CoordSchema(latitude=lat, longitude=lng)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))

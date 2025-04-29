@@ -50,3 +50,9 @@ class BranchUpdate(BaseModel):
     longitude: Optional[float]
     class Config:
         from_attributes = True  # Pydantic v2 için gerekli
+class LinkSchema(BaseModel):
+    link: str
+
+class CoordSchema(BaseModel):
+    latitude: float
+    longitude: float

@@ -486,3 +486,20 @@ export const getTasks =async ()=>{
   });
   return await response.json();
 }
+export const getBranchCoords = async (link: string) => {
+  const token = localStorage.getItem("access_token");
+  const response = await fetch(`${BASE_URL}/api/branches/coords`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`,
+    },
+    body: JSON.stringify({ link }),
+  });
+  if (!response.ok) {
+    const data = await response.json();
+    throw new Error(data.detail || "Koordinatlar alınamadı.");
+  }
+  // { latitude: number, longitude: number }
+  return await response.json();
+};
