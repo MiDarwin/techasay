@@ -1,6 +1,6 @@
 import { headers } from "next/headers";
 
-const BASE_URL = ""; //"http://127.0.1:8000""http://45.132.181.87:8000"
+const BASE_URL = "http://127.0.1:8000"; //"http://127.0.1:8000""http://45.132.181.87:8000"
 
 export async function apiRequest(
   endpoint,
@@ -527,4 +527,33 @@ export const optimizeRoute = async ({
   const data = await res.json();
   if (!res.ok) throw new Error(data.detail || "Rota oluşturulamadı");
   return data;
+};
+export const getBranchesCount = async ({
+  company_id,
+  city,
+  district,
+  textinput,
+}: {
+  company_id: number;
+  city?: string;
+  district?: string;
+  textinput?: string;
+}) => {
+  const token = localStorage.getItem("access_token");
+  const params = new URLSearchParams();
+  if (city)      params.append("city", city);
+  if (district)  params.append("district", district);
+  if (textinput) params.append("textinput", textinput);
+
+  const res = await fetch(
+    `${BASE_URL}/api/branches/companies/${company_id}/branches/count?${params.toString()}`,
+    {
+      headers: {
+        "Authorization": `Bearer ${token}`,
+      },
+    }
+  );
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.detail || "Şube sayısı alınamadı");
+  return data.count as number;
 };

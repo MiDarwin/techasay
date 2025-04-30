@@ -56,3 +56,5 @@ class LinkSchema(BaseModel):
 class CoordSchema(BaseModel):
     latitude: float
     longitude: float
+class CountResponse(BaseModel):
+    count: int

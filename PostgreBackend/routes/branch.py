@@ -5,10 +5,10 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Header, UploadFile
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from schemas.branch import BranchCreate, BranchResponse, BranchUpdate,LinkSchema, CoordSchema
+from schemas.branch import BranchCreate, BranchResponse, BranchUpdate, LinkSchema, CoordSchema, CountResponse
 from services.branch_service import create_branch, get_branches, update_branch, delete_branch, create_sub_branch, \
     get_sub_branches, get_filtered_branches, add_favorite_branch, remove_favorite_branch, create_excel_file, \
-    process_excel_file,resolve_coords_from_link
+    process_excel_file, resolve_coords_from_link, get_branches_count
 from database import get_db
 from utils.bearerToken import get_user_id_from_token
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")  # Token doğrulama şeması
@@ -209,3 +209,26 @@ async def get_branch_coords(
         return CoordSchema(latitude=lat, longitude=lng)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+@router.get(
+    "/companies/{company_id}/branches/count",
+    response_model=CountResponse,
+    summary="Filtrelenmiş şube sayısını döndürür"
+)
+async def read_branches_count(
+    company_id: int,
+    city: str | None = Query(None),
+    district: str | None = Query(None),
+    textinput: str | None = Query(None),
+    db: AsyncSession = Depends(get_db),
+):
+    try:
+        total = await get_branches_count(
+            db,
+            company_id=company_id,
+            city=city,
+            district=district,
+            textinput=textinput,
+        )
+        return CountResponse(count=total)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

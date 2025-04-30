@@ -9,7 +9,7 @@ from models.company import Company
 from models.user import User
 from schemas.branch import BranchCreate, BranchResponse,BranchUpdate
 from sqlalchemy.orm import joinedload
-from sqlalchemy import or_
+from sqlalchemy import or_, func
 from sqlalchemy.orm import selectinload
 from models.favorite_branches import favorite_branches
 from sqlalchemy import delete
@@ -493,3 +493,31 @@ async def resolve_coords_from_link(link: str) -> Tuple[float, float]:
     if not coords:
         raise ValueError("Koordinatlar alınamadı: " + final)
     return coords
+async def get_branches_count(
+    db: AsyncSession,
+    company_id: int,
+    city: str | None = None,
+    district: str | None = None,
+    textinput: str | None = None,
+) -> int:
+    """
+    Şirket, şehir, ilçe ve arama metni filtrelerine göre şube sayısını döndürür.
+    """
+    query = select(func.count(Branch.id)).filter(Branch.company_id == company_id)
+    if city:
+        query = query.filter(Branch.city.ilike(f"%{city}%"))
+    if district:
+        query = query.filter(Branch.district.ilike(f"%{district}%"))
+    if textinput:
+        query = query.filter(
+            or_(
+                Branch.branch_name.ilike(f"%{textinput}%"),
+                Branch.address.ilike(f"%{textinput}%"),
+                Branch.city.ilike(f"%{textinput}%"),
+                Branch.district.ilike(f"%{textinput}%"),
+                Branch.phone_number.ilike(f"%{textinput}%")
+            )
+        )
+    result = await db.execute(query)
+    # scalar_one() tek değer için ideal; COUNT mutlaka bir değer döndürür
+    return result.scalar_one()

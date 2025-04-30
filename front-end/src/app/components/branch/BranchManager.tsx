@@ -14,6 +14,7 @@ import {
   getAllUsersPermissions,
   exportBranches,
   uploadBranches,
+  getBranchesCount,
 } from "../../utils/api";
 import AddBusinessIcon from "@mui/icons-material/AddBusiness";
 import tableStyles from "@/app/styles/tableStyles";
@@ -23,6 +24,8 @@ import UploadBranchesModal from "./UploadBranchesModal";
 import FileUploadIcon from "@mui/icons-material/FileUpload";
 import DirectionsIcon from "@mui/icons-material/Directions";
 import { useRouter } from "next/navigation";
+import { CircularProgress, Typography } from "@mui/material";
+import { useDebouncedCallback } from "use-debounce"; // `npm install use-debounce`
 
 const BranchManager = () => {
   const router = useRouter();
@@ -42,7 +45,8 @@ const BranchManager = () => {
   const [loading, setLoading] = useState(false); // İndirme sırasında loading durumu
   const [limit, setLimit] = useState(15);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
-
+  const [count, setCount] = useState<number | null>(null);
+  const [countLoading, setCountLoading] = useState(false);
   const fetchPermissions = async () => {
     try {
       const userPermissions = await getAllUsersPermissions(); // Kullanıcı izinlerini al
@@ -107,7 +111,28 @@ const BranchManager = () => {
       setBranchLoading(false);
     }
   };
-
+  // Debounce’lu fonksiyon (500ms delay)
+  const debouncedFetchCount = useDebouncedCallback(async () => {
+    if (!companyFilter) {
+      setCount(null);
+      return;
+    }
+    setCountLoading(true);
+    try {
+      const c = await getBranchesCount({
+        company_id: companyFilter,
+        city: cityFilter,
+        district: districtFilter,
+        textinput: searchFilter,
+      });
+      setCount(c);
+    } catch (err) {
+      console.error(err);
+      setCount(null);
+    } finally {
+      setCountLoading(false);
+    }
+  }, 500);
   // useEffect, filtrelerdeki değişiklikleri izler ve API çağrısını tetikler
   useEffect(() => {
     if (!companyFilter) {
@@ -116,6 +141,9 @@ const BranchManager = () => {
       fetchBranches(cityFilter, districtFilter, searchFilter, companyFilter);
     }
   }, [cityFilter, districtFilter, searchFilter, companyFilter, limit]);
+  useEffect(() => {
+    debouncedFetchCount();
+  }, [companyFilter, cityFilter, districtFilter, searchFilter]);
 
   const fetchCompanies = async () => {
     try {
@@ -331,6 +359,15 @@ const BranchManager = () => {
             />
           </Tooltip>
         </form>
+        {countLoading ? (
+          <CircularProgress size={20} />
+        ) : (
+          <Typography variant="subtitle1">
+            {count != null
+              ? `${count} şube bulundu`
+              : "Şube sayısı yükleniyor..."}
+          </Typography>
+        )}
         {permissions.includes("branchViewing") && (
           <Tooltip title="Rota Oluştur" arrow>
             <Button
