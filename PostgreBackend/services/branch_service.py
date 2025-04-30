@@ -538,3 +538,31 @@ async def get_branches_count(
         sub_count = 0
 
     return {"count": parent_count, "sub_count": sub_count}
+async def update_missing_branch_coords(db: AsyncSession) -> dict:
+    """
+    location_link’i var ama latitude veya longitude eksik şubeleri
+    linkten parse edip doldurur.
+    Döner: {"total": int, "updated": int}
+    """
+    stmt = select(Branch).where(
+        Branch.location_link.isnot(None),
+        or_(Branch.latitude.is_(None), Branch.longitude.is_(None))
+    )
+    result   = await db.execute(stmt)
+    branches = result.scalars().all()
+    total, updated = len(branches), 0
+
+    for b in branches:
+        try:
+            lat, lng = await resolve_coords_from_link(b.location_link)
+        except Exception:
+            continue
+        if b.latitude != lat or b.longitude != lng:
+            b.latitude  = lat
+            b.longitude = lng
+            updated   += 1
+
+    if updated:
+        await db.commit()
+
+    return {"total": total, "updated": updated}

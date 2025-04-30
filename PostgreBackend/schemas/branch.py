@@ -60,4 +60,6 @@ class CountResponse(BaseModel):
     count: int
     sub_count: int
 
-
+class BulkCoordUpdateResponse(BaseModel):
+    total:   int
+    updated: int

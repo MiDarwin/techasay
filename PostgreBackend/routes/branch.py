@@ -5,10 +5,11 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Header, UploadFile
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from schemas.branch import BranchCreate, BranchResponse, BranchUpdate, LinkSchema, CoordSchema, CountResponse
+from schemas.branch import BranchCreate, BranchResponse, BranchUpdate, LinkSchema, CoordSchema, CountResponse, \
+    BulkCoordUpdateResponse
 from services.branch_service import create_branch, get_branches, update_branch, delete_branch, create_sub_branch, \
     get_sub_branches, get_filtered_branches, add_favorite_branch, remove_favorite_branch, create_excel_file, \
-    process_excel_file, resolve_coords_from_link, get_branches_count
+    process_excel_file, resolve_coords_from_link, get_branches_count, update_missing_branch_coords
 from database import get_db
 from utils.bearerToken import get_user_id_from_token
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")  # Token doğrulama şeması
@@ -227,5 +228,19 @@ async def read_branches_count(
         )
         # stats zaten {'count':…, 'sub_count':…}
         return {"count": stats["count"], "sub_count": stats["sub_count"]}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+@router.post(
+    "/coords/update",
+    response_model=BulkCoordUpdateResponse,
+    summary="Eksik koordinatları linkten çıkarıp günceller"
+)
+async def bulk_update_branch_coords(
+    db: AsyncSession = Depends(get_db),
+
+):
+    try:
+        result = await update_missing_branch_coords(db)
+        return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
