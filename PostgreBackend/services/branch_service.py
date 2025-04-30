@@ -495,29 +495,46 @@ async def resolve_coords_from_link(link: str) -> Tuple[float, float]:
     return coords
 async def get_branches_count(
     db: AsyncSession,
-    company_id: int,
-    city: str | None = None,
-    district: str | None = None,
-    textinput: str | None = None,
-) -> int:
+    company_id: int | None = None,
+    city:       str | None = None,
+    district:   str | None = None,
+    textinput:  str | None = None,
+) -> dict:
     """
-    Şirket, şehir, ilçe ve arama metni filtrelerine göre şube sayısını döndürür.
+    company_id: None ise tüm şubeler, değilse sadece o şirketin şubeleri
+    city/district/textinput filtreleri her durumda uygulanır.
+    Döner: {"count": <ana şube sayısı>, "sub_count": <alt şube sayısı>}
     """
-    query = select(func.count(Branch.id)).filter(Branch.company_id == company_id)
+    # 1) Ana şubelerin ID'lerini çek
+    id_query = select(Branch.id)
+    if company_id is not None:
+        id_query = id_query.filter(Branch.company_id == company_id)
     if city:
-        query = query.filter(Branch.city.ilike(f"%{city}%"))
+        id_query = id_query.filter(Branch.city.ilike(f"%{city}%"))
     if district:
-        query = query.filter(Branch.district.ilike(f"%{district}%"))
+        id_query = id_query.filter(Branch.district.ilike(f"%{district}%"))
     if textinput:
-        query = query.filter(
+        id_query = id_query.filter(
             or_(
                 Branch.branch_name.ilike(f"%{textinput}%"),
                 Branch.address.ilike(f"%{textinput}%"),
                 Branch.city.ilike(f"%{textinput}%"),
                 Branch.district.ilike(f"%{textinput}%"),
-                Branch.phone_number.ilike(f"%{textinput}%")
+                Branch.phone_number.ilike(f"%{textinput}%"),
             )
         )
-    result = await db.execute(query)
-    # scalar_one() tek değer için ideal; COUNT mutlaka bir değer döndürür
-    return result.scalar_one()
+    res = await db.execute(id_query)
+    branch_ids = [row[0] for row in res.fetchall()]
+    parent_count = len(branch_ids)
+
+    # 2) Bu ana şubelere bağlı alt şube sayısı
+    if branch_ids:
+        sub_res = await db.execute(
+            select(func.count(Branch.id))
+            .filter(Branch.parent_branch_id.in_(branch_ids))
+        )
+        sub_count = sub_res.scalar_one()
+    else:
+        sub_count = 0
+
+    return {"count": parent_count, "sub_count": sub_count}

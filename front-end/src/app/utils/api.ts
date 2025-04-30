@@ -534,26 +534,30 @@ export const getBranchesCount = async ({
   district,
   textinput,
 }: {
-  company_id: number;
+  company_id?: number;
   city?: string;
   district?: string;
   textinput?: string;
 }) => {
   const token = localStorage.getItem("access_token");
   const params = new URLSearchParams();
+  if (company_id != null) params.append("company_id", company_id.toString());
   if (city)      params.append("city", city);
   if (district)  params.append("district", district);
   if (textinput) params.append("textinput", textinput);
 
   const res = await fetch(
-    `${BASE_URL}/api/branches/companies/${company_id}/branches/count?${params.toString()}`,
+    `${BASE_URL}/api/branches/count?${params.toString()}`,
     {
       headers: {
         "Authorization": `Bearer ${token}`,
       },
     }
   );
-  const data = await res.json();
+  const data = await res.json();  // { count: number, sub_count: number }
   if (!res.ok) throw new Error(data.detail || "Şube sayısı alınamadı");
-  return data.count as number;
+  return {
+      count: data.count as number,
+      subCount: data.sub_count as number,
+      };
 };

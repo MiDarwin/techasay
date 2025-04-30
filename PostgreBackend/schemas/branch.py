@@ -58,3 +58,6 @@ class CoordSchema(BaseModel):
     longitude: float
 class CountResponse(BaseModel):
     count: int
+    sub_count: int
+
+

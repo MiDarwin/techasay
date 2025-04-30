@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import BranchForm from "./BranchForm";
 import BranchTable from "./BranchTable";
 import Modal from "./Modal";
-import { Button, Tooltip } from "@mui/material";
+import { Button, Tooltip, Box } from "@mui/material";
 import { turkishCities } from "./cities";
 import {
   createBranch,
@@ -46,6 +46,7 @@ const BranchManager = () => {
   const [limit, setLimit] = useState(15);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [count, setCount] = useState<number | null>(null);
+  const [subCount, setSubCount] = useState<number | null>(null);
   const [countLoading, setCountLoading] = useState(false);
   const fetchPermissions = async () => {
     try {
@@ -113,19 +114,16 @@ const BranchManager = () => {
   };
   // Debounce’lu fonksiyon (500ms delay)
   const debouncedFetchCount = useDebouncedCallback(async () => {
-    if (!companyFilter) {
-      setCount(null);
-      return;
-    }
     setCountLoading(true);
     try {
-      const c = await getBranchesCount({
-        company_id: companyFilter,
+      const { count: c, subCount: sc } = await getBranchesCount({
+        company_id: companyFilter ? Number(companyFilter) : undefined,
         city: cityFilter,
         district: districtFilter,
         textinput: searchFilter,
       });
       setCount(c);
+      setSubCount(sc);
     } catch (err) {
       console.error(err);
       setCount(null);
@@ -359,15 +357,23 @@ const BranchManager = () => {
             />
           </Tooltip>
         </form>
-        {countLoading ? (
-          <CircularProgress size={20} />
-        ) : (
-          <Typography variant="subtitle1">
-            {count != null
-              ? `${count} şube bulundu`
-              : "Şube sayısı yükleniyor..."}
-          </Typography>
-        )}
+        <Box
+          display="flex"
+          flexDirection="column"
+          justifyContent="center"
+          alignItems="flex-end"
+          sx={{ ml: "auto", mr: 2 }}
+        >
+          {countLoading ? (
+            <CircularProgress size={20} />
+          ) : (
+            <>
+              <Typography variant="subtitle2">
+                Ana şube: {count} Alt şube: {subCount}
+              </Typography>
+            </>
+          )}
+        </Box>
         {permissions.includes("branchViewing") && (
           <Tooltip title="Rota Oluştur" arrow>
             <Button

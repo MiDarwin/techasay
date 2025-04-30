@@ -209,26 +209,23 @@ async def get_branch_coords(
         return CoordSchema(latitude=lat, longitude=lng)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
-@router.get(
-    "/companies/{company_id}/branches/count",
-    response_model=CountResponse,
-    summary="Filtrelenmiş şube sayısını döndürür"
-)
+@router.get("/count", response_model=CountResponse)
 async def read_branches_count(
-    company_id: int,
-    city: str | None = Query(None),
-    district: str | None = Query(None),
-    textinput: str | None = Query(None),
-    db: AsyncSession = Depends(get_db),
+    company_id: int | None = Query(None, description="İsteğe bağlı şirket ID"),
+    city:       str | None = Query(None),
+    district:   str | None = Query(None),
+    textinput:  str | None = Query(None),
+    db:         AsyncSession = Depends(get_db),
 ):
     try:
-        total = await get_branches_count(
+        stats = await get_branches_count(
             db,
             company_id=company_id,
             city=city,
             district=district,
             textinput=textinput,
         )
-        return CountResponse(count=total)
+        # stats zaten {'count':…, 'sub_count':…}
+        return {"count": stats["count"], "sub_count": stats["sub_count"]}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
