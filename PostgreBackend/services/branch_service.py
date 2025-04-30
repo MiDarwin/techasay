@@ -355,7 +355,6 @@ async def create_excel_file(branches):
     return temp_file.name
 async def process_excel_file(file, db: AsyncSession, user_id: int):
     try:
-        # Excel dosyasını oku
         df = pd.read_excel(file.file, dtype=str)
         df = df.replace({pd.NA: None, "nan": None})
     except Exception:
@@ -370,55 +369,63 @@ async def process_excel_file(file, db: AsyncSession, user_id: int):
         if col not in df.columns:
             raise ValueError(f"Excel dosyasında '{col}' sütunu eksik.")
 
-    # Latitude/Longitude opsiyonel
-    has_lat = "latitude" in df.columns
-    has_lon = "longitude" in df.columns
+    # Opsiyonel sütunlar
+    has_lat  = "latitude" in df.columns
+    has_lon  = "longitude" in df.columns
+    has_date = "created_date" in df.columns
 
     added_count = updated_count = skipped_count = 0
 
     for _, row in df.iterrows():
-        # company_id parse
+        # Şirket ID parse
         try:
             company_id = int(row["company_id"])
         except (ValueError, TypeError):
             skipped_count += 1
             continue
 
-        # şirket kontrolü
+        # Şirket kontrolü
         res = await db.execute(select(Company).filter(Company.id == company_id))
         company = res.scalars().first()
         if not company:
             skipped_count += 1
             continue
 
-        # optional koordinatlar
-        lat = None
-        lon = None
-        if has_lat and row.get("latitude") not in (None, ""):
+        # Latitude / Longitude
+        lat = lon = None
+        if has_lat and row.get("latitude"):
             try:
                 lat = float(row["latitude"])
             except ValueError:
                 pass
-        if has_lon and row.get("longitude") not in (None, ""):
+        if has_lon and row.get("longitude"):
             try:
                 lon = float(row["longitude"])
             except ValueError:
                 pass
 
-        # mevcut şube kontrolü
+        # Created Date
+        created_date = None
+        if has_date and row.get("created_date"):
+            try:
+                created_date = datetime.strptime(row["created_date"], "%d/%m/%Y")
+            except Exception:
+                pass
+
+        # Mevcut şube bak
         res = await db.execute(
             select(Branch).filter(
                 Branch.branch_name == row["branch_name"],
-                Branch.city == row["city"],
-                Branch.district == row["district"],
-                Branch.company_id == company_id
+                Branch.city        == row["city"],
+                Branch.district    == row["district"],
+                Branch.company_id  == company_id
             )
         )
         existing = res.scalars().first()
 
         if existing:
             updated = False
-            # var olan alan güncellemeleri
+            # Alan güncellemeleri
             if existing.address != row["address"]:
                 existing.address = row["address"]; updated = True
             if existing.phone_number != row["phone_number"]:
@@ -429,19 +436,19 @@ async def process_excel_file(file, db: AsyncSession, user_id: int):
                 existing.branch_note = row.get("branch_note"); updated = True
             if existing.location_link != row.get("location_link"):
                 existing.location_link = row.get("location_link"); updated = True
-            # yeni koordinat güncellemeleri
-            if has_lat and existing.latitude != lat:
-                existing.latitude = lat; updated = True
+            if has_lat and existing.latitude  != lat:
+                existing.latitude  = lat; updated = True
             if has_lon and existing.longitude != lon:
                 existing.longitude = lon; updated = True
+            if has_date and created_date and existing.created_date != created_date:
+                existing.created_date = created_date; updated = True
 
             if updated:
                 updated_count += 1
             else:
                 skipped_count += 1
-
         else:
-            # yeni şube
+            # Yeni şube oluştur
             new_branch = Branch(
                 branch_name   = row["branch_name"],
                 address       = row["address"],
@@ -453,12 +460,15 @@ async def process_excel_file(file, db: AsyncSession, user_id: int):
                 location_link = row.get("location_link"),
                 company_id    = company_id,
                 latitude      = lat,
-                longitude     = lon
+                longitude     = lon,
+                created_date  = created_date
             )
             db.add(new_branch)
             added_count += 1
 
+    # Commit tüm değişiklikler
     await db.commit()
+
     return {
         "added_count": added_count,
         "updated_count": updated_count,
