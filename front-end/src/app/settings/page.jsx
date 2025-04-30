@@ -6,14 +6,20 @@ import ExitToAppIcon from "@mui/icons-material/ExitToApp"; // Çıkış simgesi
 import Modal from "@mui/material/Modal"; // Modal bileşeni
 import TextField from "@mui/material/TextField"; // Textfield bileşeni
 import Button from "@mui/material/Button"; // Button bileşeni
-import { SketchPicker } from "react-color"; // Renk seçici kütüphanesi
 import ColorModal from "./ColorModal";
+import StoreIcon from "@mui/icons-material/Store"; // Anasayfa simgesi
+import Tooltip from "@mui/material/Tooltip";
+import IconButton from "@mui/material/IconButton";
+import CircularProgress from "@mui/material/CircularProgress";
+import Snackbar from "@mui/material/Snackbar";
+import Alert from "@mui/material/Alert";
 
 import settingsStyles from "../styles/settingsStyles"; // Stil dosyasını içe aktar
 import {
   getCurrentUser,
   getAllUsersPermissions,
   updatePassword,
+  updateBranchCoords,
 } from "../utils/api"; // API fonksiyonlarını içe aktar
 import { useRouter } from "next/navigation"; // Router kullanımı için
 
@@ -30,7 +36,9 @@ const SettingsPage = () => {
   const [passwordSuccess, setPasswordSuccess] = useState(""); // Başarı mesajı
   const [tableColor, setTableColor] = useState("#395B64"); // Varsayılan renk
   const [open, setOpen] = useState(false);
-
+  const [coordLoading, setCoordLoading] = useState(false);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [coordResult, setCoordResult] = useState(null);
   const router = useRouter(); // Kullanıcıyı yönlendirmek için router
 
   const allPermissions = ["permission_management", "read", "write", "delete"]; // Tüm yetkiler
@@ -108,6 +116,18 @@ const SettingsPage = () => {
       setPasswordError("Şifre değiştirme sırasında bir hata oluştu.");
     }
   };
+  const handleExtractCoords = async () => {
+    setCoordLoading(true);
+    try {
+      const { total, updated } = await updateBranchCoords();
+      setCoordResult({ total, updated });
+      setSnackbarOpen(true);
+    } catch (e) {
+      console.error("Koordinat güncelleme hatası:", e);
+    } finally {
+      setCoordLoading(false);
+    }
+  };
 
   if (loading) {
     return <p style={settingsStyles.description}>Yükleniyor...</p>;
@@ -119,6 +139,26 @@ const SettingsPage = () => {
 
   return (
     <div style={settingsStyles.container}>
+      <IconButton
+        onClick={() => router.push("/homepage")}
+        sx={{
+          position: "absolute",
+          top: 16,
+          left: 16,
+          bgcolor: "primary.main",
+          color: "white",
+          width: 48,
+          height: 48,
+          "&:hover": {
+            bgcolor: "primary.dark",
+            transform: "scale(1.1)",
+          },
+          transition: "all 0.2s ease-in-out",
+          borderRadius: "50%",
+        }}
+      >
+        <StoreIcon fontSize="large" />
+      </IconButton>
       <div style={settingsStyles.box}>
         {/* Kullanıcı Bilgileri */}
         <div style={settingsStyles.userInfo}>
@@ -135,7 +175,7 @@ const SettingsPage = () => {
           </div>
         </div>
         <div style={settingsStyles.changePassword}>
-        <span style={{color:"black"}}>Şifre Değiştir</span>
+          <span style={{ color: "black" }}>Şifre Değiştir</span>
           <div style={settingsStyles.iconWrapper}>
             <EditIcon
               style={settingsStyles.editIcon}
@@ -144,13 +184,39 @@ const SettingsPage = () => {
             <span style={settingsStyles.tooltip}>Şifre Değiştir</span>
           </div>
         </div>
-        <div style={settingsStyles.adminPanel}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: "16px",
+            marginTop: "16px",
+          }}
+        >
           <button
             style={settingsStyles.adminPanelButton}
             onClick={goToAdminPanel}
           >
             Admin Panel
           </button>
+
+          <Tooltip
+            title="Varolan şubelerdeki link'lerden koordinatını çıkartmak için basın işlem uzun sürebilir"
+            arrow
+          >
+            <Button
+              variant="contained"
+              color="warning"
+              onClick={handleExtractCoords}
+              disabled={coordLoading}
+            >
+              {coordLoading ? (
+                <CircularProgress size={20} />
+              ) : (
+                "Koordinat Çıkar"
+              )}
+            </Button>
+          </Tooltip>
         </div>
         <Button
           variant="contained"
@@ -186,7 +252,23 @@ const SettingsPage = () => {
           ))}
         </div>
       </div>
-
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={6000}
+        onClose={() => setSnackbarOpen(false)}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert
+          onClose={() => setSnackbarOpen(false)}
+          severity="success"
+          variant="filled"
+          sx={{ width: "100%" }}
+        >
+          {coordResult
+            ? `${coordResult.updated}/${coordResult.total} şube koordinatı eklendi!.`
+            : "Güncelleme tamamlandı."}
+        </Alert>
+      </Snackbar>
       {/* Şifre Değiştirme Modal */}
       <Modal
         open={isPasswordModalOpen}

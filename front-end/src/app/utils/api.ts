@@ -561,3 +561,24 @@ export const getBranchesCount = async ({
       subCount: data.sub_count as number,
       };
 };
+export const updateBranchCoords = async (): Promise<{
+  total: number;
+  updated: number;
+}> => {
+  const token = localStorage.getItem("access_token");
+  const res = await fetch(`${BASE_URL}/api/branches/coords/update`, {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${token}`,
+      "Content-Type": "application/json"
+    },
+  });
+  const data = await res.json(); // { total, updated }
+  if (!res.ok) {
+    throw new Error(data.detail || "Koordinat güncelleme başarısız");
+  }
+  return {
+    total: data.total,
+    updated: data.updated
+  };
+};

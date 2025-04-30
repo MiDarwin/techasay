@@ -3,7 +3,7 @@ import { uploadBranches } from "../../utils/api"; // API fonksiyonunu import et
 import "./Modal.css"; // Modal için stil dosyası
 import Modal from "./Modal"; // Var olan modal bileşeni
 
-const UploadBranchesModal = ({ isOpen, onClose }) => {
+const UploadBranchesModal = ({ isOpen, onClose, onUploadSuccess }) => {
   const [file, setFile] = useState(null);
   const [message, setMessage] = useState(""); // Başarı veya hata mesajı
   const [isUploading, setIsUploading] = useState(false); // Yükleme işlemi sırasında butonu devre dışı bırakmak için
@@ -34,6 +34,7 @@ const UploadBranchesModal = ({ isOpen, onClose }) => {
     try {
       const result = await uploadBranches(file); // API'ye dosyayı yükle
       setMessage(result.message); // Başarı mesajını göster
+      if (onUploadSuccess) onUploadSuccess();
     } catch (error) {
       setMessage(error.message); // Hata mesajını göster
     } finally {

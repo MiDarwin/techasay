@@ -353,7 +353,10 @@ const BranchManager = () => {
             </span>
             <UploadBranchesModal
               isOpen={isUploadModalOpen}
-              onClose={closeModal}
+              onClose={() => setIsUploadModalOpen(false)}
+              onUploadSuccess={() => {
+                fetchBranches();
+              }}
             />
           </Tooltip>
         </form>
