@@ -173,7 +173,13 @@ const RoutePage = () => {
   }
 
   return (
-    <Box p={4}>
+    <Box
+      p={4}
+      sx={{
+        bgcolor: "background.default", // tema’ya göre arkaplan
+        color: "text.primary", // tema’ya göre yazı rengi
+      }}
+    >
       <Typography variant="h4" mb={2}>
         Rota Oluştur
       </Typography>

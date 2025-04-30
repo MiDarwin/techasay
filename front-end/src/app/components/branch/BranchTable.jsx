@@ -273,7 +273,6 @@ const BranchTable = ({
               <TableCell>Şehir</TableCell>
               <TableCell>İlçe</TableCell>
               <TableCell>Şube Adı</TableCell>
-              <TableCell>Adres</TableCell>
               <TableCell>Telefon Numarası / Yedek Telefon</TableCell>
               <TableCell>Şube Notu</TableCell>
               <TableCell>Kurulum Tarihi</TableCell>
@@ -297,9 +296,6 @@ const BranchTable = ({
                   </TableCell>
                   <TableCell onClick={() => handleCopy(branch.name)}>
                     {branch.name}
-                  </TableCell>
-                  <TableCell onClick={() => handleCopy(branch.address)}>
-                    {branch.address}
                   </TableCell>
                   <TableCell
                     onClick={() =>
