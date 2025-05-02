@@ -55,10 +55,10 @@ const ColorModal = ({ open, handleClose }) => {
           borderRadius: 2,
         }}
       >
-        <h3>Renk Ayarları</h3>
+        <h3 style={{ color: "black" }}>Renk Ayarları</h3>
         {Object.keys(colors).map((key) => (
           <div key={key} style={{ marginBottom: "10px" }}>
-            <label>{colorLabels[key]}:</label>
+            <label style={{ color: "black" }}>{colorLabels[key]}:</label>
             <input
               type="color"
               name={key}
