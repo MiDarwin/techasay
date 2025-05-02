@@ -75,7 +75,6 @@ const HomePage = () => {
           borderRadius: 1,
           px: 3,
           py: 2,
-          mb: 3,
         }}
       >
         <Box
