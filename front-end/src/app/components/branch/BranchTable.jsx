@@ -12,6 +12,7 @@ import {
   Paper,
   Modal,
   Box,
+  Typography,
   Snackbar,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
@@ -79,6 +80,7 @@ const BranchTable = ({
   const [selectedBranchForInfo, setSelectedBranchForInfo] = useState(null);
   const [branchVisits, setBranchVisits] = useState([]);
   const [isLoadingVisits, setIsLoadingVisits] = useState(false);
+  const [infoBranch, setInfoBranch] = useState(null);
 
   const handleOpenInventory = async (branchId, branchName) => {
     setSelectedBranchId(branchId);
@@ -228,7 +230,12 @@ const BranchTable = ({
     setSelectedBranchForInfo(null);
     setBranchVisits([]);
   };
-
+  const handleOpenInfo = (branch) => {
+    setInfoBranch(branch);
+  };
+  const handleCloseInfo = () => {
+    setInfoBranch(null);
+  };
   const handleCreateVisit = async (branchId, formData) => {
     try {
       const newVisit = await createBranchVisit(
@@ -260,7 +267,7 @@ const BranchTable = ({
   };
   const handleCopy = (text) => {
     navigator.clipboard.writeText(text); // Metni kopyala
-    setSnackbarMessage("Kopyalandı!");
+    setSnackbarMessage("Kopyalandı:" + text);
     setSnackbarOpen(true); // Snackbar'ı aç
   };
   return (
@@ -273,7 +280,7 @@ const BranchTable = ({
               <TableCell>Şehir</TableCell>
               <TableCell>İlçe</TableCell>
               <TableCell>Şube Adı</TableCell>
-              <TableCell>Telefon Numarası / Yedek Telefon</TableCell>
+              <TableCell>GSM No</TableCell>
               <TableCell>Şube Notu</TableCell>
               <TableCell>Kurulum Tarihi</TableCell>
               <TableCell>İşlemler</TableCell>
@@ -297,26 +304,16 @@ const BranchTable = ({
                   <TableCell onClick={() => handleCopy(branch.name)}>
                     {branch.name}
                   </TableCell>
-                  <TableCell
-                    onClick={() =>
-                      handleCopy(
-                        branch.phone_number +
-                          (branch.phone_number_2
-                            ? ` / ${branch.phone_number_2}`
-                            : "")
-                      )
-                    }
-                  >
+                  <TableCell onClick={() => handleCopy(branch.phone_number)}>
                     {branch.phone_number}
-                    {branch.phone_number_2 ? ` / ${branch.phone_number_2}` : ""}
                   </TableCell>
                   <TableCell>{branch.branch_note || "Yok"}</TableCell>
                   <TableCell>{branch.created_date}</TableCell>
-
                   <TableCell>
-                    <Tooltip title="Şube Bilgileri" key={branch.id}>
+                    {/* Şube Bilgileri Modal Aç */}
+                    <Tooltip title="Şube Bilgileri" arrow>
                       <IconButton
-                        onClick={() => handleInfoClick(branch)}
+                        onClick={() => handleOpenInfo(branch)}
                         color="info"
                         aria-label="Şube Bilgileri"
                       >
@@ -438,6 +435,39 @@ const BranchTable = ({
         branchData={selectedBranch}
         onUpdate={handleUpdateBranch}
       />
+      {/* Şube Bilgileri Modal */}
+      <Modal open={!!infoBranch} onClose={handleCloseInfo}>
+        <Box sx={style}>
+          <Typography variant="h6" mb={2}>
+            Şube Bilgileri
+          </Typography>
+          {infoBranch && (
+            <>
+              <Box display="flex" alignItems="center" mb={1}>
+                <Typography sx={{ flexGrow: 1 }}>Adres:</Typography>
+                <Tooltip title="Kopyala" arrow>
+                  <IconButton></IconButton>
+                </Tooltip>
+              </Box>
+              <Typography mb={2}>{infoBranch.address}</Typography>
+
+              {infoBranch.phone_number_2 && (
+                <>
+                  <Box display="flex" alignItems="center" mb={1}>
+                    <Typography sx={{ flexGrow: 1 }}>Yedek GSM No:</Typography>
+                    <Tooltip title="Kopyala" arrow>
+                      <IconButton
+                        onClick={() => handleCopy(infoBranch.phone_number_2)}
+                      ></IconButton>
+                    </Tooltip>
+                  </Box>
+                  <Typography>{infoBranch.phone_number_2}</Typography>
+                </>
+              )}
+            </>
+          )}
+        </Box>
+      </Modal>
       {/* Envanter Modal */}
       <InventoryModal
         isOpen={openInventory}
