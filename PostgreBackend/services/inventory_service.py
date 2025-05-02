@@ -1,3 +1,6 @@
+from tempfile import NamedTemporaryFile
+
+from openpyxl import Workbook
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from models.inventory import Inventory
@@ -82,3 +85,36 @@ async def update_inventory(
         created_date=inv.created_date,
         updated_date=inv.updated_date
     )
+async def generate_inventory_excel(db: AsyncSession) -> str:
+
+    stmt = (
+        select(Inventory, Branch.branch_name.label("branch_name"))
+        .join(Branch, Inventory.branch_id == Branch.id)
+    )
+    result = await db.execute(stmt)
+    rows = result.all()  # liste of (Inventory, branch_name)
+
+    # 2) JSONB içindeki tüm key’leri topla
+    all_keys = set()
+    records = []
+    for inv, branch_name in rows:
+        rec = {"id": inv.id, "branch_name": branch_name}
+        for k, v in inv.details.items():
+            rec[k] = v
+            all_keys.add(k)
+        records.append(rec)
+
+    # 3) Excel başlığı ve içerik
+    header = ["id", "branch_name"] + sorted(all_keys)
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Envanter"
+    ws.append(header)
+    for rec in records:
+        ws.append([rec.get(col) for col in header])
+
+    # 4) Geçici dosyaya kaydet
+    tmp = NamedTemporaryFile(delete=False, suffix=".xlsx")
+    wb.save(tmp.name)
+    tmp.close()
+    return tmp.name

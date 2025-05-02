@@ -1,8 +1,18 @@
+from tempfile import NamedTemporaryFile
+
 from fastapi import APIRouter, Depends, HTTPException, Query
+from openpyxl import Workbook
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List, Dict, Any
+
+from starlette.responses import FileResponse
+
+from models.branch import Branch
+from models.inventory import Inventory
 from schemas.inventory import InventoryOut, InventoryCreateBody
-from services.inventory_service import get_inventory_by_branch, create_inventory, update_inventory
+from services.inventory_service import get_inventory_by_branch, create_inventory, update_inventory, \
+    generate_inventory_excel
 from database import get_db
 
 
@@ -48,3 +58,23 @@ async def add_inventory(
         return await create_inventory(db, inv_in)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.get(
+    "/export",
+    response_description="Excel dosyası olarak envanteri indir",
+    summary="Envanter Excel olarak indir"
+)
+async def export_inventory(
+    db: AsyncSession = Depends(get_db),
+):
+
+    try:
+        file_path = await generate_inventory_excel(db)
+        return FileResponse(
+            file_path,
+            filename="envanter.xlsx",
+            media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
