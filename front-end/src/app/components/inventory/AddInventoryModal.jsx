@@ -47,15 +47,10 @@ const AddInventoryModal = ({
   const [selectedSubBranchId, setSelectedSubBranchId] = useState(""); // Seçilen alt şube ID'si
 
   // Şirket değiştiğinde şubeleri yükleme
-  const fetchBranches = async (companyId, city = "", district = "") => {
+  const fetchBranches = async (companyId) => {
     try {
-      const limit = 50; // İsteğe bağlı olarak limit değerini ayarlayın
-      const data = await getBranchesByCompanyId(
-        companyId,
-        limit,
-        city,
-        district
-      );
+      const limit = 200; // İsteğe bağlı olarak limit değerini ayarlayın
+      const data = await getBranchesByCompanyId(companyId, limit);
       setBranches(data);
     } catch (err) {
       console.error("Şubeler alınırken bir hata oluştu:", err);
@@ -65,11 +60,9 @@ const AddInventoryModal = ({
   // Şirket değiştiğinde filtreleri sıfırlayıp şubeleri getir
   useEffect(() => {
     if (companyId) {
-      setCityFilter("");
-      setDistrictFilter("");
       setBranchId("");
       setAvailableDistricts([]);
-      fetchBranches(companyId, "", "");
+      fetchBranches(companyId);
     }
   }, [companyId]);
 
@@ -195,95 +188,43 @@ const AddInventoryModal = ({
 
         {/* Şirket Seçimi */}
         <FormControl fullWidth margin="normal">
-          <InputLabel sx={{ color: "#6B7280" }}>Şirket Seçin</InputLabel>
+          <InputLabel>Şirket Seçin</InputLabel>
           <Select
             value={companyId}
             onChange={(e) => setCompanyId(e.target.value)}
-            sx={{
-              "& .MuiOutlinedInput-root": {
-                "& fieldset": { borderColor: "#A5B68D" },
-                "&:hover fieldset": { borderColor: "#8FA781" },
-              },
-            }}
+            disabled={companies.length === 0}
           >
             <MenuItem value="">
               <em>Şirket Seçin</em>
             </MenuItem>
-            {companies.map((company) => (
-              <MenuItem key={company.company_id} value={company.company_id}>
-                {company.name}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-
-        {/* İl Seçimi */}
-        <FormControl fullWidth margin="normal" disabled={!companyId}>
-          <InputLabel sx={{ color: "#6B7280" }}>İl Seçin</InputLabel>
-          <Select
-            value={cityFilter}
-            onChange={handleCityChange}
-            sx={{
-              "& .MuiOutlinedInput-root": {
-                "& fieldset": { borderColor: "#A5B68D" },
-                "&:hover fieldset": { borderColor: "#8FA781" },
-              },
-            }}
-          >
-            <MenuItem value="">
-              <em>İl Seçin</em>
-            </MenuItem>
-            {Object.keys(turkishCities).map((city) => (
-              <MenuItem key={city} value={city}>
-                {city}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-
-        {/* İlçe Seçimi */}
-        <FormControl fullWidth margin="normal" disabled={!cityFilter}>
-          <InputLabel sx={{ color: "#6B7280" }}>İlçe Seçin</InputLabel>
-          <Select
-            value={districtFilter}
-            onChange={handleDistrictChange}
-            sx={{
-              "& .MuiOutlinedInput-root": {
-                "& fieldset": { borderColor: "#A5B68D" },
-                "&:hover fieldset": { borderColor: "#8FA781" },
-              },
-            }}
-          >
-            <MenuItem value="">
-              <em>İlçe Seçin</em>
-            </MenuItem>
-            {availableDistricts.map((district) => (
-              <MenuItem key={district} value={district}>
-                {district}
+            {companies.map((c) => (
+              <MenuItem key={c.company_id} value={c.company_id}>
+                {c.name}
               </MenuItem>
             ))}
           </Select>
         </FormControl>
 
         {/* Şube Seçimi */}
-        <FormControl fullWidth margin="normal" disabled={!cityFilter}>
-          <InputLabel sx={{ color: "#6B7280" }}>Şube Seçin</InputLabel>
+        <FormControl fullWidth margin="normal" disabled={!companyId}>
+          <InputLabel>Şube Seçin</InputLabel>
           <Select
             value={branchId}
-            onChange={(e) => setBranchId(e.target.value)}
-            sx={{
-              "& .MuiOutlinedInput-root": {
-                "& fieldset": { borderColor: "#A5B68D" },
-                "&:hover fieldset": { borderColor: "#8FA781" },
-              },
+            onChange={async (e) => {
+              const id = e.target.value;
+              setBranchId(id);
+              // Alt şubeleri çek
+              const subs = await getSubBranchesByBranchId(id);
+              setSubBranches(subs);
+              setSelectedSubBranchId("");
             }}
           >
             <MenuItem value="">
               <em>Şube Seçin</em>
             </MenuItem>
-            {branches.map((branch) => (
-              <MenuItem key={branch.id} value={branch.id}>
-                {branch.name}
+            {branches.map((b) => (
+              <MenuItem key={b.id} value={b.id}>
+                {b.name}
               </MenuItem>
             ))}
           </Select>
