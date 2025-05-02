@@ -293,9 +293,7 @@ export const getSubBranchesByBranchId = async (branchId) => {
     },
   });
 
-  if (!response.ok) {
-    throw new Error("Alt şubelere erişim sağlanırken bir hata oluştu.");
-  }
+  
 
   return response.json();
 };

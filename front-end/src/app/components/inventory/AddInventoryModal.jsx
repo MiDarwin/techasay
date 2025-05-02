@@ -96,9 +96,7 @@ const AddInventoryModal = ({
       const data = await getSubBranchesByBranchId(branchId);
       setSubBranches(data);
       setHasSubBranches(data.length > 0);
-    } catch (error) {
-      console.error("Alt şubeler alınırken hata oluştu:", error);
-    }
+    } catch (error) {}
   };
   // Şube değiştiğinde alt şubeleri kontrol et
   useEffect(() => {
