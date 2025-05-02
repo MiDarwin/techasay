@@ -1,6 +1,6 @@
 from tempfile import NamedTemporaryFile
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File
 from openpyxl import Workbook
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -10,9 +10,9 @@ from starlette.responses import FileResponse
 
 from models.branch import Branch
 from models.inventory import Inventory
-from schemas.inventory import InventoryOut, InventoryCreateBody
+from schemas.inventory import InventoryOut, InventoryCreateBody, InventoryImportResponse
 from services.inventory_service import get_inventory_by_branch, create_inventory, update_inventory, \
-    generate_inventory_excel
+    generate_inventory_excel, import_inventory_from_excel
 from database import get_db
 
 
@@ -76,5 +76,22 @@ async def export_inventory(
             filename="envanter.xlsx",
             media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+@router.post(
+    "/import",
+    response_model=InventoryImportResponse,
+    summary="Excel ile envanter import et (merge-only, silme yok)"
+)
+async def import_inventory(
+    file: UploadFile = File(..., description="Excel dosyası"),
+    db:   AsyncSession = Depends(get_db),
+):
+
+    try:
+        result = await import_inventory_from_excel(db, file)
+        return result
+    except ValueError as ve:
+        raise HTTPException(status_code=400, detail=str(ve))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

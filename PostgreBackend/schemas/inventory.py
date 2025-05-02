@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List
 from pydantic import BaseModel
 
 class InventoryBase(BaseModel):
@@ -22,3 +22,8 @@ class InventoryOut(InventoryBase):
 
     class Config:
         orm_mode = True
+class InventoryImportResponse(BaseModel):
+    added: int
+    updated: int
+    skipped: int
+    skipped_branches: List[str]

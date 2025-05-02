@@ -1,5 +1,7 @@
 from tempfile import NamedTemporaryFile
+from typing import List, Dict, Any
 
+import pandas as pd
 from openpyxl import Workbook
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -118,3 +120,67 @@ async def generate_inventory_excel(db: AsyncSession) -> str:
     wb.save(tmp.name)
     tmp.close()
     return tmp.name
+async def import_inventory_from_excel(
+    db: AsyncSession,
+    file
+) -> Dict[str, Any]:
+
+    # 1) Excel’i oku
+    df = pd.read_excel(file.file)
+    df = df.where(pd.notnull(df), None)
+
+    if "branch_name" not in df.columns:
+        raise ValueError("Excel dosyasında 'branch_name' sütunu yok.")
+
+    # 2) Dynamic detay sütunları
+    detail_cols = [c for c in df.columns if c != "branch_name"]
+
+    added = updated = skipped = 0
+    skipped_branches: List[str] = []
+
+    # 3) Satır satır işle
+    for _, row in df.iterrows():
+        bname = row["branch_name"]
+        # Şubeyi bul
+        q = select(Branch).where(Branch.branch_name == bname)
+        res = await db.execute(q)
+        branch = res.scalars().first()
+        if not branch:
+            skipped += 1
+            skipped_branches.append(bname)
+            continue
+
+        # Envanter var mı?
+        q2 = select(Inventory).where(Inventory.branch_id == branch.id)
+        res2 = await db.execute(q2)
+        inv = res2.scalars().first()
+
+        # Yeni detay dict’i
+        new_details = {
+            col: row[col]
+            for col in detail_cols
+            if row[col] is not None
+        }
+
+        if inv:
+            # Merge: var olansa korunur, yeni/güncelleme gelen override eder
+            merged = {**inv.details, **new_details}
+            if merged != inv.details:
+                inv.details = merged
+                updated += 1
+        else:
+            # Yeni envanter
+            to_create = Inventory(branch_id=branch.id, details=new_details)
+            db.add(to_create)
+            added += 1
+
+    # 4) Commit
+    if added + updated > 0:
+        await db.commit()
+
+    return {
+        "added": added,
+        "updated": updated,
+        "skipped": skipped,
+        "skipped_branches": skipped_branches
+    }
