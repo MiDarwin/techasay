@@ -1,5 +1,5 @@
 from tempfile import NamedTemporaryFile
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 
 import pandas as pd
 from openpyxl import Workbook
@@ -87,12 +87,23 @@ async def update_inventory(
         created_date=inv.created_date,
         updated_date=inv.updated_date
     )
-async def generate_inventory_excel(db: AsyncSession) -> str:
-
+async def generate_inventory_excel(
+    db: AsyncSession,
+    branch_ids: Optional[List[int]] = None
+) -> str:
+    """
+    Tüm envanter kayıtlarını (veya opsiyonel branch_ids listesi ile
+    sadece bu şubelere ait kayıtları) branch_name ile birlikte alır,
+    bir Excel dosyası oluşturur ve geçici dosya yolunu döner.
+    """
+    # 1) Veriyi çek
     stmt = (
         select(Inventory, Branch.branch_name.label("branch_name"))
         .join(Branch, Inventory.branch_id == Branch.id)
     )
+    if branch_ids:
+        stmt = stmt.where(Inventory.branch_id.in_(branch_ids))
+
     result = await db.execute(stmt)
     rows = result.all()  # liste of (Inventory, branch_name)
 
