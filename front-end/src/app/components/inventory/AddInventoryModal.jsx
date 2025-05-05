@@ -11,12 +11,14 @@ import {
   TextField,
   Typography,
   Modal,
+  Autocomplete,
 } from "@mui/material";
 import {
   createInventory,
   getBranchesByCompanyId,
   getInventoryHelpers, // Cihaz türlerini çekmek için API fonksiyonu
   getSubBranchesByBranchId,
+  getInventoryFieldsByBranch,
 } from "../../utils/api";
 import { turkishCities } from "../branch/cities"; // Şehir ve ilçeler için dosya importu
 import tableStyles from "@/app/styles/tableStyles";
@@ -45,7 +47,8 @@ const AddInventoryModal = ({
   const [subBranches, setSubBranches] = useState([]); // Alt şubeleri tutmak için state
   const [hasSubBranches, setHasSubBranches] = useState("");
   const [selectedSubBranchId, setSelectedSubBranchId] = useState(""); // Seçilen alt şube ID'si
-
+  const [detailFields, setDetailFields] = useState([{ key: "", value: "" }]);
+  const [fieldSuggestions, setFieldSuggestions] = useState([]);
   // Şirket değiştiğinde şubeleri yükleme
   const fetchBranches = async (companyId) => {
     try {
@@ -66,21 +69,6 @@ const AddInventoryModal = ({
     }
   }, [companyId]);
 
-  // İl değiştiğinde ilçeleri yükle ve şubeleri getir
-  const handleCityChange = (e) => {
-    const selectedCity = e.target.value;
-    setCityFilter(selectedCity);
-    setDistrictFilter(""); // İl değiştiğinde ilçe filtresini sıfırla
-    setAvailableDistricts(turkishCities[selectedCity] || []); // Seçilen ilin ilçelerini getir
-    fetchBranches(companyId, selectedCity); // Sadece il ile şubeleri filtrele
-  };
-
-  // İlçe değiştiğinde şubeleri filtrele
-  const handleDistrictChange = (e) => {
-    const selectedDistrict = e.target.value;
-    setDistrictFilter(selectedDistrict);
-    fetchBranches(companyId, cityFilter, selectedDistrict); // Şubeleri filtrele
-  };
   // Alt şubeleri alma
   const fetchSubBranches = async (branchId) => {
     try {
@@ -129,22 +117,25 @@ const AddInventoryModal = ({
   // Formu gönder
   const handleSubmit = async () => {
     try {
-      if (!branchId || !deviceType || !deviceModel) {
+      if (!branchId) {
         alert("Lütfen gerekli tüm alanları doldurun!");
         return;
       }
 
-      const inventoryData = {
-        device_type: deviceType,
-        device_model: deviceModel,
-        quantity,
-        specs,
-      };
+      // JSONB olarak gönderilecek detaylar
+      const details = {};
+      detailFields.forEach(({ key, value }) => {
+        if (key) details[key] = value;
+      });
+      if (!Object.keys(details).length) {
+        alert("Lütfen en az bir envanter alanı girin!");
+        return;
+      }
 
       // Alt şube seçildiyse onun ID'sini, aksi takdirde seçilen şubenin ID'sini kullan
       const targetBranchId = selectedSubBranchId || branchId;
 
-      await createInventory(targetBranchId, inventoryData); // Doğru branch ID kullanılıyor
+      await createInventory({ branch_id: targetBranchId, details }); // Doğru branch ID kullanılıyor
       alert("Envanter başarıyla eklendi!");
       onInventoryAdded();
       onClose();
@@ -152,6 +143,23 @@ const AddInventoryModal = ({
       console.error("Envanter eklenirken hata oluştu:", err);
       alert("Envanter eklenirken bir hata oluştu.");
     }
+  };
+  useEffect(() => {
+    if (branchId) {
+      const id = selectedSubBranchId || branchId;
+      getInventoryFieldsByBranch(id)
+        .then(setFieldSuggestions)
+        .catch(console.error);
+    }
+  }, [branchId, selectedSubBranchId]);
+  const handleAddDetailField = () => {
+    setDetailFields([...detailFields, { key: "", value: "" }]);
+  };
+
+  const handleDetailChange = (index, field, newValue) => {
+    const updated = [...detailFields];
+    updated[index][field] = newValue;
+    setDetailFields(updated);
   };
 
   return (
@@ -245,6 +253,32 @@ const AddInventoryModal = ({
               </Select>
             </FormControl>
           )}
+          {/* Dinamik Envanter Alanları */}
+          {detailFields.map((df, idx) => (
+            <Box key={idx} display="flex" alignItems="center" gap={2} mt={2}>
+              <Autocomplete
+                freeSolo
+                options={fieldSuggestions}
+                value={df.key}
+                onInputChange={(e, val) => handleDetailChange(idx, "key", val)}
+                renderInput={(params) => (
+                  <TextField {...params} label="Alan Adı" fullWidth />
+                )}
+                sx={{ width: 240 }}
+              />
+              <TextField
+                label="Değer"
+                value={df.value}
+                onChange={(e) =>
+                  handleDetailChange(idx, "value", e.target.value)
+                }
+                fullWidth
+              />
+              {idx === detailFields.length - 1 && (
+                <Button onClick={handleAddDetailField}>+ Ekle</Button>
+              )}
+            </Box>
+          ))}
         </FormControl>
 
         <Button

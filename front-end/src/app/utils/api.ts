@@ -241,20 +241,72 @@ export const uploadBranches = async (file) => {
   return await response.json(); // Başarılı olursa sonucu dön
 };
 // ** Envanter CRUD İstekleri **
-export const createInventory = (branchId, inventoryData) =>
-  apiRequest(`/api/inventory/branches/${branchId}/inventories`, "POST", inventoryData);
+export const createInventory = async (payload: {
+  branch_id: number;
+  details: Record<string, any>;
+}): Promise<InventoryOut> => {
+  const token = localStorage.getItem("access_token");
+  const res = await fetch(`${BASE_URL}/api/inventory`, {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),  // <-- burada branch_id ve details girilmeli
+  });
 
-export const getInventoryByBranch = (branch_id) =>
-  apiRequest(`/api/inventory/branches/${branch_id}/inventory`, "GET");
+  const data = await res.json();
+  if (!res.ok) {
+    // data.detail FastAPI’den geliyor
+    throw new Error(data.detail || "Envanter oluşturmada hata");
+  }
+  return data as InventoryOut;
+};
+export const getInventoryByBranch = async (branch_id?: number) => {
+  if (!branch_id) {
+    return [];  // branch_id boşsa API’ye bile gitme
+  }
+  const token = localStorage.getItem("access_token");
+  const res = await fetch(
+    `${BASE_URL}/api/inventory?branch_id=${branch_id}`,
+    { headers: { "Authorization": `Bearer ${token}` } }
+  );
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.detail || "Envanter alınamadı");
+  return data as InventoryOut[];
+};
 
 export const getcombinedinventoryByBranch = (branch_id) =>
-  apiRequest(`/api/inventory/branches/${branch_id}/combined-inventory`, "GET");
+  apiRequest(`${BASE_URL}/api/inventory/branches/${branch_id}/combined-inventory`, "GET");
 
-export const updateInventory = (inventoryId, updateData) =>
-  apiRequest(`/api/inventory/inventories/${inventoryId}`, "PUT", updateData);
-
+export const updateInventory = async (
+  inventory_id: number,
+  updates: Record<string, any>
+) => {
+  const token = localStorage.getItem("access_token");
+  const res = await fetch(`${BASE_URL}/api/inventory/${inventory_id}`, {
+    method: "PATCH",
+    headers: {
+      "Authorization": `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(updates),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.detail || "Envanter güncellemede hata");
+  return data as InventoryOut;
+};
+export const getInventoryFieldsByBranch = async (branch_id: number) => {
+  const token = localStorage.getItem("access_token");
+  const res = await fetch(`${BASE_URL}/api/inventory/fields?branch_id=${branch_id}`, {
+    headers: { "Authorization": `Bearer ${token}` },
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.detail || "Alan önerileri alınamadı");
+  return data as string[];
+};
 export const deleteInventory = (inventoryId) =>
-  apiRequest(`/api/inventory/inventories/${inventoryId}`, "DELETE");
+  apiRequest(`${BASE_URL}/api/inventory/inventories/${inventoryId}`, "DELETE");
 
 export const getAllInventory = (companyName = "", branchName = "") => {
   const params = new URLSearchParams();
@@ -262,7 +314,7 @@ export const getAllInventory = (companyName = "", branchName = "") => {
   if (companyName) params.append("company_name", companyName); // Şirket adı
   if (branchName) params.append("branch_name", branchName); // Şube adı
 
-  return apiRequest(`/api/inventory/inventories?${params.toString()}`, "GET");
+  return apiRequest(`${BASE_URL}/api/inventory/inventories?${params.toString()}`, "GET");
 };
 // ** Alt Şube CRUD İstekleri **
 export const createSubBranch = async (branchId, subBranchData) => {

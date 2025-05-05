@@ -5,7 +5,6 @@ import InventoryList from "./InventoryList";
 import AddInventoryModal from "./AddInventoryModal";
 import UpdateInventoryModal from "./UpdateInventoryModal";
 import {
-  getAllInventory,
   getAllCompanies,
   getBranchesByCompanyId,
   deleteInventory,
@@ -18,10 +17,6 @@ import {
   Box,
   Button,
   CircularProgress,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
   IconButton,
   Drawer,
   List,
@@ -36,7 +31,6 @@ const InventoryManager = () => {
   const [activeTab, setActiveTab] = useState("inventory");
   const [branches, setBranches] = useState([]);
   const [selectedInventory, setSelectedInventory] = useState(null);
-  const [allInventories, setAllInventories] = useState([]);
   const [filteredInventories, setFilteredInventories] = useState([]);
   const [inventoriesLoading, setInventoriesLoading] = useState(false);
   const [inventoriesError, setInventoriesError] = useState("");
@@ -83,43 +77,30 @@ const InventoryManager = () => {
     }
   };
 
-  // Envanterleri çekme fonksiyonu
-  const fetchAllInventories = async (companyName = "", branchName = "") => {
-    if (!permissionsLoaded) {
-      // İzinler henüz yüklenmedi, bekleyin veya erken çıkın
-      return;
-    }
-
+  const fetchInventories = async () => {
+    if (!permissionsLoaded) return;
     if (!permissions.includes("inventoryViewing")) {
       setInventoriesError(
         "Envanter bilgilerini görüntüleme yetkiniz yok. Lütfen sistem yöneticisi ile iletişime geçin."
       );
-      setAllInventories([]); // Tablo boş olacak
-      setFilteredInventories([]); // Filtrelenmiş de boş olacak
-      return; // Alttaki kodlar çalışmasın
+      setFilteredInventories([]);
+      return;
     }
 
+    // Loading başlat
+    setInventoriesLoading(true);
+
     try {
-      setInventoriesLoading(true);
-
-      let allInventories = [];
-
-      const selectedBranchDetails = branches.find(
-        (branch) => branch.name === branchName
-      );
-
-      if (selectedBranchDetails) {
-        if (selectedBranchDetails.has_sub_branches) {
-          allInventories = await getInventoryByBranch(selectedBranchDetails.id);
-        } else {
-          allInventories = await getAllInventory(companyName, branchName);
-        }
-      } else {
-        allInventories = await getAllInventory(companyName, branchName);
+      // branchName’den branch objesini bul
+      const branchObj = branches.find((b) => b.name === selectedBranch);
+      if (!branchObj) {
+        setFilteredInventories([]);
+        return;
       }
 
-      setAllInventories(allInventories);
-      setFilteredInventories(allInventories);
+      // buradaki id ile API çağrısı
+      const invs = await getInventoryByBranch(branchObj.id);
+      setFilteredInventories(invs);
     } catch (err) {
       setInventoriesError(
         err.message || "Envanterler alınırken bir hata oluştu."
@@ -145,29 +126,6 @@ const InventoryManager = () => {
     setIsArchiveDrawerOpen(true);
   };
 
-  // Envanteri silme fonksiyonu
-  const handleDeleteInventory = async (inventoryId) => {
-    if (!inventoryId) {
-      console.error("Silme işlemi için geçersiz envanter ID'si:", inventoryId);
-      alert("Silme işlemi sırasında bir hata oluştu. Lütfen tekrar deneyin.");
-      return;
-    }
-    if (window.confirm("Bu envanteri silmek istediğinizden emin misiniz?")) {
-      try {
-        await deleteInventory(inventoryId); // API çağrısı
-        alert("Envanter başarıyla silindi!");
-        fetchAllInventories(
-          companies.find((company) => company.company_id === selectedCompanyId)
-            ?.name || "",
-          selectedBranch
-        ); // Listeyi yenile
-      } catch (err) {
-        console.error("Envanter silinirken bir hata oluştu:", err);
-        alert("Envanter silinirken bir hata oluştu.");
-      }
-    }
-  };
-
   // İzinleri ve ardından şirketleri/envanterleri çek
   useEffect(() => {
     fetchPermissions();
@@ -177,7 +135,6 @@ const InventoryManager = () => {
     if (permissionsLoaded) {
       if (permissions.includes("inventoryViewing")) {
         fetchCompanies();
-        fetchAllInventories();
       } else {
         setInventoriesError(
           "Envanter bilgilerini görüntüleme yetkiniz yok. Lütfen sistem yöneticisi ile iletişime geçin."
@@ -186,37 +143,29 @@ const InventoryManager = () => {
     }
   }, [permissionsLoaded, permissions]);
 
-  // Şirket seçimi değiştiğinde şubeleri ve envanterleri çek
   useEffect(() => {
     if (permissionsLoaded && permissions.includes("inventoryViewing")) {
       if (selectedCompanyId) {
-        const selectedCompany = companies.find(
-          (company) => company.company_id === selectedCompanyId
-        );
-
-        fetchAllInventories(selectedCompany?.name || "");
         fetchBranches(selectedCompanyId);
+        // Şubeler geldikten sonra ilk şube otomatik seçiliyorsa,
+        // `setSelectedBranch(...)` sonrası da fetchInventories çağırabilirsin.
       } else {
         setBranches([]);
-        fetchAllInventories();
+        setFilteredInventories([]);
       }
     }
   }, [selectedCompanyId, permissionsLoaded, permissions]);
 
-  // Şube seçimi değiştiğinde envanterleri tekrar çek
   useEffect(() => {
+    // selectedBranch adı değiştiğinde
     if (
       permissionsLoaded &&
       permissions.includes("inventoryViewing") &&
-      selectedCompanyId &&
       selectedBranch
     ) {
-      const selectedCompany = companies.find(
-        (company) => company.company_id === selectedCompanyId
-      );
-      fetchAllInventories(selectedCompany?.name || "", selectedBranch);
+      fetchInventories();
     }
-  }, [selectedBranch, selectedCompanyId, permissionsLoaded, permissions]);
+  }, [selectedBranch, permissionsLoaded, permissions, branches]);
 
   return (
     <div>
@@ -233,7 +182,7 @@ const InventoryManager = () => {
                 <div>
                   <label
                     htmlFor="companyFilter"
-                    style={{ marginRight: "10px",color:"black" }}
+                    style={{ marginRight: "10px", color: "black" }}
                   >
                     Şirket Seçin:
                   </label>
@@ -256,7 +205,10 @@ const InventoryManager = () => {
                 </div>
                 {/* Şube Seçimi */}
                 <div>
-                  <label htmlFor="branchFilter" style={{ marginRight: "10px",color:"black" }}>
+                  <label
+                    htmlFor="branchFilter"
+                    style={{ marginRight: "10px", color: "black" }}
+                  >
                     Şube Seçin:
                   </label>
                   <select
@@ -301,51 +253,10 @@ const InventoryManager = () => {
                   companies={companies}
                   selectedCompanyId={selectedCompanyId}
                   selectedBranchName={selectedBranch} // Şube adını gönderiyoruz
-                  onInventoryAdded={() =>
-                    fetchAllInventories(
-                      companies.find(
-                        (company) => company.company_id === selectedCompanyId
-                      )?.name || "",
-                      selectedBranch
-                    )
-                  }
+                  onInventoryAdded={() => fetchInventories()}
                 />
               )}
             </div>
-
-            {/* Envanter Listesi ve Yüklenme Durumu */}
-            <div>
-              {inventoriesLoading ? (
-                <CircularProgress />
-              ) : inventoriesError ? (
-                <div className="bg-red-500 text-white p-2 rounded mt-3">
-                  {inventoriesError}
-                </div>
-              ) : (
-                <InventoryList
-                  inventories={filteredInventories}
-                  onEdit={setSelectedInventory}
-                  onDelete={handleDeleteInventory}
-                />
-              )}
-            </div>
-
-            {/* Envanter Güncelle Modal */}
-            {selectedInventory && (
-              <UpdateInventoryModal
-                open={!!selectedInventory}
-                onClose={() => setSelectedInventory(null)}
-                inventory={selectedInventory}
-                onInventoryUpdated={() =>
-                  fetchAllInventories(
-                    companies.find(
-                      (company) => company.company_id === selectedCompanyId
-                    )?.name || "",
-                    selectedBranch
-                  )
-                }
-              />
-            )}
           </Box>
         )}
       </main>

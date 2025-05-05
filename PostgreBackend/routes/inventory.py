@@ -119,7 +119,6 @@ async def import_inventory(
 async def read_inventory_fields(
     branch_id: int = Query(..., description="Alanları alınacak şube ID"),
     db:        AsyncSession = Depends(get_db),
-    current_user=Depends(get_current_user),
 ):
     """
     GET /api/inventory/fields?branch_id=5
