@@ -259,6 +259,21 @@ const InventoryManager = () => {
             </div>
           </Box>
         )}
+        {/* Envanter Listesi ve Yüklenme Durumu */}
+        <div>
+          {inventoriesLoading ? (
+            <CircularProgress />
+          ) : inventoriesError ? (
+            <div className="bg-red-500 text-white p-2 rounded mt-3">
+              {inventoriesError}
+            </div>
+          ) : (
+            <InventoryList
+              inventories={filteredInventories}
+              onEdit={setSelectedInventory}
+            />
+          )}
+        </div>
       </main>
       {/* Arşivlenmiş Envanterler Drawer'ı */}
       <Drawer
