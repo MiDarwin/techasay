@@ -10,10 +10,8 @@ from models.branch import Branch
 from schemas.inventory import InventoryOut, InventoryCreateBody
 
 
-async def get_inventory_by_branch(db: AsyncSession, branch_id: int) -> list[InventoryOut]:
-    """
-    Bu branch_id için envanter kayıtlarını, branch_name ile birlikte döner.
-    """
+async def get_inventory_by_branch(db: AsyncSession, branch_id: int,limit: int | None = None) -> list[InventoryOut]:
+
     stmt = (
         select(
             Inventory,
@@ -22,6 +20,8 @@ async def get_inventory_by_branch(db: AsyncSession, branch_id: int) -> list[Inve
         .join(Branch, Inventory.branch_id == Branch.id)
         .where(Inventory.branch_id == branch_id)
     )
+    if limit:
+        stmt = stmt.limit(limit)
 
     result = await db.execute(stmt)
     rows = result.all()  # her satır: (Inventory instance, branch_name str)
@@ -184,3 +184,21 @@ async def import_inventory_from_excel(
         "skipped": skipped,
         "skipped_branches": skipped_branches
     }
+async def get_inventory_fields_by_branch(
+    db: AsyncSession,
+    branch_id: int
+) -> list[str]:
+    """
+    Verilen branch_id için envanter JSONB 'details' içindeki tüm alan adlarını (keys)
+    uniqe olarak döner.
+    """
+    stmt = select(Inventory.details).where(Inventory.branch_id == branch_id)
+    result = await db.execute(stmt)
+    records = result.scalars().all()  # her biri bir dict
+
+    fields = set()
+    for details in records:
+        if isinstance(details, dict):
+            fields.update(details.keys())
+
+    return sorted(fields)
