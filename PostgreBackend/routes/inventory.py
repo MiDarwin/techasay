@@ -13,8 +13,8 @@ from dependencies import get_current_user
 from models.branch import Branch
 from models.inventory import Inventory
 from schemas.inventory import InventoryOut, InventoryCreateBody, InventoryImportResponse
-from services.inventory_service import get_inventory_by_branch, create_inventory, update_inventory, \
-    generate_inventory_excel, import_inventory_from_excel, get_inventory_fields_by_branch
+from services.inventory_service import create_inventory, update_inventory, \
+    generate_inventory_excel, import_inventory_from_excel, get_inventory_fields_by_branch, get_inventories
 from database import get_db
 
 
@@ -22,19 +22,27 @@ router = APIRouter(prefix="", tags=["inventory"])
 @router.get(
     "",
     response_model=List[InventoryOut],
-    summary="Belirtilen branch_id ile envanter kayıtlarını döner"
+    summary="Branch veya Company bazlı envanter kayıtlarını döner"
 )
 async def read_inventory(
-    branch_id: int = Query(..., description="Envanter alınacak şube ID"),
-    limit:Optional[int] = Query(
+    branch_id:  Optional[int] = Query(None, description="Şube ID (öncelikli)"),
+    company_id: Optional[int] = Query(None, description="Şirket ID"),
+    limit:      Optional[int] = Query(
                   None,
                   description="Gösterilecek kayıt sayısı (15,25,40 veya None için tümü)"
-              ),
-    db:        AsyncSession = Depends(get_db),
+                ),
+    db:         AsyncSession    = Depends(get_db),
 ):
 
+    if branch_id is None and company_id is None:
+        raise HTTPException(
+            status_code=400,
+            detail="branch_id veya company_id sorgu parametresinden en az biri gerekli"
+        )
+
     try:
-        return await get_inventory_by_branch(db, branch_id,limit)
+        items = await get_inventories(db, branch_id, company_id, limit)
+        return items
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 @router.patch("/{inventory_id}", response_model=InventoryOut)

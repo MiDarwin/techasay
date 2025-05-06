@@ -10,22 +10,35 @@ from models.branch import Branch
 from schemas.inventory import InventoryOut, InventoryCreateBody
 
 
-async def get_inventory_by_branch(db: AsyncSession, branch_id: int,limit: int | None = None) -> list[InventoryOut]:
-
+async def get_inventories(
+    db: AsyncSession,
+    branch_id: Optional[int] = None,
+    company_id: Optional[int] = None,
+    limit: Optional[int] = None
+) -> List[InventoryOut]:
+    """
+    branch_id ile (öncelikli) veya company_id ile
+    (branch.company_id filtresi) envanterleri çeker.
+    limit ile kayıt sayısını sınırlandırır.
+    """
     stmt = (
-        select(
-            Inventory,
-            Branch.branch_name.label("branch_name")
-        )
+        select(Inventory, Branch.branch_name.label("branch_name"))
         .join(Branch, Inventory.branch_id == Branch.id)
-        .where(Inventory.branch_id == branch_id)
     )
+
+    if branch_id is not None:
+        stmt = stmt.where(Inventory.branch_id == branch_id)
+    elif company_id is not None:
+        stmt = stmt.where(Branch.company_id == company_id)
+    else:
+        # Hiç filtre yoksa boş liste
+        return []
+
     if limit:
         stmt = stmt.limit(limit)
 
     result = await db.execute(stmt)
-    rows = result.all()  # her satır: (Inventory instance, branch_name str)
-
+    rows = result.all()
     return [
         InventoryOut(
             id=inv.id,
@@ -37,7 +50,6 @@ async def get_inventory_by_branch(db: AsyncSession, branch_id: int,limit: int | 
         )
         for inv, branch_name in rows
     ]
-
 async def create_inventory(db: AsyncSession, inv_in: InventoryCreateBody) -> InventoryOut:
     # varsa varolanı çek
     q = select(Inventory).where(Inventory.branch_id == inv_in.branch_id)

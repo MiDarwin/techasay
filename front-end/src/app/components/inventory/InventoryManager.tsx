@@ -9,6 +9,7 @@ import {
   getBranchesByCompanyId,
   deleteInventory,
   getInventoryByBranch,
+  getInventoryByCompany,
   getAllUsersPermissions,
   getArchivedInventory,
 } from "../../utils/api";
@@ -76,6 +77,25 @@ const InventoryManager = () => {
       console.error("Şubeler alınırken hata oluştu:", err);
     }
   };
+  useEffect(() => {
+    if (!permissionsLoaded || !permissions.includes("inventoryViewing")) return;
+
+    if (selectedCompanyId) {
+      setInventoriesLoading(true);
+      getInventoryByCompany(selectedCompanyId)
+        .then((data) => {
+          setFilteredInventories(data);
+          setInventoriesError("");
+        })
+        .catch((e) => {
+          setInventoriesError(e.message);
+          setFilteredInventories([]);
+        })
+        .finally(() => setInventoriesLoading(false));
+    } else {
+      setFilteredInventories([]);
+    }
+  }, [selectedCompanyId, permissionsLoaded, permissions]);
 
   const fetchInventories = async () => {
     if (!permissionsLoaded) return;
@@ -156,15 +176,27 @@ const InventoryManager = () => {
     }
   }, [selectedCompanyId, permissionsLoaded, permissions]);
 
+  // Şube seçildiğinde şirket geneli yerine sadece o şubenin envanterini çek
   useEffect(() => {
-    // selectedBranch adı değiştiğinde
-    if (
-      permissionsLoaded &&
-      permissions.includes("inventoryViewing") &&
-      selectedBranch
-    ) {
-      fetchInventories();
+    if (!permissionsLoaded || !permissions.includes("inventoryViewing")) return;
+
+    // branches: { id, name, … } diziniz; selectedBranch ise name
+    const branchObj = branches.find((b) => b.name === selectedBranch);
+
+    if (branchObj) {
+      setInventoriesLoading(true);
+      getInventoryByBranch(branchObj.id)
+        .then((data) => {
+          setFilteredInventories(data);
+          setInventoriesError("");
+        })
+        .catch((e) => {
+          setInventoriesError(e.message);
+          setFilteredInventories([]);
+        })
+        .finally(() => setInventoriesLoading(false));
     }
+    // şube sıfırlandıysa, şirket geneli zaten başka efekt tetikleniyor
   }, [selectedBranch, permissionsLoaded, permissions, branches]);
 
   return (

@@ -316,6 +316,18 @@ export const getAllInventory = (companyName = "", branchName = "") => {
 
   return apiRequest(`${BASE_URL}/api/inventory/inventories?${params.toString()}`, "GET");
 };
+// company bazlı envanter (tüm o şirkete ait şubeler)
+export const getInventoryByCompany = async (company_id?: number) => {
+  if (!company_id) return [];
+  const token = localStorage.getItem("access_token");
+  const res = await fetch(
+    `${BASE_URL}/api/inventory?company_id=${company_id}`,
+    { headers: { "Authorization": `Bearer ${token}` } }
+  );
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.detail || "Envanter alınamadı");
+  return data as InventoryOut[];
+};
 // ** Alt Şube CRUD İstekleri **
 export const createSubBranch = async (branchId, subBranchData) => {
   const response = await fetch(`${BASE_URL}/api/branches/branches/${branchId}/sub-branches`, {

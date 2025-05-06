@@ -1,118 +1,71 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  IconButton,
-  Tooltip,
+  Grid,
+  Card,
+  CardHeader,
+  CardContent,
   Typography,
+  Box,
+  IconButton,
 } from "@mui/material";
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
-import NoBackpackIcon from "@mui/icons-material/NoBackpack";
-import { getAllUsersPermissions } from "@/app/utils/api";
-import tableStyles from "../../styles/tableStyles";
-const style = {
-  position: "absolute",
-  top: "50%",
-  left: "50%",
-  transform: "translate(-50%, -50%)",
-  width: 400,
-  bgcolor: "background.paper",
-  border: "2px solid #1976d2",
-  boxShadow: 24,
-  p: 4,
-};
-const InventoryList = ({ inventories, onEdit, onDelete }) => {
-  const [permissions, setPermissions] = useState([]); // Kullanıcı izinleri
-  useEffect(() => {
-    const fetchPermissions = async () => {
-      try {
-        const userPermissions = await getAllUsersPermissions(); // Kullanıcı izinlerini al
-        setPermissions(userPermissions); // İzinleri state'e ata
-      } catch (error) {
-        console.error("Kullanıcı izinleri alınırken hata oluştu:", error);
-      }
-    };
+import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
+import LocationOnIcon from "@mui/icons-material/LocationOn";
+import AccessTimeIcon from "@mui/icons-material/AccessTime";
+import InfoIcon from "@mui/icons-material/Info";
 
-    fetchPermissions();
-  }, []);
+/**
+ * InventoryList: Envanter kayıtlarını kart şeklinde gösterir.
+ * props.inventories: Array<{
+ *   id: number;
+ *   branch_id: number;
+ *   branch_name: string;
+ *   created_date: string;
+ *   updated_date: string | null;
+ *   details: Record<string, any>;
+ * }>
+ */
+const InventoryList = ({ inventories = [] }) => {
+  const formatDate = (iso) => {
+    const d = new Date(iso);
+    return d.toLocaleDateString(undefined, {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
+  };
+
   return (
-    <TableContainer component={Paper} sx={tableStyles.tableContainer}>
-      <Table>
-        <TableHead>
-          <TableRow sx={tableStyles.tableHeader}>
-            <TableCell>Şube Adı</TableCell>
-            <TableCell>Ürün Türü</TableCell>
-            <TableCell>Ürün Modeli</TableCell>
-            <TableCell>Miktar</TableCell>
-            <TableCell>Ürün Notu</TableCell>
-            <TableCell>İşlemler</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {inventories.length === 0 ? (
-            <TableRow>
-              <TableCell colSpan={6} align="center">
-                <Typography sx={{ color: "#6B7280" }}>
-                  Envanter bulunamadı.
-                </Typography>
-              </TableCell>
-            </TableRow>
-          ) : (
-            inventories.map((inventory, index) => (
-              <TableRow
-                key={inventory.id ?? `inventory-${index}`}
-                sx={tableStyles.tableRow}
-              >
-                <TableCell sx={{ textAlign: "center" }}>
-                  {inventory.branch_name}
-                </TableCell>
-                <TableCell sx={{ textAlign: "center" }}>
-                  {inventory.device_type}
-                </TableCell>
-                <TableCell sx={{ textAlign: "center" }}>
-                  {inventory.device_model}
-                </TableCell>
-                <TableCell sx={{ textAlign: "center" }}>
-                  {inventory.quantity}
-                </TableCell>
-                <TableCell sx={{ textAlign: "center" }}>
-                  {inventory.specs}
-                </TableCell>
-                <TableCell sx={{ textAlign: "center" }}>
-                  {permissions.includes("inventoryEdit") && (
-                    <Tooltip title="Düzenle">
-                      <IconButton
-                        onClick={() => onEdit(inventory)}
-                        color="warning"
-                        aria-label="Düzenle"
-                      >
-                        <EditIcon />
-                      </IconButton>
-                    </Tooltip>
-                  )}
-                  {permissions.includes("inventoryDelete") && (
-                    <Tooltip title="Sil">
-                      <IconButton
-                        onClick={() => onDelete(inventory.id)}
-                        color="error"
-                      >
-                        <NoBackpackIcon />
-                      </IconButton>
-                    </Tooltip>
-                  )}
-                </TableCell>
-              </TableRow>
-            ))
-          )}
-        </TableBody>
-      </Table>
-    </TableContainer>
+    <Grid container spacing={2}>
+      {inventories.map((inv) => (
+        <Grid item xs={12} sm={6} md={4} key={inv.id}>
+          <Card
+            variant="outlined"
+            sx={{ minHeight: 180, position: "relative" }}
+          >
+            <CardHeader
+              title={`Envanter #${inv.id}`}
+              subheader={inv.branch_name}
+              sx={{ pb: 0 }}
+            />
+            <CardContent sx={{ pt: 1 }}>
+              <Box display="flex" alignItems="center" mb={1}>
+                <LocationOnIcon fontSize="small" sx={{ mr: 0.5 }} />
+                <Typography variant="body2">{inv.branch_name}</Typography>
+              </Box>
+              {/* Dinamik detaylar */}
+              {Object.entries(inv.details || {}).map(([key, value]) => (
+                <Box key={key} display="flex" alignItems="center" mb={0.5}>
+                  <InfoIcon fontSize="small" sx={{ mr: 0.5 }} />
+                  <Typography variant="body2">
+                    <strong>{key}:</strong> {value}
+                  </Typography>
+                </Box>
+              ))}
+            </CardContent>
+          </Card>
+        </Grid>
+      ))}
+    </Grid>
   );
 };
 
