@@ -341,6 +341,49 @@ export const getInventoryByCompany = async (
   if (!res.ok) throw new Error(data.detail || "Envanter alınamadı");
   return data as InventoryOut[];
 };
+// Excel import
+export const importInventory = async (file: File) => {
+  const token = localStorage.getItem("access_token");
+  const form = new FormData();
+  form.append("file", file);
+  const res = await fetch(`${BASE_URL}/api/inventory/import`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+    body: form,
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.detail || "Excel import hatası");
+  return data as {
+    added: number;
+    updated: number;
+    skipped: number;
+    skipped_branches: string[];
+  };
+};
+
+// Excel export
+export const downloadInventoryExcel = async (
+  company_id?: number,
+  branch_id?: number,
+  limit?: number
+) => {
+  const token = localStorage.getItem("access_token");
+  const url = new URL(`${BASE_URL}/api/inventory/export`);
+  if (branch_id) url.searchParams.append("branch_id", branch_id.toString());
+  else if (company_id) url.searchParams.append("company_id", company_id.toString());
+  if (limit) url.searchParams.append("limit", limit.toString());
+
+  const res = await fetch(url.toString(), {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error("Excel indirilemedi");
+  const blob = await res.blob();
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "envanter.xlsx";
+  a.click();
+};
+
 // ** Alt Şube CRUD İstekleri **
 export const createSubBranch = async (branchId, subBranchData) => {
   const response = await fetch(`${BASE_URL}/api/branches/branches/${branchId}/sub-branches`, {

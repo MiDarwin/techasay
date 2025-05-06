@@ -12,6 +12,8 @@ import {
   getInventoryByCompany,
   getAllUsersPermissions,
   getArchivedInventory,
+  downloadInventoryExcel,
+  importInventory,
 } from "../../utils/api";
 import AddIcon from "@mui/icons-material/Add";
 import {
@@ -32,6 +34,7 @@ import {
 import tableStyles from "@/app/styles/tableStyles";
 import HistoryIcon from "@mui/icons-material/History"; // Kum saati simgesi için
 import InventoryUpdateModal from "./InvetoryUpdate";
+import InventoryImportModal from "./InventoryImportModal";
 
 const LIMIT_OPTIONS = [15, 25, 40, 100, 200];
 
@@ -53,6 +56,7 @@ const InventoryManager = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedInv, setSelectedInv] = useState(null);
   const [limit, setLimit] = useState<number>(15);
+  const [importModalOpen, setImportModalOpen] = useState(false);
 
   // İzinleri çekme fonksiyonu
   const fetchPermissions = async () => {
@@ -293,6 +297,36 @@ const InventoryManager = () => {
                     ))}
                   </Select>
                 </FormControl>
+                <Button
+                  variant="outlined"
+                  onClick={() => setImportModalOpen(true)}
+                >
+                  Excel Yükle
+                </Button>
+                <Button
+                  variant="outlined"
+                  onClick={() => {
+                    // branches: [{ id, name, ... }, ...]
+                    const branchObj = branches.find(
+                      (b) => b.name === selectedBranch
+                    );
+                    if (branchObj) {
+                      // Şube seçiliyse sadece şube bazlı indir
+                      downloadInventoryExcel(
+                        undefined, // company_id
+                        branchObj.id // branch_id
+                      );
+                    } else {
+                      // Şube seçili değilse şirket bazlı indir
+                      downloadInventoryExcel(
+                        selectedCompanyId as number, // company_id
+                        undefined // branch_id
+                      );
+                    }
+                  }}
+                >
+                  Excel İndir
+                </Button>
                 {/* Arşivlenmiş Envanter Butonu */}
                 <IconButton color="primary" onClick={handleOpenArchive}>
                   <HistoryIcon />
@@ -324,6 +358,10 @@ const InventoryManager = () => {
                 />
               )}
             </div>
+            <InventoryImportModal
+              open={importModalOpen}
+              onClose={() => setImportModalOpen(false)}
+            />
           </Box>
         )}
         {/* Envanter Listesi ve Yüklenme Durumu */}

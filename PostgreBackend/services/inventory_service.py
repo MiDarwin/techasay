@@ -1,6 +1,6 @@
 from tempfile import NamedTemporaryFile
 from typing import List, Dict, Any, Optional
-
+from models.company import Company
 import pandas as pd
 from openpyxl import Workbook
 from sqlalchemy import select
@@ -101,36 +101,45 @@ async def update_inventory(
     )
 async def generate_inventory_excel(
     db: AsyncSession,
-    branch_ids: Optional[List[int]] = None
+    branch_ids: Optional[List[int]] = None,
+    company_id: Optional[int] = None
 ) -> str:
     """
-    Tüm envanter kayıtlarını (veya opsiyonel branch_ids listesi ile
-    sadece bu şubelere ait kayıtları) branch_name ile birlikte alır,
-    bir Excel dosyası oluşturur ve geçici dosya yolunu döner.
+    Envanter kayıtlarını branch veya company bazlı alır,
+    company_name ve branch_name ile birlikte Excel'e yazar.
     """
-    # 1) Veriyi çek
+    # Temel SELECT
     stmt = (
-        select(Inventory, Branch.branch_name.label("branch_name"))
+        select(
+            Inventory,
+            Branch.branch_name.label("branch_name"),
+            Company.name.label("company_name")
+        )
         .join(Branch, Inventory.branch_id == Branch.id)
+        .join(Company, Branch.company_id == Company.company_id)
     )
+    # Şube bazlı filtre
     if branch_ids:
         stmt = stmt.where(Inventory.branch_id.in_(branch_ids))
+    # Company bazlı filtre (branch_ids yoksa)
+    elif company_id:
+        stmt = stmt.where(Branch.company_id == company_id)
 
     result = await db.execute(stmt)
-    rows = result.all()  # liste of (Inventory, branch_name)
+    rows = result.all()  # her satır: (Inventory, branch_name, company_name)
 
-    # 2) JSONB içindeki tüm key’leri topla
+    # JSONB key'lerini topla
     all_keys = set()
     records = []
-    for inv, branch_name in rows:
-        rec = {"id": inv.id, "branch_name": branch_name}
-        for k, v in inv.details.items():
+    for inv, branch_name, company_name in rows:
+        rec = {"id": inv.id, "company_name": company_name, "branch_name": branch_name}
+        for k, v in (inv.details or {}).items():
             rec[k] = v
             all_keys.add(k)
         records.append(rec)
 
-    # 3) Excel başlığı ve içerik
-    header = ["id", "branch_name"] + sorted(all_keys)
+    # Excel başlık
+    header = ["id", "company_name", "branch_name"] + sorted(all_keys)
     wb = Workbook()
     ws = wb.active
     ws.title = "Envanter"
@@ -138,7 +147,7 @@ async def generate_inventory_excel(
     for rec in records:
         ws.append([rec.get(col) for col in header])
 
-    # 4) Geçici dosyaya kaydet
+    # Geçici dosyaya kaydet
     tmp = NamedTemporaryFile(delete=False, suffix=".xlsx")
     wb.save(tmp.name)
     tmp.close()

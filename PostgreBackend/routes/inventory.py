@@ -72,29 +72,17 @@ async def add_inventory(
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@router.get(
-    "/export",
-    response_description="Excel dosyası olarak envanteri indir",
-    summary="Envanter Excel olarak indir (çoklu şube filtreli)"
-)
+@router.get("/export", response_description="Excel olarak indir")
 async def export_inventory(
-    branch_id: Optional[List[int]] = Query(
-        None,
-        alias="branch_id",
-        description="Opsiyonel: birden çok şube ID’si (örn. ?branch_id=1&branch_id=2)"
-    ),
-    db:        AsyncSession = Depends(get_db),
+    branch_id:  Optional[List[int]] = Query(None, alias="branch_id"),
+    company_id: Optional[int]  = Query(None),
+    db:       AsyncSession    = Depends(get_db),
 ):
-    """
-    GET /api/inventory/export
-      → tüm envanter
-    GET /api/inventory/export?branch_id=5
-      → sadece şube#5’in envanteri
-    GET /api/inventory/export?branch_id=3&branch_id=8
-      → şube#3 ve #8’in envanteri
-    """
+    branch_ids = branch_id if branch_id else None
+
+
     try:
-        file_path = await generate_inventory_excel(db, branch_id)
+        file_path = await generate_inventory_excel(db, branch_ids, company_id)
         return FileResponse(
             file_path,
             filename="envanter.xlsx",

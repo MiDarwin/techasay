@@ -262,12 +262,12 @@ const AddInventoryModal = ({
                 value={df.key}
                 onInputChange={(e, val) => handleDetailChange(idx, "key", val)}
                 renderInput={(params) => (
-                  <TextField {...params} label="Alan Adı" fullWidth />
+                  <TextField {...params} label="Envanter Adı" fullWidth />
                 )}
                 sx={{ width: 240 }}
               />
               <TextField
-                label="Değer"
+                label="Envanter Adı Değeri"
                 value={df.value}
                 onChange={(e) =>
                   handleDetailChange(idx, "value", e.target.value)
