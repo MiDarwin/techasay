@@ -1,6 +1,6 @@
 import { headers } from "next/headers";
 
-const BASE_URL = "http://127.0.1:8000"; //"http://127.0.1:8000""http://45.132.181.87:8000"
+const BASE_URL = ""; //"http://127.0.1:8000""http://45.132.181.87:8000"
 
 export async function apiRequest(
   endpoint,
@@ -268,13 +268,9 @@ export const getInventoryByBranch = async (
 ): Promise<InventoryOut[]> => {
   if (!branch_id) return [];
   const token = localStorage.getItem("access_token");
-  // URL constructor kullanarak sorgu parametrelerini ekleyelim
-  const url = new URL(`${BASE_URL}/api/inventory`);
-  url.searchParams.append("branch_id", branch_id.toString());
-  if (limit !== undefined && limit !== null) {
-    url.searchParams.append("limit", limit.toString());
-  }
-  const res = await fetch(url.toString(), {
+  let url = `${BASE_URL}/api/inventory?branch_id=${branch_id}`;
+  if (limit) url += `&limit=${limit}`;
+  const res = await fetch(url, {
     headers: { Authorization: `Bearer ${token}` },
   });
   const data = await res.json();
@@ -329,12 +325,9 @@ export const getInventoryByCompany = async (
 ): Promise<InventoryOut[]> => {
   if (!company_id) return [];
   const token = localStorage.getItem("access_token");
-  const url = new URL(`${BASE_URL}/api/inventory`);
-  url.searchParams.append("company_id", company_id.toString());
-  if (limit !== undefined && limit !== null) {
-    url.searchParams.append("limit", limit.toString());
-  }
-  const res = await fetch(url.toString(), {
+  let url = `${BASE_URL}/api/inventory?company_id=${company_id}`;
+  if (limit) url += `&limit=${limit}`;
+  const res = await fetch(url, {
     headers: { Authorization: `Bearer ${token}` },
   });
   const data = await res.json();
@@ -368,12 +361,11 @@ export const downloadInventoryExcel = async (
   limit?: number
 ) => {
   const token = localStorage.getItem("access_token");
-  const url = new URL(`${BASE_URL}/api/inventory/export`);
-  if (branch_id) url.searchParams.append("branch_id", branch_id.toString());
-  else if (company_id) url.searchParams.append("company_id", company_id.toString());
-  if (limit) url.searchParams.append("limit", limit.toString());
-
-  const res = await fetch(url.toString(), {
+  let url = `${BASE_URL}/api/inventory/export?`;
+  if (branch_id) url += `branch_id=${branch_id}`;
+  else if (company_id) url += `company_id=${company_id}`;
+  if (limit) url += `&limit=${limit}`;
+  const res = await fetch(url, {
     headers: { Authorization: `Bearer ${token}` },
   });
   if (!res.ok) throw new Error("Excel indirilemedi");
@@ -383,7 +375,6 @@ export const downloadInventoryExcel = async (
   a.download = "envanter.xlsx";
   a.click();
 };
-
 // ** Alt Şube CRUD İstekleri **
 export const createSubBranch = async (branchId, subBranchData) => {
   const response = await fetch(`${BASE_URL}/api/branches/branches/${branchId}/sub-branches`, {
