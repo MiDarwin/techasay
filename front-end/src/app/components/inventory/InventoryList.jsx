@@ -8,6 +8,7 @@ import {
   CardActions,
   Box,
   Button,
+  Divider,
 } from "@mui/material";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
@@ -45,49 +46,85 @@ const InventoryList = ({ inventories = [], onEdit }) => {
           style={{ display: "flex" }}
         >
           <Card
-            variant="outlined"
             sx={{
               display: "flex",
               flexDirection: "column",
-              flex: 1, // tüm kartlar eşit yükseklikte olsun
+              flex: 1,
+              borderRadius: 2,
+              boxShadow: 2,
+              transition: "transform 0.2s, box-shadow 0.2s",
+              ":hover": {
+                transform: "translateY(-4px)",
+                boxShadow: 6,
+              },
             }}
           >
             <CardHeader
               title={inv.branch_name}
               subheader={`Envanter #${inv.id}`}
+              avatar={
+                <Box
+                  sx={{
+                    width: 8,
+                    height: 40,
+                    bgcolor: "primary.main",
+                    borderRadius: 1,
+                    mr: 1,
+                  }}
+                />
+              }
               sx={{ pb: 0 }}
             />
             <CardContent
               sx={{
-                pt: 1,
-                flexGrow: 1, // içerik bölgesi genişlesin
-                overflowY: "auto",
+                pt: 2,
+                pb: 2,
+                flexGrow: 1,
+                display: "flex",
+                flexDirection: "column",
+                gap: 2, // her bölüm arasında boşluk
               }}
             >
-              <Box display="flex" alignItems="center" mb={1}>
-                <CalendarTodayIcon fontSize="small" sx={{ mr: 0.5 }} />
+              {/* Tarih ve Saat */}
+              <Box display="flex" alignItems="center" color="text.secondary">
+                <CalendarTodayIcon fontSize="small" sx={{ mr: 1 }} />
                 <Typography variant="body2">
                   {formatDate(inv.created_date)}
                 </Typography>
                 {inv.updated_date && (
-                  <>
-                    <AccessTimeIcon fontSize="small" sx={{ ml: 2, mr: 0.5 }} />
+                  <Box display="flex" alignItems="center" sx={{ ml: 3 }}>
+                    <AccessTimeIcon fontSize="small" sx={{ mr: 1 }} />
                     <Typography variant="body2">
                       {formatDate(inv.updated_date)}
                     </Typography>
-                  </>
+                  </Box>
                 )}
               </Box>
 
-              {/* Dinamik detaylar */}
-              {Object.entries(inv.details || {}).map(([key, value]) => (
-                <Box key={key} display="flex" alignItems="center" mb={0.5}>
-                  <InfoIcon fontSize="small" sx={{ mr: 0.5 }} />
-                  <Typography variant="body2">
-                    <strong>{key}:</strong> {value}
-                  </Typography>
-                </Box>
-              ))}
+              {/* Ayırıcı Çizgi */}
+              <Divider />
+
+              {/* Dinamik Detaylar */}
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 1, // her bir detay arasında boşluk
+                  flexGrow: 1, // altta kalan alanı kaplasın
+                }}
+              >
+                {Object.entries(inv.details || {}).map(([key, value]) => (
+                  <Box key={key} display="flex" alignItems="center">
+                    <InfoIcon
+                      fontSize="small"
+                      sx={{ mr: 1, color: "primary.main" }}
+                    />
+                    <Typography variant="body2" color="text.primary">
+                      <strong>{key}:</strong> {value}
+                    </Typography>
+                  </Box>
+                ))}
+              </Box>
             </CardContent>
             <CardActions sx={{ justifyContent: "flex-end" }}>
               <Button

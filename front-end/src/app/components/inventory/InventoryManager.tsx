@@ -226,7 +226,16 @@ const InventoryManager = () => {
   }, [selectedBranch, permissionsLoaded, permissions, branches]);
 
   return (
-    <Container maxWidth="xl" sx={{ py: 3, px: 2 }}>
+    <Container
+      disableGutters
+      maxWidth={false}
+      sx={{
+        px: 2,
+        py: 1,
+        bgcolor: "grey.50", // çok açık gri
+        minHeight: "100vh",
+      }}
+    >
       {/* Filtre ve İşlemler */}
       <Box
         display="flex"
