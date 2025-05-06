@@ -5,6 +5,7 @@ import {
   CardHeader,
   CardContent,
   Typography,
+  CardActions,
   Box,
   Button,
 } from "@mui/material";
@@ -76,13 +77,6 @@ const InventoryList = ({ inventories = [], onEdit }) => {
                     </Typography>
                   </>
                 )}
-                <Button
-                  variant="outlined"
-                  size="small"
-                  onClick={() => onEdit(inv)}
-                >
-                  Düzenle
-                </Button>
               </Box>
 
               {/* Dinamik detaylar */}
@@ -95,6 +89,16 @@ const InventoryList = ({ inventories = [], onEdit }) => {
                 </Box>
               ))}
             </CardContent>
+            <CardActions sx={{ justifyContent: "flex-end" }}>
+              <Button
+                size="small"
+                variant="outlined"
+                startIcon={<EditIcon />}
+                onClick={() => onEdit(inv)}
+              >
+                Düzenle
+              </Button>
+            </CardActions>
           </Card>
         </Grid>
       ))}

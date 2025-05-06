@@ -30,6 +30,7 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  Container,
 } from "@mui/material";
 import tableStyles from "@/app/styles/tableStyles";
 import HistoryIcon from "@mui/icons-material/History"; // Kum saati simgesi için
@@ -225,197 +226,109 @@ const InventoryManager = () => {
   }, [selectedBranch, permissionsLoaded, permissions, branches]);
 
   return (
-    <div>
-      <main>
-        {activeTab === "inventory" && (
-          <Box sx={{ padding: 2 }}>
-            <div
-              className="flex items-center justify-between mb-4 p-2 rounded-lg shadow-md "
-              style={tableStyles.tableHeaderBackground}
-            >
-              {/* Şirket ve Şube Seçimi */}
-              <div className="flex items-center gap-4">
-                {/* Şirket Seçimi */}
-                <div>
-                  <label
-                    htmlFor="companyFilter"
-                    style={{ marginRight: "10px", color: "black" }}
-                  >
-                    Şirket Seçin:
-                  </label>
-                  <select
-                    id="companyFilter"
-                    value={selectedCompanyId}
-                    onChange={(e) => setSelectedCompanyId(e.target.value)}
-                    style={tableStyles.selectInput}
-                  >
-                    <option value="">Tüm Şirketler</option>
-                    {companies.map((company) => (
-                      <option
-                        key={company.company_id}
-                        value={company.company_id}
-                      >
-                        {company.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                {/* Şube Seçimi */}
-                <div>
-                  <label
-                    htmlFor="branchFilter"
-                    style={{ marginRight: "10px", color: "black" }}
-                  >
-                    Şube Seçin:
-                  </label>
-                  <select
-                    id="branchFilter"
-                    value={selectedBranch}
-                    onChange={(e) => setSelectedBranch(e.target.value)}
-                    style={tableStyles.selectInput}
-                    disabled={!selectedCompanyId || branches.length === 0}
-                  >
-                    <option value="">Tüm Şubeler</option>
-                    {branches.map((branch) => (
-                      <option key={branch.id} value={branch.name}>
-                        {branch.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>{" "}
-                <FormControl>
-                  <InputLabel>Adet</InputLabel>
-                  <Select
-                    value={limit}
-                    label="Adet"
-                    onChange={(e) => setLimit(Number(e.target.value))}
-                  >
-                    {LIMIT_OPTIONS.map((n) => (
-                      <MenuItem key={n} value={n}>
-                        {n}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-                <Button
-                  variant="outlined"
-                  onClick={() => setImportModalOpen(true)}
-                >
-                  Excel Yükle
-                </Button>
-                <Button
-                  variant="outlined"
-                  onClick={() => {
-                    // branches: [{ id, name, ... }, ...]
-                    const branchObj = branches.find(
-                      (b) => b.name === selectedBranch
-                    );
-                    if (branchObj) {
-                      // Şube seçiliyse sadece şube bazlı indir
-                      downloadInventoryExcel(
-                        undefined, // company_id
-                        branchObj.id // branch_id
-                      );
-                    } else {
-                      // Şube seçili değilse şirket bazlı indir
-                      downloadInventoryExcel(
-                        selectedCompanyId as number, // company_id
-                        undefined // branch_id
-                      );
-                    }
-                  }}
-                >
-                  Excel İndir
-                </Button>
-                {/* Arşivlenmiş Envanter Butonu */}
-                <IconButton color="primary" onClick={handleOpenArchive}>
-                  <HistoryIcon />
-                </IconButton>
-              </div>
-
-              {/* Envanter Ekle Butonu */}
-              {permissions.includes("inventoryAdd") && (
-                <Button
-                  variant="contained"
-                  color="success"
-                  onClick={() => setIsInventoryAddModalOpen(true)}
-                  className="flex items-center"
-                  size="small"
-                  sx={{ height: "40px", ml: "auto" }} // Butonu en sağa almak için margin-left: auto
-                >
-                  <AddIcon className="mr-1" />
-                  Envanter Ekle
-                </Button>
-              )}
-              {isInventoryAddModalOpen && (
-                <AddInventoryModal
-                  open={isInventoryAddModalOpen}
-                  onClose={() => setIsInventoryAddModalOpen(false)}
-                  companies={companies}
-                  selectedCompanyId={selectedCompanyId}
-                  selectedBranchName={selectedBranch} // Şube adını gönderiyoruz
-                  onInventoryAdded={() => fetchInventories()}
-                />
-              )}
-            </div>
-            <InventoryImportModal
-              open={importModalOpen}
-              onClose={() => setImportModalOpen(false)}
-            />
-          </Box>
-        )}
-        {/* Envanter Listesi ve Yüklenme Durumu */}
-        <div>
-          {inventoriesLoading ? (
-            <CircularProgress />
-          ) : inventoriesError ? (
-            <div className="bg-red-500 text-white p-2 rounded mt-3">
-              {inventoriesError}
-            </div>
-          ) : (
-            <InventoryList
-              inventories={filteredInventories}
-              onEdit={(inv) => {
-                setSelectedInv(inv);
-                setModalOpen(true);
-              }}
-            />
-          )}
-        </div>
-        <InventoryUpdateModal
-          open={modalOpen}
-          inventory={selectedInv}
-          onClose={() => setModalOpen(false)}
-          onUpdated={() => {
-            fetchInventories(); // Aynı unified fetch kullanılıyor
-          }}
-        />
-      </main>
-      {/* Arşivlenmiş Envanterler Drawer'ı */}
-      <Drawer
-        anchor="right"
-        open={isArchiveDrawerOpen}
-        onClose={() => setIsArchiveDrawerOpen(false)}
+    <Container maxWidth="xl" sx={{ py: 3, px: 2 }}>
+      {/* Filtre ve İşlemler */}
+      <Box
+        display="flex"
+        alignItems="center"
+        justifyContent="space-between"
+        mb={3}
+        p={2}
+        borderRadius={1}
+        boxShadow={1}
+        bgcolor="background.paper"
       >
-        <Box sx={{ width: 350, padding: 2 }}>
-          <Typography variant="h6">Arşivlenmiş Envanterler</Typography>
-          <List>
-            {archivedInventories.length > 0 ? (
-              archivedInventories.map((inventory, index) => (
-                <ListItem key={index}>
-                  <ListItemText
-                    primary={inventory.device_type}
-                    secondary={`Cihaz Modeli: ${inventory.device_model}, quantity: ${inventory.quantity}`}
-                  />
-                </ListItem>
-              ))
-            ) : (
-              <Typography color="textSecondary">Arşiv boş</Typography>
-            )}
-          </List>
+        <Box display="flex" alignItems="center" gap={2}>
+          <FormControl>
+            <InputLabel>Şirket Seçin</InputLabel>
+            <Select
+              value={selectedCompanyId}
+              label="Şirket Seçin"
+              onChange={(e) => setSelectedCompanyId(e.target.value)}
+            >
+              {companies.map((c) => (
+                <MenuItem key={c.company_id} value={c.company_id}>
+                  {c.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <FormControl>
+            <InputLabel>Şube Seçin</InputLabel>
+            <Select
+              value={selectedBranch}
+              label="Şube Seçin"
+              onChange={(e) => setSelectedBranch(e.target.value)}
+              sx={{ minWidth: 160 }}
+            >
+              <MenuItem value="">
+                <em>Tüm Şubeler</em>
+              </MenuItem>
+              {branches.map((b) => (
+                <MenuItem key={b.id} value={b.name}>
+                  {b.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <FormControl>
+            <InputLabel>Adet</InputLabel>
+            <Select
+              value={limit}
+              label="Adet"
+              onChange={(e) => setLimit(Number(e.target.value))}
+            >
+              {LIMIT_OPTIONS.map((n) => (
+                <MenuItem key={n} value={n}>
+                  {n}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
         </Box>
-      </Drawer>
-    </div>
+        <Box display="flex" alignItems="center" gap={2}>
+          <Button variant="outlined" onClick={() => setImportModalOpen(true)}>
+            EXCEL YÜKLE
+          </Button>
+          <Button
+            variant="outlined"
+            onClick={() => {
+              const branchObj = branches.find((b) => b.name === selectedBranch);
+              if (branchObj)
+                downloadInventoryExcel(undefined, branchObj.id, limit);
+              else if (selectedCompanyId)
+                downloadInventoryExcel(selectedCompanyId, undefined, limit);
+            }}
+          >
+            EXCEL İNDİR
+          </Button>
+          <Button variant="contained" startIcon={<AddIcon />}>
+            EN​VANTER​ Ekle
+          </Button>
+        </Box>
+      </Box>
+
+      {/* Liste */}
+      <InventoryList
+        inventories={filteredInventories}
+        onEdit={(inv) => {
+          setSelectedInv(inv);
+          setModalOpen(true);
+        }}
+      />
+
+      {/* Modaller */}
+      <InventoryUpdateModal
+        open={modalOpen}
+        inventory={selectedInv}
+        onClose={() => setModalOpen(false)}
+        onUpdated={() => fetchInventories()}
+      />
+      <InventoryImportModal
+        open={importModalOpen}
+        onClose={() => setImportModalOpen(false)}
+      />
+    </Container>
   );
 };
 

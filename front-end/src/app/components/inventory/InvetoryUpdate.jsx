@@ -85,7 +85,9 @@ const InventoryUpdateModal = ({
           alignItems="center"
           mb={2}
         >
-          <Typography variant="h6">Envanter Güncelle</Typography>
+          <Typography color="black " variant="h6">
+            Envanter Güncelle
+          </Typography>
           <IconButton size="small" onClick={onClose}>
             <CloseIcon />
           </IconButton>
