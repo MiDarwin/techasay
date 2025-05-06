@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import InventoryList from "./InventoryList";
 import AddInventoryModal from "./AddInventoryModal";
 import UpdateInventoryModal from "./UpdateInventoryModal";
@@ -27,6 +27,7 @@ import {
 } from "@mui/material";
 import tableStyles from "@/app/styles/tableStyles";
 import HistoryIcon from "@mui/icons-material/History"; // Kum saati simgesi için
+import InventoryUpdateModal from "./InvetoryUpdate";
 
 const InventoryManager = () => {
   const [activeTab, setActiveTab] = useState("inventory");
@@ -43,7 +44,8 @@ const InventoryManager = () => {
   const [permissionsLoaded, setPermissionsLoaded] = useState(false);
   const [archivedInventories, setArchivedInventories] = useState([]);
   const [isArchiveDrawerOpen, setIsArchiveDrawerOpen] = useState(false);
-
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedInv, setSelectedInv] = useState(null);
   // İzinleri çekme fonksiyonu
   const fetchPermissions = async () => {
     try {
@@ -97,38 +99,43 @@ const InventoryManager = () => {
     }
   }, [selectedCompanyId, permissionsLoaded, permissions]);
 
-  const fetchInventories = async () => {
-    if (!permissionsLoaded) return;
-    if (!permissions.includes("inventoryViewing")) {
-      setInventoriesError(
-        "Envanter bilgilerini görüntüleme yetkiniz yok. Lütfen sistem yöneticisi ile iletişime geçin."
-      );
+  const fetchInventories = useCallback(async () => {
+    if (!permissionsLoaded || !permissions.includes("inventoryViewing")) {
       setFilteredInventories([]);
       return;
     }
 
-    // Loading başlat
     setInventoriesLoading(true);
-
     try {
-      // branchName’den branch objesini bul
+      let invs = [];
+
+      // Öncelikli: şube seçili mi?
       const branchObj = branches.find((b) => b.name === selectedBranch);
-      if (!branchObj) {
-        setFilteredInventories([]);
-        return;
+      if (branchObj) {
+        invs = await getInventoryByBranch(branchObj.id);
+      }
+      // Değilse, company seçili mi?
+      else if (selectedCompanyId) {
+        invs = await getInventoryByCompany(selectedCompanyId);
       }
 
-      // buradaki id ile API çağrısı
-      const invs = await getInventoryByBranch(branchObj.id);
       setFilteredInventories(invs);
+      setInventoriesError("");
     } catch (err) {
       setInventoriesError(
         err.message || "Envanterler alınırken bir hata oluştu."
       );
+      setFilteredInventories([]);
     } finally {
       setInventoriesLoading(false);
     }
-  };
+  }, [
+    permissionsLoaded,
+    permissions,
+    branches,
+    selectedBranch,
+    selectedCompanyId,
+  ]);
 
   // Arşivlenmiş envanterleri çekme fonksiyonu
   const fetchArchivedInventories = async () => {
@@ -302,10 +309,21 @@ const InventoryManager = () => {
           ) : (
             <InventoryList
               inventories={filteredInventories}
-              onEdit={setSelectedInventory}
+              onEdit={(inv) => {
+                setSelectedInv(inv);
+                setModalOpen(true);
+              }}
             />
           )}
         </div>
+        <InventoryUpdateModal
+          open={modalOpen}
+          inventory={selectedInv}
+          onClose={() => setModalOpen(false)}
+          onUpdated={() => {
+            fetchInventories(); // Aynı unified fetch kullanılıyor
+          }}
+        />
       </main>
       {/* Arşivlenmiş Envanterler Drawer'ı */}
       <Drawer
