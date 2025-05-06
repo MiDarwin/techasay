@@ -7,6 +7,7 @@ import {
   IconButton,
   Typography,
   CircularProgress,
+  Container,
 } from "@mui/material";
 import CompanyIcon from "@mui/icons-material/Business";
 import StoreIcon from "@mui/icons-material/Store";
@@ -66,75 +67,85 @@ const HomePage = () => {
   ];
 
   return (
-    <Box sx={{ backgroundColor: "#E7F6F2", flexGrow: 1 }}>
+    <Box
+      sx={{
+        bgcolor: "background.default",
+        minHeight: "100vh",
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
+      {/* HEADER */}
       <Box
         component="header"
         sx={{
-          backgroundColor: "background.paper",
+          bgcolor: "background.paper",
           boxShadow: 1,
-          borderRadius: 1,
-          px: 3,
-          py: 2,
+          borderBottom: (theme) => `1px solid ${theme.palette.divider}`,
         }}
       >
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-        >
-          <Breadcrumbs
-            separator="›"
-            aria-label="breadcrumb"
-            sx={{ display: "flex", alignItems: "center", gap: 3 }}
-          >
-            {breadcrumbItems.map(({ label, icon, key }) => (
-              <Link
-                key={key}
-                underline="none"
-                color={activeTab === key ? "primary" : "text.secondary"}
-                onClick={() => handleTabChange(key)}
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  fontSize: "1.2rem",
-                  fontWeight: activeTab === key ? "bold" : "normal",
-                  cursor: "pointer",
-                }}
-              >
-                {icon}
-                <Typography component="span" sx={{ ml: 0.5 }}>
-                  {label}
-                </Typography>
-              </Link>
-            ))}
-          </Breadcrumbs>
-
-          <IconButton
-            onClick={navigateToSettings}
+        <Container disableGutters maxWidth={false} sx={{ px: 2, py: 1 }}>
+          <Box
             sx={{
-              color: "text.primary",
-              "&:hover": { color: "primary.main", transform: "scale(1.1)" },
-              transition: "all 0.2s ease-in-out",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
             }}
           >
-            <SettingsIcon fontSize="large" />
-          </IconButton>
-        </Box>
+            <Breadcrumbs
+              separator="›"
+              aria-label="breadcrumb"
+              sx={{ display: "flex", alignItems: "center", gap: 2 }}
+            >
+              {breadcrumbItems.map(({ key, label, icon }) => (
+                <Link
+                  key={key}
+                  underline="none"
+                  color={activeTab === key ? "primary" : "text.secondary"}
+                  onClick={() => handleTabChange(key)}
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    fontSize: "1.1rem",
+                    fontWeight: activeTab === key ? "bold" : "normal",
+                    cursor: "pointer",
+                  }}
+                >
+                  {icon}
+                  <Typography component="span" sx={{ ml: 0.5 }}>
+                    {label}
+                  </Typography>
+                </Link>
+              ))}
+            </Breadcrumbs>
+            <IconButton
+              onClick={navigateToSettings}
+              sx={{
+                color: "text.primary",
+                "&:hover": { color: "primary.main", transform: "scale(1.1)" },
+                transition: "all 0.2s ease-in-out",
+              }}
+            >
+              <SettingsIcon fontSize="large" />
+            </IconButton>
+          </Box>
+        </Container>
       </Box>
 
+      {/* MAIN CONTENT */}
       <Box
         component="main"
         sx={{
-          backgroundColor: "#2C3333",
-          p: 3,
-          minHeight: "calc(100vh - 120px)",
+          flexGrow: 1,
+          bgcolor: "background.default",
+          pt: 2,
         }}
       >
-        {activeTab === "company" && <CompanyManager />}
-        {activeTab === "branch" && <BranchManager />}
-        {activeTab === "inventory" && <InventoryManager />}
+        <Container disableGutters maxWidth={false} sx={{ px: 2, pb: 3 }}>
+          {activeTab === "company" && <CompanyManager />}
+          {activeTab === "branch" && <BranchManager />}
+          {activeTab === "inventory" && <InventoryManager />}
+        </Container>
       </Box>
     </Box>
   );
