@@ -24,10 +24,16 @@ import {
   Typography,
   ListItem,
   ListItemText,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from "@mui/material";
 import tableStyles from "@/app/styles/tableStyles";
 import HistoryIcon from "@mui/icons-material/History"; // Kum saati simgesi için
 import InventoryUpdateModal from "./InvetoryUpdate";
+
+const LIMIT_OPTIONS = [15, 25, 40, 100, 200];
 
 const InventoryManager = () => {
   const [activeTab, setActiveTab] = useState("inventory");
@@ -46,6 +52,8 @@ const InventoryManager = () => {
   const [isArchiveDrawerOpen, setIsArchiveDrawerOpen] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedInv, setSelectedInv] = useState(null);
+  const [limit, setLimit] = useState<number>(15);
+
   // İzinleri çekme fonksiyonu
   const fetchPermissions = async () => {
     try {
@@ -63,6 +71,7 @@ const InventoryManager = () => {
     try {
       const companyData = await getAllCompanies();
       setCompanies(companyData);
+      if (companyData.length) setSelectedCompanyId(companyData[0].company_id);
     } catch (err) {
       setInventoriesError(
         err.message || "Şirketler alınırken bir hata oluştu."
@@ -75,6 +84,7 @@ const InventoryManager = () => {
     try {
       const branchData = await getBranchesByCompanyId(companyId);
       setBranches(branchData);
+      setSelectedBranch("");
     } catch (err) {
       console.error("Şubeler alınırken hata oluştu:", err);
     }
@@ -112,11 +122,11 @@ const InventoryManager = () => {
       // Öncelikli: şube seçili mi?
       const branchObj = branches.find((b) => b.name === selectedBranch);
       if (branchObj) {
-        invs = await getInventoryByBranch(branchObj.id);
+        invs = await getInventoryByBranch(branchObj.id, limit);
       }
       // Değilse, company seçili mi?
       else if (selectedCompanyId) {
-        invs = await getInventoryByCompany(selectedCompanyId);
+        invs = await getInventoryByCompany(selectedCompanyId, limit);
       }
 
       setFilteredInventories(invs);
@@ -135,7 +145,11 @@ const InventoryManager = () => {
     branches,
     selectedBranch,
     selectedCompanyId,
+    limit,
   ]);
+  useEffect(() => {
+    fetchInventories();
+  }, [selectedCompanyId, selectedBranch, limit]);
 
   // Arşivlenmiş envanterleri çekme fonksiyonu
   const fetchArchivedInventories = async () => {
@@ -265,6 +279,20 @@ const InventoryManager = () => {
                     ))}
                   </select>
                 </div>{" "}
+                <FormControl>
+                  <InputLabel>Adet</InputLabel>
+                  <Select
+                    value={limit}
+                    label="Adet"
+                    onChange={(e) => setLimit(Number(e.target.value))}
+                  >
+                    {LIMIT_OPTIONS.map((n) => (
+                      <MenuItem key={n} value={n}>
+                        {n}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
                 {/* Arşivlenmiş Envanter Butonu */}
                 <IconButton color="primary" onClick={handleOpenArchive}>
                   <HistoryIcon />

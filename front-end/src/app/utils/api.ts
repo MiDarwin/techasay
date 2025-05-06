@@ -262,15 +262,21 @@ export const createInventory = async (payload: {
   }
   return data as InventoryOut;
 };
-export const getInventoryByBranch = async (branch_id?: number) => {
-  if (!branch_id) {
-    return [];  // branch_id boşsa API’ye bile gitme
-  }
+export const getInventoryByBranch = async (
+  branch_id?: number,
+  limit?: number
+): Promise<InventoryOut[]> => {
+  if (!branch_id) return [];
   const token = localStorage.getItem("access_token");
-  const res = await fetch(
-    `${BASE_URL}/api/inventory?branch_id=${branch_id}`,
-    { headers: { "Authorization": `Bearer ${token}` } }
-  );
+  // URL constructor kullanarak sorgu parametrelerini ekleyelim
+  const url = new URL(`${BASE_URL}/api/inventory`);
+  url.searchParams.append("branch_id", branch_id.toString());
+  if (limit !== undefined && limit !== null) {
+    url.searchParams.append("limit", limit.toString());
+  }
+  const res = await fetch(url.toString(), {
+    headers: { Authorization: `Bearer ${token}` },
+  });
   const data = await res.json();
   if (!res.ok) throw new Error(data.detail || "Envanter alınamadı");
   return data as InventoryOut[];
@@ -316,14 +322,21 @@ export const getAllInventory = (companyName = "", branchName = "") => {
 
   return apiRequest(`${BASE_URL}/api/inventory/inventories?${params.toString()}`, "GET");
 };
-// company bazlı envanter (tüm o şirkete ait şubeler)
-export const getInventoryByCompany = async (company_id?: number) => {
+// Şirket bazlı çağrı da limit parametresi alacak
+export const getInventoryByCompany = async (
+  company_id?: number,
+  limit?: number
+): Promise<InventoryOut[]> => {
   if (!company_id) return [];
   const token = localStorage.getItem("access_token");
-  const res = await fetch(
-    `${BASE_URL}/api/inventory?company_id=${company_id}`,
-    { headers: { "Authorization": `Bearer ${token}` } }
-  );
+  const url = new URL(`${BASE_URL}/api/inventory`);
+  url.searchParams.append("company_id", company_id.toString());
+  if (limit !== undefined && limit !== null) {
+    url.searchParams.append("limit", limit.toString());
+  }
+  const res = await fetch(url.toString(), {
+    headers: { Authorization: `Bearer ${token}` },
+  });
   const data = await res.json();
   if (!res.ok) throw new Error(data.detail || "Envanter alınamadı");
   return data as InventoryOut[];
