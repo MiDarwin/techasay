@@ -14,7 +14,8 @@ from models.branch import Branch
 from models.inventory import Inventory
 from schemas.inventory import InventoryOut, InventoryCreateBody, InventoryImportResponse
 from services.inventory_service import create_inventory, update_inventory, \
-    generate_inventory_excel, import_inventory_from_excel, get_inventory_fields_by_branch, get_inventories
+    generate_inventory_excel, import_inventory_from_excel, get_inventories, \
+    get_inventory_fields_by_company
 from database import get_db
 
 
@@ -112,17 +113,18 @@ async def import_inventory(
 @router.get(
     "/fields",
     response_model=List[str],
-    summary="Branch bazlı envanter alan adlarını döner"
+    summary="Şirket bazlı envanter alan adlarını döner"
 )
 async def read_inventory_fields(
-    branch_id: int = Query(..., description="Alanları alınacak şube ID"),
-    db:        AsyncSession = Depends(get_db),
+    company_id: int = Query(..., description="Alanları alınacak şirket ID"),
+    db:         AsyncSession = Depends(get_db),
 ):
     """
-    GET /api/inventory/fields?branch_id=5
-    Bu branch için geçmişte kullanılmış envanter alan adlarının listesini döner.
+    GET /api/inventory/fields?company_id=2
+    Bu şirkete ait tüm şubelerde geçmişte kullanılmış
+    envanter alan adlarının listesini döner.
     """
     try:
-        return await get_inventory_fields_by_branch(db, branch_id)
+        return await get_inventory_fields_by_company(db, company_id)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

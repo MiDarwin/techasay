@@ -18,7 +18,7 @@ import {
   getBranchesByCompanyId,
   getInventoryHelpers, // Cihaz türlerini çekmek için API fonksiyonu
   getSubBranchesByBranchId,
-  getInventoryFieldsByBranch,
+  getInventoryFieldsByCompany,
 } from "../../utils/api";
 import { turkishCities } from "../branch/cities"; // Şehir ve ilçeler için dosya importu
 import tableStyles from "@/app/styles/tableStyles";
@@ -145,13 +145,14 @@ const AddInventoryModal = ({
     }
   };
   useEffect(() => {
-    if (branchId) {
-      const id = selectedSubBranchId || branchId;
-      getInventoryFieldsByBranch(id)
-        .then(setFieldSuggestions)
+    if (companyId) {
+      getInventoryFieldsByCompany(companyId)
+        .then((fields) => setFieldSuggestions(fields))
         .catch(console.error);
+    } else {
+      setFieldSuggestions([]);
     }
-  }, [branchId, selectedSubBranchId]);
+  }, [companyId]);
   const handleAddDetailField = () => {
     setDetailFields([...detailFields, { key: "", value: "" }]);
   };

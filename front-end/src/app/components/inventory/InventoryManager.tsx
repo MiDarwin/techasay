@@ -352,6 +352,7 @@ const InventoryManager = () => {
         inventory={selectedInv}
         onClose={() => setModalOpen(false)}
         onUpdated={() => fetchInventories()}
+        companyId={selectedCompanyId}
       />
       <InventoryImportModal
         open={importModalOpen}

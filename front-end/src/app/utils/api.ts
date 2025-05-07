@@ -298,11 +298,16 @@ export const updateInventory = async (
   if (!res.ok) throw new Error(data.detail || "Envanter güncellemede hata");
   return data as InventoryOut;
 };
-export const getInventoryFieldsByBranch = async (branch_id: number) => {
+export const getInventoryFieldsByCompany = async (
+  company_id: number
+): Promise<string[]> => {
   const token = localStorage.getItem("access_token");
-  const res = await fetch(`${BASE_URL}/api/inventory/fields?branch_id=${branch_id}`, {
-    headers: { "Authorization": `Bearer ${token}` },
-  });
+  const res = await fetch(
+    `${BASE_URL}/api/inventory/fields?company_id=${company_id}`,
+    {
+      headers: { Authorization: `Bearer ${token}` },
+    }
+  );
   const data = await res.json();
   if (!res.ok) throw new Error(data.detail || "Alan önerileri alınamadı");
   return data as string[];

@@ -212,17 +212,20 @@ async def import_inventory_from_excel(
         "skipped": skipped,
         "skipped_branches": skipped_branches
     }
-async def get_inventory_fields_by_branch(
+async def get_inventory_fields_by_company(
     db: AsyncSession,
-    branch_id: int
-) -> list[str]:
-    """
-    Verilen branch_id için envanter JSONB 'details' içindeki tüm alan adlarını (keys)
-    uniqe olarak döner.
-    """
-    stmt = select(Inventory.details).where(Inventory.branch_id == branch_id)
+    company_id: int
+) -> List[str]:
+
+    # Inventory.details ve Branch join
+    stmt = (
+        select(Inventory.details)
+        .join(Branch, Inventory.branch_id == Branch.id)
+        .where(Branch.company_id == company_id)
+    )
+
     result = await db.execute(stmt)
-    records = result.scalars().all()  # her biri bir dict
+    records = result.scalars().all()  # her biri bir dict ya da None
 
     fields = set()
     for details in records:
