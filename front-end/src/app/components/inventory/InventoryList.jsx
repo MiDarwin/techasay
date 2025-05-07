@@ -61,6 +61,7 @@ const InventoryList = ({ inventories = [], onEdit }) => {
                   flex: 1,
                   borderRadius: 2,
                   boxShadow: 2,
+                  backgroundColor: "#EDF2F7",
                   transition: "transform 0.2s, box-shadow 0.2s",
                   "&:hover": { transform: "translateY(-4px)", boxShadow: 6 },
                 }}
