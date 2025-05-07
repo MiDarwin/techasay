@@ -311,12 +311,32 @@ const InventoryManager = () => {
           >
             EXCEL İNDİR
           </Button>
-          <Button variant="contained" startIcon={<AddIcon />}>
-            EN​VANTER​ Ekle
-          </Button>
+          {/* Envanter Ekle Butonu */}
+          {permissions.includes("inventoryAdd") && (
+            <Button
+              variant="contained"
+              color="success"
+              onClick={() => setIsInventoryAddModalOpen(true)}
+              className="flex items-center"
+              size="small"
+              sx={{ height: "40px", ml: "auto" }} // Butonu en sağa almak için margin-left: auto
+            >
+              <AddIcon className="mr-1" />
+              Envanter Ekle
+            </Button>
+          )}
         </Box>
       </Box>
-
+      {isInventoryAddModalOpen && (
+        <AddInventoryModal
+          open={isInventoryAddModalOpen}
+          onClose={() => setIsInventoryAddModalOpen(false)}
+          companies={companies}
+          selectedCompanyId={selectedCompanyId}
+          selectedBranchName={selectedBranch} // Şube adını gönderiyoruz
+          onInventoryAdded={() => fetchInventories()}
+        />
+      )}
       {/* Liste */}
       <InventoryList
         inventories={filteredInventories}

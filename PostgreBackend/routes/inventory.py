@@ -1,6 +1,6 @@
 from tempfile import NamedTemporaryFile
 
-from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File, Body
 from openpyxl import Workbook
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -48,13 +48,15 @@ async def read_inventory(
 @router.patch("/{inventory_id}", response_model=InventoryOut)
 async def edit_inventory(
     inventory_id: int,
-    payload:      Dict[str, Any],
-    db:           AsyncSession = Depends(get_db),
-
+    details: Dict[str, Any] = Body(...),      # <— doğrudan JSON objesi olarak al
+    db: AsyncSession = Depends(get_db),
 ):
-
+    """
+    Gelen 'details' objesini olduğu gibi envanter kaydına yazar.
+    Eksik alanlar silinmiş olur, yeni alanlar eklenir.
+    """
     try:
-        return await update_inventory(db, inventory_id, payload)
+        return await update_inventory(db, inventory_id, details)
     except ValueError as ve:
         raise HTTPException(status_code=404, detail=str(ve))
     except Exception as e:

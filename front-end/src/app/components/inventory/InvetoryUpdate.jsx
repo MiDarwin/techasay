@@ -1,118 +1,136 @@
+"use client";
 import React, { useState, useEffect } from "react";
 import {
   Modal,
   Box,
-  Typography,
+  Grid,
   TextField,
   Button,
   IconButton,
+  Typography,
 } from "@mui/material";
-import CloseIcon from "@mui/icons-material/Close";
+import AddCircleIcon from "@mui/icons-material/AddCircle";
+import RemoveCircleIcon from "@mui/icons-material/RemoveCircle";
 import { updateInventory } from "@/app/utils/api";
 
-const style = {
+const modalStyle = {
   position: "fixed",
   top: "50%",
   left: "50%",
   transform: "translate(-50%, -50%)",
+  width: 500,
   bgcolor: "background.paper",
-  boxShadow: 24,
   borderRadius: 2,
+  boxShadow: 24,
   p: 4,
-  maxHeight: "80vh",
-  overflowY: "auto",
-  width: 400,
 };
 
-/**
- * props:
- * - open: boolean
- * - inventory: { id, branch_id, branch_name, details }
- * - onClose: function
- * - onUpdated: callback(updatedInventory)
- */
-const InventoryUpdateModal = ({
+export default function InventoryUpdateModal({
   open,
-  inventory,
   onClose,
+  inventory,
   onUpdated,
-  fetchInventories,
-}) => {
-  const [fields, setFields] = useState({});
-  const [saving, setSaving] = useState(false);
+}) {
+  // dynamic list of detail fields
+  const [fields, setFields] = useState([{ key: "", value: "" }]);
 
   useEffect(() => {
     if (inventory) {
-      setFields(inventory.details || {});
+      const init = Object.entries(inventory.details || {}).map(
+        ([key, value]) => ({ key, value })
+      );
+      setFields(init.length ? init : [{ key: "", value: "" }]);
     }
   }, [inventory]);
 
-  const handleChange = (key) => (e) => {
-    setFields({ ...fields, [key]: e.target.value });
+  const handleFieldChange = (idx, name, val) => {
+    setFields((curr) =>
+      curr.map((f, i) => (i === idx ? { ...f, [name]: val } : f))
+    );
   };
 
-  const handleSave = async () => {
-    setSaving(true);
+  const addField = () => {
+    setFields((curr) => [...curr, { key: "", value: "" }]);
+  };
+
+  const removeField = (idx) => {
+    setFields((curr) => curr.filter((_, i) => i !== idx));
+  };
+
+  const handleSubmit = async () => {
+    // build details object
+    const newDetails = fields.reduce((acc, { key, value }) => {
+      if (key.trim()) acc[key.trim()] = value;
+      return acc;
+    }, {});
+
     try {
-      const updated = await updateInventory(inventory.id, fields);
-      onUpdated && onUpdated(updated);
+      // Call API with correct signature: (inventory_id, updates)
+      await updateInventory(inventory.id, newDetails);
+      onUpdated();
       onClose();
     } catch (err) {
       console.error(err);
-      // optionally show error to user
-    } finally {
-      setSaving(false);
+      // optionally show error toast
     }
-    const handleSave = async () => {
-      await updateInventory(inventory.id, fields);
-      onUpdated(); // Manager’daki fetchInventories() burada tetiklenir
-      onClose();
-    };
   };
 
   return (
-    <Modal
-      open={open}
-      onClose={onClose}
-      BackdropProps={{
-        sx: { backdropFilter: "blur(4px)" },
-      }}
-    >
-      <Box sx={style}>
-        <Box
-          display="flex"
-          justifyContent="space-between"
-          alignItems="center"
-          mb={2}
-        >
-          <Typography color="black " variant="h6">
-            Envanter Güncelle
-          </Typography>
-          <IconButton size="small" onClick={onClose}>
-            <CloseIcon />
-          </IconButton>
-        </Box>
-        {Object.entries(fields).map(([key, value]) => (
-          <TextField
-            key={key}
-            label={key}
-            value={value}
-            onChange={handleChange(key)}
-            fullWidth
-            margin="normal"
-          />
-        ))}
-        <Box display="flex" justifyContent="flex-end" mt={2} gap={1}>
-          <Button onClick={onClose} disabled={saving}>
-            İptal
-          </Button>
-          <Button variant="contained" onClick={handleSave} disabled={saving}>
-            {saving ? "Kaydediliyor..." : "Güncelle"}
+    <Modal open={open} onClose={onClose} disablePortal>
+      <Box sx={modalStyle}>
+        <Typography color="black" variant="h6" mb={2}>
+          Envanter #{inventory?.id} Düzenle
+        </Typography>
+
+        <Grid container spacing={2}>
+          {fields.map((fld, idx) => (
+            <React.Fragment key={idx}>
+              <Grid item xs={5}>
+                <TextField
+                  label="Anahtar"
+                  value={fld.key}
+                  onChange={(e) =>
+                    handleFieldChange(idx, "key", e.target.value)
+                  }
+                  fullWidth
+                />
+              </Grid>
+              <Grid item xs={5}>
+                <TextField
+                  label="Değer"
+                  value={fld.value}
+                  onChange={(e) =>
+                    handleFieldChange(idx, "value", e.target.value)
+                  }
+                  fullWidth
+                />
+              </Grid>
+              <Grid item xs={2} display="flex" alignItems="center">
+                <IconButton onClick={() => removeField(idx)} color="error">
+                  <RemoveCircleIcon />
+                </IconButton>
+              </Grid>
+            </React.Fragment>
+          ))}
+
+          <Grid item xs={12}>
+            <Button
+              startIcon={<AddCircleIcon />}
+              onClick={addField}
+              variant="text"
+            >
+              Alan Ekle
+            </Button>
+          </Grid>
+        </Grid>
+
+        <Box mt={3} display="flex" justifyContent="flex-end" gap={1}>
+          <Button onClick={onClose}>İptal</Button>
+          <Button variant="contained" onClick={handleSubmit}>
+            Güncelle
           </Button>
         </Box>
       </Box>
     </Modal>
   );
-};
-
-export default InventoryUpdateModal;
+}

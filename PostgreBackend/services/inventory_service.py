@@ -74,22 +74,18 @@ async def create_inventory(db: AsyncSession, inv_in: InventoryCreateBody) -> Inv
 async def update_inventory(
     db: AsyncSession,
     inventory_id: int,
-    new_details: dict
+    details: Dict[str, Any]       # <-- Bu parametre eksikti, ekliyoruz
 ) -> InventoryOut:
     inv = await db.get(Inventory, inventory_id)
     if not inv:
         raise ValueError("Envanter kaydı bulunamadı.")
-    # mevcut JSONB kopyasını al
-    merged = {**inv.details}
-    # gönderilen her alanı güncelle
-    for key, val in new_details.items():
-        merged[key] = val
-    # commit ancak gerçekten değiştiyse
-    if merged != inv.details:
-        inv.details = merged
-        await db.commit()
-        await db.refresh(inv)
-    # branch_name ekle
+
+    # Yeni gelen detayları doğrudan kaydet
+    inv.details = details
+    await db.commit()
+    await db.refresh(inv)
+
+    # branch_name eklemek için
     branch = await db.get(Branch, inv.branch_id)
     return InventoryOut(
         id=inv.id,
