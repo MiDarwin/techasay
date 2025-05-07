@@ -19,13 +19,6 @@ import AddIcon from "@mui/icons-material/Add";
 import {
   Box,
   Button,
-  CircularProgress,
-  IconButton,
-  Drawer,
-  List,
-  Typography,
-  ListItem,
-  ListItemText,
   FormControl,
   InputLabel,
   Select,
@@ -245,7 +238,7 @@ const InventoryManager = () => {
         p={2}
         borderRadius={1}
         boxShadow={1}
-        bgcolor="background.paper"
+        bgcolor="#EDF2F7"
       >
         <Box display="flex" alignItems="center" gap={2}>
           <FormControl>

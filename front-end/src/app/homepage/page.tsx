@@ -17,6 +17,7 @@ import { useRouter } from "next/navigation";
 import CompanyManager from "../components/company/CompanyManager";
 import BranchManager from "../components/branch/BranchManager";
 import InventoryManager from "../components/inventory/InventoryManager";
+import { alpha } from "@mui/material";
 
 const HomePage = () => {
   const [activeTab, setActiveTab] = useState("branch");
@@ -79,7 +80,7 @@ const HomePage = () => {
       <Box
         component="header"
         sx={{
-          bgcolor: "background.paper",
+          bgcolor: "#EDF2F7",
           boxShadow: 1,
           borderBottom: (theme) => `1px solid ${theme.palette.divider}`,
         }}
@@ -101,7 +102,7 @@ const HomePage = () => {
                 <Link
                   key={key}
                   underline="none"
-                  color={activeTab === key ? "primary" : "text.secondary"}
+                  color={activeTab === key ? "primary.main" : "text.secondary"}
                   onClick={() => handleTabChange(key)}
                   sx={{
                     display: "flex",
@@ -109,6 +110,14 @@ const HomePage = () => {
                     fontSize: "1.1rem",
                     fontWeight: activeTab === key ? "bold" : "normal",
                     cursor: "pointer",
+                    px: 1,
+                    py: 0.5,
+                    borderRadius: 1,
+                    transition: "background-color 0.2s ease",
+                    "&:hover": {
+                      backgroundColor: (theme) =>
+                        alpha(theme.palette.primary.main, 0.08),
+                    },
                   }}
                 >
                   {icon}
@@ -118,6 +127,7 @@ const HomePage = () => {
                 </Link>
               ))}
             </Breadcrumbs>
+
             <IconButton
               onClick={navigateToSettings}
               sx={{

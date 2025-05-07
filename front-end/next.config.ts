@@ -5,7 +5,7 @@ const nextConfig: NextConfig = {
     return [
       {
         source: "/",
-        destination: "/auth/login",
+        destination: "/homepage",
         permanent: true, // Kalıcı yönlendirme (HTTP 308). Geçici ise `false` yapın.
       },
     ];

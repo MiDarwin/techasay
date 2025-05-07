@@ -120,7 +120,7 @@ const InventoryList = ({ inventories = [], onEdit }) => {
 
                   {moreCount > 0 && (
                     <Typography variant="caption" color="text.secondary">
-                      +{moreCount} detay daha…
+                      +{moreCount} envanter daha…
                     </Typography>
                   )}
                 </CardContent>
