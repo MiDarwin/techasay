@@ -160,14 +160,14 @@ async def generate_inventory_excel(
     all_keys = set()
     records = []
     for inv, branch_name, company_name in rows:
-        rec = {"id": inv.id, "company_name": company_name, "branch_name": branch_name}
+        rec = { "company_name": company_name, "branch_name": branch_name}
         for k, v in (inv.details or {}).items():
             rec[k] = v
             all_keys.add(k)
         records.append(rec)
 
     # Excel başlık
-    header = ["id", "company_name", "branch_name"] + sorted(all_keys)
+    header = ["company_name", "branch_name"] + sorted(all_keys)
     wb = Workbook()
     ws = wb.active
     ws.title = "Envanter"
