@@ -1,23 +1,14 @@
-from tempfile import NamedTemporaryFile
-
-from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File, Body
-from openpyxl import Workbook
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List, Dict, Any, Optional
 
-from sqlalchemy.sql.functions import current_user
+from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File, Body, Response
+from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.responses import FileResponse
 
-from dependencies import get_current_user
-from models.branch import Branch
-from models.inventory import Inventory
+from database import get_db
 from schemas.inventory import InventoryOut, InventoryCreateBody, InventoryImportResponse
 from services.inventory_service import create_inventory, update_inventory, \
     generate_inventory_excel, import_inventory_from_excel, get_inventories, \
-    get_inventory_fields_by_company
-from database import get_db
-
+    get_inventory_fields_by_company, count_inventories
 
 router = APIRouter(prefix="", tags=["inventory"])
 @router.get(
@@ -26,6 +17,7 @@ router = APIRouter(prefix="", tags=["inventory"])
     summary="Branch veya Company bazlı envanter kayıtlarını döner"
 )
 async def read_inventory(
+    response: Response,
     branch_id:  Optional[int] = Query(None, description="Şube ID (öncelikli)"),
     company_id: Optional[int] = Query(None, description="Şirket ID"),
 q:          Optional[str]   = Query(None, description="Aranacak metin"),
@@ -43,7 +35,13 @@ q:          Optional[str]   = Query(None, description="Aranacak metin"),
         )
 
     try:
+
+        total = await count_inventories(db, branch_id, company_id, q)
+
         items = await get_inventories(db, branch_id, company_id, limit, q)
+
+        response.headers["X-Total-Count"] = str(total)
+
         return items
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

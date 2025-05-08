@@ -9,6 +9,7 @@ from models.inventory import Inventory
 from models.branch import Branch
 from schemas.inventory import InventoryOut, InventoryCreateBody
 from sqlalchemy import or_, cast, String
+from sqlalchemy import func
 
 
 async def get_inventories(
@@ -60,6 +61,27 @@ async def get_inventories(
         )
         for inv, branch_name in rows
     ]
+async def count_inventories(
+    db: AsyncSession,
+    branch_id:  Optional[int] = None,
+    company_id: Optional[int] = None,
+    q:          Optional[str] = None
+) -> int:
+    stmt = select(func.count()).select_from(Inventory).join(Branch)
+    if branch_id is not None:
+        stmt = stmt.where(Inventory.branch_id == branch_id)
+    elif company_id is not None:
+        stmt = stmt.where(Branch.company_id == company_id)
+    if q:
+        pattern = f"%{q}%"
+        stmt = stmt.where(
+            or_(
+               Branch.branch_name.ilike(pattern),
+               cast(Inventory.details, String).ilike(pattern)
+            )
+        )
+    res = await db.execute(stmt)
+    return res.scalar_one()
 async def create_inventory(db: AsyncSession, inv_in: InventoryCreateBody) -> InventoryOut:
     # varsa varolanı çek
     q = select(Inventory).where(Inventory.branch_id == inv_in.branch_id)

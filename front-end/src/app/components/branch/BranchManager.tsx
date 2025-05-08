@@ -371,7 +371,7 @@ const BranchManager = () => {
             <CircularProgress size={20} />
           ) : (
             <>
-              <Typography variant="subtitle2">
+              <Typography color="black" variant="subtitle2">
                 Ana şube: {count} Alt şube: {subCount}
               </Typography>
             </>

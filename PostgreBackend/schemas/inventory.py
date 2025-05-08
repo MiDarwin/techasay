@@ -27,3 +27,6 @@ class InventoryImportResponse(BaseModel):
     updated: int
     skipped: int
     skipped_branches: List[str]
+class InventoryListResponse(BaseModel):
+    total: int
+    items: List[InventoryOut]

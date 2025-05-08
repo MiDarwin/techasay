@@ -47,7 +47,7 @@ export const turkishCities = {
     "Sultandağı",
     "Şuhut",
   ],
-  Ağri: [
+  Ağrı: [
     "Ağrı",
     "Diyadin",
     "Doğubeyazıt",
@@ -124,7 +124,7 @@ export const turkishCities = {
     "Şavşat",
     "Yusufeli",
   ],
-  Aydin: [
+  Aydın: [
     "Aydın",
     "Bozdoğan",
     "Buharkent",
@@ -143,7 +143,7 @@ export const turkishCities = {
     "Sultanhisar",
     "Yenipazar",
   ],
-  Balikesir: [
+  Balıkesir: [
     "Ayvalık",
     "Balıkesir",
     "Balya",
@@ -731,7 +731,7 @@ export const turkishCities = {
     "Savur",
     "Yeşilli",
   ],
-  Mugla: [
+  Muğla: [
     "Bodrum",
     "Dalaman",
     "Datça",
@@ -756,7 +756,7 @@ export const turkishCities = {
     "Nevşehir",
     "Ürgüp",
   ],
-  Nigde: ["Altunhisar", "Bor", "Çamardı", "Çiftlik", "Niğde", "Ulukışla"],
+  Niğde: ["Altunhisar", "Bor", "Çamardı", "Çiftlik", "Niğde", "Ulukışla"],
   Ordu: [
     "Akkuş",
     "Aybastı",
@@ -860,7 +860,7 @@ export const turkishCities = {
     "Yıldızeli",
     "Zara",
   ],
-  Tekirdag: [
+  Tekirdağ: [
     "Çerkezköy",
     "Çorlu",
     "Hayrabolu",

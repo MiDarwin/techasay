@@ -40,6 +40,7 @@ const InventoryManager = () => {
   const [filteredInventories, setFilteredInventories] = useState([]);
   const [inventoriesLoading, setInventoriesLoading] = useState(false);
   const [inventoriesError, setInventoriesError] = useState("");
+  const [totalCount, setTotalCount] = useState<number>(0);
   const [companies, setCompanies] = useState([]);
   const [selectedCompanyId, setSelectedCompanyId] = useState("");
   const [selectedBranch, setSelectedBranch] = useState("");

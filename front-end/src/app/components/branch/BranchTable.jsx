@@ -342,7 +342,7 @@ const BranchTable = ({
                     {branch.phone_number}
                   </TableCell>
                   <TableCell>{branch.branch_note || "Yok"}</TableCell>
-                  <TableCell>{ safeFormatDate(branch.created_date) }</TableCell>
+                  <TableCell>{safeFormatDate(branch.created_date)}</TableCell>
                   <TableCell>
                     {/* Şube Bilgileri Modal Aç */}
                     <Tooltip title="Şube Bilgileri" arrow>
@@ -388,15 +388,6 @@ const BranchTable = ({
                       </Tooltip>
                     )}
 
-                    <Tooltip title="Şube Envanterini Görüntüle">
-                      <IconButton
-                        onClick={() => handleOpenInventory(branch.id)}
-                        color="primary"
-                        aria-label="Şube Envanterini Görüntüle"
-                      >
-                        <BackpackIcon />
-                      </IconButton>
-                    </Tooltip>
                     {permissions.includes("subBranchAdd") && (
                       <Tooltip title="Alt Şube Ekle">
                         <IconButton
@@ -472,18 +463,22 @@ const BranchTable = ({
       {/* Şube Bilgileri Modal */}
       <Modal open={!!infoBranch} onClose={handleCloseInfo}>
         <Box sx={style}>
-          <Typography variant="h6" mb={2}>
+          <Typography color="black" variant="h6" mb={2}>
             Şube Bilgileri
           </Typography>
           {infoBranch && (
             <>
               <Box display="flex" alignItems="center" mb={1}>
-                <Typography sx={{ flexGrow: 1 }}>Adres:</Typography>
+                <Typography color="black" sx={{ flexGrow: 1 }}>
+                  Adres:
+                </Typography>
                 <Tooltip title="Kopyala" arrow>
                   <IconButton></IconButton>
                 </Tooltip>
               </Box>
-              <Typography mb={2}>{infoBranch.address}</Typography>
+              <Typography color="black" mb={2}>
+                {infoBranch.address}
+              </Typography>
 
               {infoBranch.phone_number_2 && (
                 <>
@@ -502,13 +497,6 @@ const BranchTable = ({
           )}
         </Box>
       </Modal>
-      {/* Envanter Modal */}
-      <InventoryModal
-        isOpen={openInventory}
-        onClose={handleCloseInventory}
-        inventory={inventory}
-        branchName={selectedBranchName}
-      />
 
       {/* Alt Şube Ekleme Modalı */}
       {selectedBranch && (
