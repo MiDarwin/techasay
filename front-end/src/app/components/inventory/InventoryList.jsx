@@ -191,7 +191,7 @@ const InventoryList = ({ inventories = [], onEdit }) => {
               justifyContent: "space-between",
             }}
           >
-            <Typography variant="h6">
+            <Typography color="black"variant="h6">
               {detailInv?.branch_name} — Envanter detayları
             </Typography>
             <IconButton onClick={() => setDetailInv(null)}>
@@ -208,7 +208,7 @@ const InventoryList = ({ inventories = [], onEdit }) => {
                     fontSize="small"
                     sx={{ mr: 1, color: "primary.main" }}
                   />
-                  <Typography variant="body2">
+                  <Typography color="black"variant="body2">
                     <strong>{key}:</strong> {value}
                   </Typography>
                 </Box>

@@ -62,7 +62,7 @@ export default function InventoryDetailModal({
             justifyContent: "space-between",
           }}
         >
-          <Typography variant="h6">Tüm Envanterler</Typography>
+          <Typography color="black" variant="h6">Tüm Envanterler</Typography>
           <IconButton onClick={onClose}>
             <CloseIcon />
           </IconButton>
