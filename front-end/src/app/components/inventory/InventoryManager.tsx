@@ -14,7 +14,6 @@ import {
   getArchivedInventory,
   downloadInventoryExcel,
   importInventory,
-  InventoryFetchResult,
 } from "../../utils/api";
 import AddIcon from "@mui/icons-material/Add";
 import {
@@ -26,7 +25,6 @@ import {
   MenuItem,
   Container,
   TextField,
-  Typography,
 } from "@mui/material";
 import tableStyles from "@/app/styles/tableStyles";
 import HistoryIcon from "@mui/icons-material/History"; // Kum saati simgesi için
@@ -115,38 +113,35 @@ const InventoryManager = () => {
   const fetchInventories = useCallback(async () => {
     if (!permissionsLoaded || !permissions.includes("inventoryViewing")) {
       setFilteredInventories([]);
-      setTotalCount(0);
       return;
     }
 
     setInventoriesLoading(true);
     try {
-      let result: InventoryFetchResult;
+      let invs: InventoryOut[] = [];
       const branchObj = branches.find((b) => b.name === selectedBranch);
 
       if (branchObj) {
-        result = await getInventoryByBranch(
+        invs = await getInventoryByBranch(
           branchObj.id,
           limit ?? undefined,
           searchTerm
         );
-      } else {
-        result = await getInventoryByCompany(
+      } else if (selectedCompanyId) {
+        invs = await getInventoryByCompany(
           selectedCompanyId,
           limit ?? undefined,
           searchTerm
         );
       }
 
-      setFilteredInventories(result.items);
-      setTotalCount(result.total);
+      setFilteredInventories(invs);
       setInventoriesError("");
-    } catch (err: any) {
+    } catch (err) {
       setInventoriesError(
         err.message || "Envanterler alınırken bir hata oluştu."
       );
       setFilteredInventories([]);
-      setTotalCount(0);
     } finally {
       setInventoriesLoading(false);
     }
@@ -157,7 +152,7 @@ const InventoryManager = () => {
     selectedBranch,
     selectedCompanyId,
     limit,
-    searchTerm,
+    searchTerm, // ← add searchTerm here
   ]);
   useEffect(() => {
     fetchInventories();
@@ -310,9 +305,6 @@ const InventoryManager = () => {
               ))}
             </Select>
           </FormControl>
-          <Typography color="black">
-            Sayfada gözüken envanter: {totalCount}
-          </Typography>
         </Box>
         <Box display="flex" alignItems="center" gap={2}>
           <Button variant="outlined" onClick={() => setImportModalOpen(true)}>

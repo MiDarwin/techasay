@@ -266,20 +266,18 @@ export const getInventoryByBranch = async (
   branch_id?: number,
   limit?: number,
   q?: string
-): Promise<InventoryFetchResult> => {
-  if (!branch_id) return { items: [], total: 0 };
+): Promise<InventoryOut[]> => {
+  if (!branch_id) return [];
   const token = localStorage.getItem("access_token");
   let url = `${BASE_URL}/api/inventory?branch_id=${branch_id}`;
   if (limit) url += `&limit=${limit}`;
   if (q)     url += `&q=${encodeURIComponent(q)}`;
-
   const res = await fetch(url, {
     headers: { Authorization: `Bearer ${token}` },
   });
-  const items = (await res.json()) as InventoryOut[];
-  if (!res.ok) throw new Error((items as any).detail || "Envanter alınamadı");
-  const total = Number(res.headers.get("X-Total-Count") ?? items.length);
-  return { items, total };
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.detail || "Envanter alınamadı");
+  return data as InventoryOut[];
 };
 
 export const getcombinedinventoryByBranch = (branch_id) =>
@@ -331,25 +329,19 @@ export const getInventoryByCompany = async (
   company_id?: number,
   limit?: number,
   q?: string
-): Promise<InventoryFetchResult> => {
-  if (!company_id) return { items: [], total: 0 };
+): Promise<InventoryOut[]> => {
+  if (!company_id) return [];
   const token = localStorage.getItem("access_token");
   let url = `${BASE_URL}/api/inventory?company_id=${company_id}`;
   if (limit) url += `&limit=${limit}`;
   if (q)     url += `&q=${encodeURIComponent(q)}`;
-
   const res = await fetch(url, {
     headers: { Authorization: `Bearer ${token}` },
   });
-  const items = (await res.json()) as InventoryOut[];
-  if (!res.ok) throw new Error((items as any).detail || "Envanter alınamadı");
-  const total = Number(res.headers.get("X-Total-Count") ?? items.length);
-  return { items, total };
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.detail || "Envanter alınamadı");
+  return data as InventoryOut[];
 };
-export interface InventoryFetchResult {
-  items: InventoryOut[];
-  total: number;
-}
 // Excel import
 export const importInventory = async (file: File) => {
   const token = localStorage.getItem("access_token");
