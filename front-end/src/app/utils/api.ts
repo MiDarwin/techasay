@@ -1,6 +1,6 @@
 import { headers } from "next/headers";
 
-const BASE_URL = ""; //"http://127.0.1:8000""http://45.132.181.87:8000"
+const BASE_URL = "http://127.0.1:8000"; //"http://127.0.1:8000""http://45.132.181.87:8000"
 
 export async function apiRequest(
   endpoint,
@@ -264,12 +264,14 @@ export const createInventory = async (payload: {
 };
 export const getInventoryByBranch = async (
   branch_id?: number,
-  limit?: number
+  limit?: number,
+  q?: string
 ): Promise<InventoryOut[]> => {
   if (!branch_id) return [];
   const token = localStorage.getItem("access_token");
   let url = `${BASE_URL}/api/inventory?branch_id=${branch_id}`;
   if (limit) url += `&limit=${limit}`;
+  if (q)     url += `&q=${encodeURIComponent(q)}`;
   const res = await fetch(url, {
     headers: { Authorization: `Bearer ${token}` },
   });
@@ -323,15 +325,16 @@ export const getAllInventory = (companyName = "", branchName = "") => {
 
   return apiRequest(`${BASE_URL}/api/inventory/inventories?${params.toString()}`, "GET");
 };
-// Şirket bazlı çağrı da limit parametresi alacak
 export const getInventoryByCompany = async (
   company_id?: number,
-  limit?: number
+  limit?: number,
+  q?: string
 ): Promise<InventoryOut[]> => {
   if (!company_id) return [];
   const token = localStorage.getItem("access_token");
   let url = `${BASE_URL}/api/inventory?company_id=${company_id}`;
   if (limit) url += `&limit=${limit}`;
+  if (q)     url += `&q=${encodeURIComponent(q)}`;
   const res = await fetch(url, {
     headers: { Authorization: `Bearer ${token}` },
   });

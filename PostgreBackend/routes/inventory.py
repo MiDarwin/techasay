@@ -28,6 +28,7 @@ router = APIRouter(prefix="", tags=["inventory"])
 async def read_inventory(
     branch_id:  Optional[int] = Query(None, description="Şube ID (öncelikli)"),
     company_id: Optional[int] = Query(None, description="Şirket ID"),
+q:          Optional[str]   = Query(None, description="Aranacak metin"),
     limit:      Optional[int] = Query(
                   None,
                   description="Gösterilecek kayıt sayısı (15,25,40 veya None için tümü)"
@@ -42,7 +43,7 @@ async def read_inventory(
         )
 
     try:
-        items = await get_inventories(db, branch_id, company_id, limit)
+        items = await get_inventories(db, branch_id, company_id, limit, q)
         return items
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

@@ -8,13 +8,15 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from models.inventory import Inventory
 from models.branch import Branch
 from schemas.inventory import InventoryOut, InventoryCreateBody
+from sqlalchemy import or_, cast, String
 
 
 async def get_inventories(
     db: AsyncSession,
     branch_id: Optional[int] = None,
     company_id: Optional[int] = None,
-    limit: Optional[int] = None
+    limit: Optional[int] = None,
+    q:Optional[str]   = None,
 ) -> List[InventoryOut]:
     """
     branch_id ile (öncelikli) veya company_id ile
@@ -33,7 +35,15 @@ async def get_inventories(
     else:
         # Hiç filtre yoksa boş liste
         return []
-
+    if q:
+            pattern = f"%{q}%"
+            stmt = stmt.where(
+                    or_(
+                            Branch.branch_name.ilike(pattern),
+              # JSONB'i text'e çevirip içinde arama
+                            cast(Inventory.details, String).ilike(pattern)
+            )
+        )
     if limit:
         stmt = stmt.limit(limit)
 

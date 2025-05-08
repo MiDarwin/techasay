@@ -24,6 +24,7 @@ import {
   Select,
   MenuItem,
   Container,
+  TextField,
 } from "@mui/material";
 import tableStyles from "@/app/styles/tableStyles";
 import HistoryIcon from "@mui/icons-material/History"; // Kum saati simgesi için
@@ -51,6 +52,7 @@ const InventoryManager = () => {
   const [selectedInv, setSelectedInv] = useState(null);
   const [limit, setLimit] = useState<number>(15);
   const [importModalOpen, setImportModalOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState<string>("");
 
   // İzinleri çekme fonksiyonu
   const fetchPermissions = async () => {
@@ -115,16 +117,21 @@ const InventoryManager = () => {
 
     setInventoriesLoading(true);
     try {
-      let invs = [];
-
-      // Öncelikli: şube seçili mi?
+      let invs: InventoryOut[] = [];
       const branchObj = branches.find((b) => b.name === selectedBranch);
+
       if (branchObj) {
-        invs = await getInventoryByBranch(branchObj.id, limit);
-      }
-      // Değilse, company seçili mi?
-      else if (selectedCompanyId) {
-        invs = await getInventoryByCompany(selectedCompanyId, limit);
+        invs = await getInventoryByBranch(
+          branchObj.id,
+          limit ?? undefined,
+          searchTerm
+        );
+      } else if (selectedCompanyId) {
+        invs = await getInventoryByCompany(
+          selectedCompanyId,
+          limit ?? undefined,
+          searchTerm
+        );
       }
 
       setFilteredInventories(invs);
@@ -144,11 +151,11 @@ const InventoryManager = () => {
     selectedBranch,
     selectedCompanyId,
     limit,
+    searchTerm, // ← add searchTerm here
   ]);
   useEffect(() => {
     fetchInventories();
-  }, [selectedCompanyId, selectedBranch, limit]);
-
+  }, [fetchInventories]);
   // Arşivlenmiş envanterleri çekme fonksiyonu
   const fetchArchivedInventories = async () => {
     try {
@@ -272,6 +279,16 @@ const InventoryManager = () => {
                 </MenuItem>
               ))}
             </Select>
+          </FormControl>
+          <FormControl>
+            <TextField
+              label="Envanterde ara"
+              variant="outlined"
+              size="medium"
+              fullWidth
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
           </FormControl>
           <FormControl>
             <InputLabel>Adet</InputLabel>
