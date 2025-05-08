@@ -40,7 +40,41 @@ import InventoryModal from "./InventoryModal"; // Envanter Modalı Component
 import InfoIcon from "@mui/icons-material/Info";
 import tableStyles from "../../styles/tableStyles";
 import VisitModal from "./VisitModal";
+export function safeFormatDate(dateStr) {
+  if (!dateStr) return "";
 
+  // 1) ISO 8601: 2025-05-06T14:30:00Z vb.
+  if (/^\d{4}-\d{2}-\d{2}/.test(dateStr)) {
+    const d = new Date(dateStr);
+    return isNaN(d) ? dateStr : d.toLocaleDateString();
+  }
+
+  // 2) Gün/Ay/Yıl: dd/MM/yyyy
+  if (/^\d{2}\/\d{2}\/\d{4}$/.test(dateStr)) {
+    const [dd, mm, yyyy] = dateStr.split("/").map((n) => parseInt(n, 10));
+    const d = new Date(yyyy, mm - 1, dd);
+    return isNaN(d) ? dateStr : d.toLocaleDateString();
+  }
+
+  // 3) Ay/Gün/Yıl: MM/dd/yyyy
+  if (/^\d{2}\/\d{2}\/\d{4}$/.test(dateStr)) {
+    // Bu regex ikisini de yakalar ama burada illâ da lokal ay/gün/ yıl yazıldıysa:
+    // bir tercih yapmak gerek, genelde dd>12 ise kesin gün/ay gözükecektir
+    const [p1, p2, yyyy] = dateStr.split("/").map((n) => parseInt(n, 10));
+    if (p1 > 12) {
+      // aslında dd/mm/yyyy
+      const d = new Date(yyyy, p2 - 1, p1);
+      return isNaN(d) ? dateStr : d.toLocaleDateString();
+    } else {
+      // mm/dd/yyyy
+      const d = new Date(yyyy, p1 - 1, p2);
+      return isNaN(d) ? dateStr : d.toLocaleDateString();
+    }
+  }
+
+  // 4) Hiçbirine uymadıysa: olduğu gibi göster
+  return dateStr;
+}
 const style = {
   position: "absolute",
   top: "50%",
@@ -308,7 +342,7 @@ const BranchTable = ({
                     {branch.phone_number}
                   </TableCell>
                   <TableCell>{branch.branch_note || "Yok"}</TableCell>
-                  <TableCell>{branch.created_date}</TableCell>
+                  <TableCell>{ safeFormatDate(branch.created_date) }</TableCell>
                   <TableCell>
                     {/* Şube Bilgileri Modal Aç */}
                     <Tooltip title="Şube Bilgileri" arrow>
