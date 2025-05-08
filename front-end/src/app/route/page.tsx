@@ -200,7 +200,7 @@ const RoutePage = () => {
           ))}
         </RadioGroup>
       </FormControl>
-      <Box display="flex" gap={2} mt={2} mb={3}>
+      <Box display="flex" gap={2} mb={3}>
         <TextField
           fullWidth
           label="Başlangıç Koordinatı (lat, lng)"
@@ -275,6 +275,15 @@ const RoutePage = () => {
             ),
           }}
         />
+
+        <Button
+          variant="contained"
+          startIcon={<RocketLaunchIcon />}
+          onClick={handleCreateRoute}
+          sx={{ ml: "auto" }}
+        >
+          Rota Oluştur
+        </Button>
       </Box>
 
       <Divider sx={{ mb: 3 }} />
@@ -317,16 +326,6 @@ const RoutePage = () => {
           ))}
         </TableBody>
       </Table>
-
-      <Box display="flex" justifyContent="flex-end" mt={4}>
-        <Button
-          variant="contained"
-          startIcon={<RocketLaunchIcon />}
-          onClick={handleCreateRoute}
-        >
-          Rota Oluştur
-        </Button>
-      </Box>
     </Box>
   );
 };
