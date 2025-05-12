@@ -26,7 +26,10 @@ import DirectionsIcon from "@mui/icons-material/Directions";
 import { useRouter } from "next/navigation";
 import { CircularProgress, Typography } from "@mui/material";
 import { useDebouncedCallback } from "use-debounce"; // `npm install use-debounce`
-
+import ToggleButton from "@mui/material/ToggleButton";
+import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
+import ViewModuleIcon from "@mui/icons-material/ViewModule";
+import TableRowsIcon from "@mui/icons-material/TableRows";
 const BranchManager = () => {
   const router = useRouter();
   const [branches, setBranches] = useState([]);
@@ -48,6 +51,7 @@ const BranchManager = () => {
   const [count, setCount] = useState<number | null>(null);
   const [subCount, setSubCount] = useState<number | null>(null);
   const [countLoading, setCountLoading] = useState(false);
+  const [view, setView] = useState<"card" | "list">("card");
   const fetchPermissions = async () => {
     try {
       const userPermissions = await getAllUsersPermissions(); // Kullanıcı izinlerini al
@@ -360,6 +364,18 @@ const BranchManager = () => {
             />
           </Tooltip>
         </form>
+        <ToggleButtonGroup
+          value={view}
+          exclusive
+          onChange={(_, v) => v && setView(v)}
+        >
+          <ToggleButton value="card">
+            <ViewModuleIcon /> Kart
+          </ToggleButton>
+          <ToggleButton value="list">
+            <TableRowsIcon /> Liste
+          </ToggleButton>
+        </ToggleButtonGroup>
         <Box
           display="flex"
           flexDirection="column"
@@ -437,6 +453,7 @@ const BranchManager = () => {
         searchFilter={searchFilter}
         companyFilter={companyFilter}
         fetchBranches={fetchBranches} // fetchBranches fonksiyonunu geçiyoruz
+        view={view}
       />
     </div>
   );

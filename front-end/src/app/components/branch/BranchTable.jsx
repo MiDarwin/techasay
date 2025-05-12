@@ -14,6 +14,12 @@ import {
   Box,
   Typography,
   Snackbar,
+  Grid,
+  Card,
+  CardHeader,
+  CardContent,
+  CardActions,
+  Divider,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -40,6 +46,8 @@ import InventoryModal from "./InventoryModal"; // Envanter Modalı Component
 import InfoIcon from "@mui/icons-material/Info";
 import tableStyles from "../../styles/tableStyles";
 import VisitModal from "./VisitModal";
+import AddIcon from "@mui/icons-material/Add";
+
 export function safeFormatDate(dateStr) {
   if (!dateStr) return "";
 
@@ -91,6 +99,7 @@ const BranchTable = ({
   branches,
   companies,
   onEdit,
+  view,
   onDelete,
   fetchBranches,
 }) => {
@@ -115,6 +124,7 @@ const BranchTable = ({
   const [branchVisits, setBranchVisits] = useState([]);
   const [isLoadingVisits, setIsLoadingVisits] = useState(false);
   const [infoBranch, setInfoBranch] = useState(null);
+  const [detailBranch, setDetailBranch] = useState(null);
 
   const handleOpenInventory = async (branchId, branchName) => {
     setSelectedBranchId(branchId);
@@ -307,146 +317,152 @@ const BranchTable = ({
   return (
     <>
       <TableContainer component={Paper} sx={tableStyles.tableContainer}>
-        <Table>
-          <TableHead>
-            <TableRow sx={tableStyles.tableHeader}>
-              <TableCell>Şirket Adı</TableCell>
-              <TableCell>Şehir</TableCell>
-              <TableCell>İlçe</TableCell>
-              <TableCell>Şube Adı</TableCell>
-              <TableCell>GSM No</TableCell>
-              <TableCell>Şube Notu</TableCell>
-              <TableCell>Kurulum Tarihi</TableCell>
-              <TableCell>İşlemler</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {branches.map((branch, index) => (
-              <React.Fragment key={branch.id}>
-                <TableRow key={branch.id} sx={tableStyles.tableRow}>
-                  <TableCell onClick={() => handleCopy(branch.company_name)}>
-                    {branch.company_name}
-                  </TableCell>
-                  <TableCell onClick={() => handleCopy(branch.city)}>
-                    {branch.city}
-                  </TableCell>
-                  <TableCell
-                    onClick={() => handleCopy(branch.district || "Yok")}
-                  >
-                    {branch.district || "Yok"}
-                  </TableCell>
-                  <TableCell onClick={() => handleCopy(branch.name)}>
-                    {branch.name}
-                  </TableCell>
-                  <TableCell onClick={() => handleCopy(branch.phone_number)}>
-                    {branch.phone_number}
-                  </TableCell>
-                  <TableCell>{branch.branch_note || "Yok"}</TableCell>
-                  <TableCell>{safeFormatDate(branch.created_date)}</TableCell>
-                  <TableCell>
-                    {/* Şube Bilgileri Modal Aç */}
-                    <Tooltip title="Şube Bilgileri" arrow>
-                      <IconButton
-                        onClick={() => handleOpenInfo(branch)}
-                        color="info"
-                        aria-label="Şube Bilgileri"
-                      >
-                        <InfoIcon />
-                      </IconButton>
-                    </Tooltip>
-                    {branch.location_link && (
-                      <Tooltip title="Konum Göster">
+        {view === "list" && (
+          <Table>
+            <TableHead>
+              <TableRow sx={tableStyles.tableHeader}>
+                <TableCell>Şirket Adı</TableCell>
+                <TableCell>Şehir</TableCell>
+                <TableCell>İlçe</TableCell>
+                <TableCell>Şube Adı</TableCell>
+                <TableCell>GSM No</TableCell>
+                <TableCell>Şube Notu</TableCell>
+                <TableCell>Kurulum Tarihi</TableCell>
+                <TableCell>İşlemler</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {branches.map((branch, index) => (
+                <React.Fragment key={branch.id}>
+                  <TableRow key={branch.id} sx={tableStyles.tableRow}>
+                    <TableCell onClick={() => handleCopy(branch.company_name)}>
+                      {branch.company_name}
+                    </TableCell>
+                    <TableCell onClick={() => handleCopy(branch.city)}>
+                      {branch.city}
+                    </TableCell>
+                    <TableCell
+                      onClick={() => handleCopy(branch.district || "Yok")}
+                    >
+                      {branch.district || "Yok"}
+                    </TableCell>
+                    <TableCell onClick={() => handleCopy(branch.name)}>
+                      {branch.name}
+                    </TableCell>
+                    <TableCell onClick={() => handleCopy(branch.phone_number)}>
+                      {branch.phone_number}
+                    </TableCell>
+                    <TableCell>{branch.branch_note || "Yok"}</TableCell>
+                    <TableCell>{safeFormatDate(branch.created_date)}</TableCell>
+                    <TableCell>
+                      {/* Şube Bilgileri Modal Aç */}
+                      <Tooltip title="Şube Bilgileri" arrow>
                         <IconButton
-                          onClick={() => openLocationLink(branch.location_link)}
-                          color="primary"
-                          aria-label="Konum Göster"
+                          onClick={() => handleOpenInfo(branch)}
+                          color="info"
+                          aria-label="Şube Bilgileri"
                         >
-                          <LocationOnIcon />
+                          <InfoIcon />
                         </IconButton>
                       </Tooltip>
-                    )}
-                    {permissions.includes("branchEdit") && (
-                      <Tooltip title="Düzenle">
-                        <IconButton
-                          onClick={() => handleEditClick(branch)}
-                          color="warning"
-                          aria-label="Düzenle"
-                        >
-                          <EditIcon />
-                        </IconButton>
-                      </Tooltip>
-                    )}
-                    {permissions.includes("branchDelete") && (
-                      <Tooltip title="Sil">
-                        <IconButton
-                          onClick={() => onDelete(branch.id)}
-                          color="error"
-                          aria-label="Sil"
-                        >
-                          <DeleteIcon />
-                        </IconButton>
-                      </Tooltip>
-                    )}
-
-                    {permissions.includes("subBranchAdd") && (
-                      <Tooltip title="Alt Şube Ekle">
-                        <IconButton
-                          onClick={() => openSubBranchModal(branch)}
-                          color="success"
-                          aria-label="Alt Şube Ekle"
-                        >
-                          <HolidayVillageIcon />
-                        </IconButton>
-                      </Tooltip>
-                    )}
-                    {branch.has_sub_branches && (
-                      <Tooltip title="Alt Şubeleri Görüntüle">
-                        <IconButton
-                          onClick={() => handleExpandClick(branch.id)}
-                          color="secondary"
-                          aria-label="Alt Şubeleri Görüntüle"
-                        >
-                          <HolidayVillageIcon />
-                        </IconButton>
-                      </Tooltip>
-                    )}
-                    {/* Favori simgesini ekle */}
-                    <Tooltip title="Favori">
-                      <IconButton
-                        onClick={() =>
-                          handleFavoriteClick(branch.id, branch.is_favorite)
-                        }
-                        aria-label="Favori"
-                      >
-                        <FavoriteIcon
-                          style={{ color: branch.is_favorite ? "red" : "gray" }}
-                        />
-                      </IconButton>
-                    </Tooltip>
-                  </TableCell>
-                </TableRow>
-
-                {/* Alt Şube Tablosu */}
-                {expandedRow === branch.id && (
-                  <TableRow>
-                    <TableCell colSpan={9} sx={tableStyles.tableRow}>
-                      {loading ? (
-                        <CircularProgress />
-                      ) : (
-                        <SubBranchTable
-                          subBranches={subBranches}
-                          fetchSubBranches={() =>
-                            fetchSubBranches(parentBranchId)
-                          } // Prop olarak geçiş
-                        />
+                      {branch.location_link && (
+                        <Tooltip title="Konum Göster">
+                          <IconButton
+                            onClick={() =>
+                              openLocationLink(branch.location_link)
+                            }
+                            color="primary"
+                            aria-label="Konum Göster"
+                          >
+                            <LocationOnIcon />
+                          </IconButton>
+                        </Tooltip>
                       )}
+                      {permissions.includes("branchEdit") && (
+                        <Tooltip title="Düzenle">
+                          <IconButton
+                            onClick={() => handleEditClick(branch)}
+                            color="warning"
+                            aria-label="Düzenle"
+                          >
+                            <EditIcon />
+                          </IconButton>
+                        </Tooltip>
+                      )}
+                      {permissions.includes("branchDelete") && (
+                        <Tooltip title="Sil">
+                          <IconButton
+                            onClick={() => onDelete(branch.id)}
+                            color="error"
+                            aria-label="Sil"
+                          >
+                            <DeleteIcon />
+                          </IconButton>
+                        </Tooltip>
+                      )}
+
+                      {permissions.includes("subBranchAdd") && (
+                        <Tooltip title="Alt Şube Ekle">
+                          <IconButton
+                            onClick={() => openSubBranchModal(branch)}
+                            color="success"
+                            aria-label="Alt Şube Ekle"
+                          >
+                            <HolidayVillageIcon />
+                          </IconButton>
+                        </Tooltip>
+                      )}
+                      {branch.has_sub_branches && (
+                        <Tooltip title="Alt Şubeleri Görüntüle">
+                          <IconButton
+                            onClick={() => handleExpandClick(branch.id)}
+                            color="secondary"
+                            aria-label="Alt Şubeleri Görüntüle"
+                          >
+                            <HolidayVillageIcon />
+                          </IconButton>
+                        </Tooltip>
+                      )}
+                      {/* Favori simgesini ekle */}
+                      <Tooltip title="Favori">
+                        <IconButton
+                          onClick={() =>
+                            handleFavoriteClick(branch.id, branch.is_favorite)
+                          }
+                          aria-label="Favori"
+                        >
+                          <FavoriteIcon
+                            style={{
+                              color: branch.is_favorite ? "red" : "gray",
+                            }}
+                          />
+                        </IconButton>
+                      </Tooltip>
                     </TableCell>
                   </TableRow>
-                )}
-              </React.Fragment>
-            ))}
-          </TableBody>
-        </Table>
+
+                  {/* Alt Şube Tablosu */}
+                  {expandedRow === branch.id && (
+                    <TableRow>
+                      <TableCell colSpan={9} sx={tableStyles.tableRow}>
+                        {loading ? (
+                          <CircularProgress />
+                        ) : (
+                          <SubBranchTable
+                            subBranches={subBranches}
+                            fetchSubBranches={() =>
+                              fetchSubBranches(parentBranchId)
+                            } // Prop olarak geçiş
+                          />
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </React.Fragment>
+              ))}
+            </TableBody>
+          </Table>
+        )}
       </TableContainer>
       <Snackbar
         open={snackbarOpen}
@@ -523,6 +539,144 @@ const BranchTable = ({
           isLoading={isLoadingVisits}
           onCreateVisit={handleCreateVisit}
         />
+      )}
+      {view === "card" && (
+        <Grid container spacing={2}>
+          {branches.map((b) => (
+            <Grid
+              item
+              xs={12}
+              sm={6}
+              md={4}
+              key={b.id}
+              sx={{ display: "flex" }}
+            >
+              <Card
+                sx={{
+                  height: 320,
+                  display: "flex",
+                  flexDirection: "column",
+                  flex: 1,
+                  borderRadius: 2,
+                  boxShadow: 2,
+                  backgroundColor: "#EDF2F7",
+                  transition: "transform 0.2s, box-shadow 0.2s",
+                  "&:hover": { transform: "translateY(-4px)", boxShadow: 6 },
+                }}
+              >
+                <CardHeader
+                  title={b.name}
+                  subheader={b.company_name || "Şirket Yok"}
+                />
+                <Divider />
+                <CardContent sx={{ flexGrow: 1 }}>
+                  <Typography variant="body2" gutterBottom>
+                    <strong>Şehir / İlçe:</strong> {b.city} / {b.district}
+                  </Typography>
+                  <Typography variant="body2" gutterBottom>
+                    <strong>GSM No:</strong> {b.phone_number}
+                  </Typography>
+                  <Typography variant="body2" gutterBottom>
+                    <strong>Not:</strong> {b.branch_note || "—"}
+                  </Typography>
+                </CardContent>
+
+                <Divider />
+
+                <CardActions
+                  sx={{ justifyContent: "flex-end", flexWrap: "wrap" }}
+                >
+                  {/* Şube Bilgileri */}
+                  <Tooltip title="Şube Bilgileri" arrow>
+                    <IconButton
+                      onClick={() => handleOpenInfo(b)}
+                      color="info"
+                      aria-label="Şube Bilgileri"
+                    >
+                      <InfoIcon />
+                    </IconButton>
+                  </Tooltip>
+
+                  {/* Konum Göster */}
+                  {b.location_link && (
+                    <Tooltip title="Konum Göster" arrow>
+                      <IconButton
+                        onClick={() => openLocationLink(b.location_link)}
+                        color="primary"
+                        aria-label="Konum Göster"
+                      >
+                        <LocationOnIcon />
+                      </IconButton>
+                    </Tooltip>
+                  )}
+
+                  {permissions.includes("branchEdit") && (
+                    <Tooltip title="Düzenle">
+                      <IconButton
+                        onClick={() => handleEditClick(b)}
+                        color="warning"
+                        aria-label="Düzenle"
+                      >
+                        <EditIcon />
+                      </IconButton>
+                    </Tooltip>
+                  )}
+
+                  {permissions.includes("branchDelete") && (
+                    <Tooltip title="Sil">
+                      <IconButton
+                        onClick={() => onDelete(b.id)}
+                        color="error"
+                        aria-label="Sil"
+                      >
+                        <DeleteIcon />
+                      </IconButton>
+                    </Tooltip>
+                  )}
+
+                  {permissions.includes("subBranchAdd") && (
+                    <Tooltip title="Alt Şube Ekle">
+                      <IconButton
+                        onClick={() => openSubBranchModal(b)}
+                        color="success"
+                        aria-label="Alt Şube Ekle"
+                      >
+                        <HolidayVillageIcon />
+                      </IconButton>
+                    </Tooltip>
+                  )}
+
+                  {/* Alt Şubeleri Görüntüle */}
+                  {b.has_sub_branches && (
+                    <Tooltip title="Alt Şubeleri Görüntüle" arrow>
+                      <IconButton
+                        onClick={() => onViewSubBranches(b.id)}
+                        color="secondary"
+                        aria-label="Alt Şubeleri Görüntüle"
+                      >
+                        <HolidayVillageIcon />
+                      </IconButton>
+                    </Tooltip>
+                  )}
+
+                  {/* Favori */}
+                  <Tooltip title="Favori">
+                    <IconButton
+                      onClick={() => handleFavoriteClick(b.id, b.is_favorite)}
+                      aria-label="Favori"
+                    >
+                      <FavoriteIcon
+                        style={{
+                          color: b.is_favorite ? "red" : "gray",
+                        }}
+                      />
+                    </IconButton>
+                  </Tooltip>
+                </CardActions>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
       )}
     </>
   );

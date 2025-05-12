@@ -20,7 +20,7 @@ const tableStyles = {
     },
   },
   tableHeaderBackground: {
-    backgroundColor: colors.tableHeader || "#E7F6F2",
+    backgroundColor: colors.tableHeader || "#EDF2F7",
   },
   tableRow: {
     "&:nth-of-type(odd)": {
