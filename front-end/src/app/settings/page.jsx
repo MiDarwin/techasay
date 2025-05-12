@@ -3,17 +3,22 @@ import { useEffect, useState } from "react";
 import PersonIcon from "@mui/icons-material/Person"; // Kullanıcı simgesi
 import EditIcon from "@mui/icons-material/Edit"; // Kalem simgesi
 import ExitToAppIcon from "@mui/icons-material/ExitToApp"; // Çıkış simgesi
-import Modal from "@mui/material/Modal"; // Modal bileşeni
-import TextField from "@mui/material/TextField"; // Textfield bileşeni
-import Button from "@mui/material/Button"; // Button bileşeni
 import ColorModal from "./ColorModal";
 import StoreIcon from "@mui/icons-material/Store"; // Anasayfa simgesi
-import Tooltip from "@mui/material/Tooltip";
-import IconButton from "@mui/material/IconButton";
-import CircularProgress from "@mui/material/CircularProgress";
-import Snackbar from "@mui/material/Snackbar";
-import Alert from "@mui/material/Alert";
-
+import {
+  Box,
+  Tabs,
+  Tab,
+  Typography,
+  IconButton,
+  Button,
+  Tooltip,
+  CircularProgress,
+  Snackbar,
+  Alert,
+  Modal,
+  TextField,
+} from "@mui/material";
 import settingsStyles from "../styles/settingsStyles"; // Stil dosyasını içe aktar
 import {
   getCurrentUser,
@@ -40,6 +45,7 @@ const SettingsPage = () => {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [coordResult, setCoordResult] = useState(null);
   const router = useRouter(); // Kullanıcıyı yönlendirmek için router
+  const [tabIndex, setTabIndex] = useState(0);
 
   const allPermissions = ["permission_management", "read", "write", "delete"]; // Tüm yetkiler
 
@@ -67,6 +73,7 @@ const SettingsPage = () => {
       setTableColor(savedColor);
     }
   }, []);
+  const handleTabChange = (e, newIndex) => setTabIndex(newIndex);
 
   const handleColorChange = (color) => {
     setTableColor(color.hex);
@@ -138,200 +145,254 @@ const SettingsPage = () => {
   }
 
   return (
-    <div style={settingsStyles.container}>
-      <IconButton
-        onClick={() => router.push("/homepage")}
+    <Box
+      sx={{ display: "flex", height: "100%", bgcolor: "background.default" }}
+    >
+      {/* ---------- Solda Dikey Sekmeler ---------- */}
+      <Box
         sx={{
-          position: "absolute",
-          top: 16,
-          left: 16,
-          bgcolor: "primary.main",
-          color: "white",
-          width: 48,
-          height: 48,
-          "&:hover": {
-            bgcolor: "primary.dark",
-            transform: "scale(1.1)",
-          },
-          transition: "all 0.2s ease-in-out",
-          borderRadius: "50%",
+          borderRight: 1,
+          borderColor: "divider",
+          width: 200,
+          bgcolor: "background.paper",
+          p: 2,
         }}
       >
-        <StoreIcon fontSize="large" />
-      </IconButton>
-      <div style={settingsStyles.box}>
-        {/* Kullanıcı Bilgileri */}
-        <div style={settingsStyles.userInfo}>
-          <PersonIcon style={settingsStyles.icon} />
-          <span style={settingsStyles.userName}>
-            {user.name} {user.surname}
-          </span>
-          <div style={settingsStyles.iconWrapper}>
-            <ExitToAppIcon
-              style={settingsStyles.logoutIcon}
-              onClick={handleLogout}
-            />
-            <span style={settingsStyles.tooltip}>Çıkış Yap</span>
-          </div>
-        </div>
-        <div style={settingsStyles.changePassword}>
-          <span style={{ color: "black" }}>Şifre Değiştir</span>
-          <div style={settingsStyles.iconWrapper}>
-            <EditIcon
-              style={settingsStyles.editIcon}
-              onClick={togglePasswordModal} // Şifre değiştirme modalını aç
-            />
-            <span style={settingsStyles.tooltip}>Şifre Değiştir</span>
-          </div>
-        </div>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: "16px",
-            marginTop: "16px",
+        <Tabs
+          orientation="vertical"
+          value={tabIndex}
+          onChange={handleTabChange}
+        >
+          <Tab label="Profil" />
+          <Tab label="Tema & Koordinat" />
+          <Tab label="Yetkilerim" />
+        </Tabs>
+      </Box>
+
+      {/* ---------- Sağda İçerik Panelleri ---------- */}
+      <Box sx={{ flexGrow: 1, p: 3, position: "relative" }}>
+        {/* Ana Sayfa ikonu */}
+        <IconButton
+          onClick={() => router.push("/homepage")}
+          sx={{
+            position: "absolute",
+            top: 16,
+            left: 16,
+            bgcolor: "primary.main",
+            color: "white",
+            width: 48,
+            height: 48,
+            "&:hover": { bgcolor: "primary.dark", transform: "scale(1.1)" },
+            transition: "all 0.2s",
+            borderRadius: "50%",
           }}
         >
-          <button
-            style={settingsStyles.adminPanelButton}
-            onClick={goToAdminPanel}
-          >
-            Admin Panel
-          </button>
+          <StoreIcon fontSize="large" />
+        </IconButton>
 
-          <Tooltip
-            title="Varolan şubelerdeki link'lerden koordinatını çıkartmak için basın işlem uzun sürebilir"
-            arrow
-          >
+        {/* --- Profil Paneli --- */}
+        {tabIndex === 0 && (
+          <Box sx={{ maxWidth: 600, mx: "auto" }}>
+            <Box sx={settingsStyles.userInfo}>
+              <PersonIcon sx={settingsStyles.icon} />
+              <Typography variant="h6">
+                {user.name} {user.surname}
+              </Typography>
+              <Box sx={settingsStyles.iconWrapper}>
+                <ExitToAppIcon
+                  sx={settingsStyles.logoutIcon}
+                  onClick={handleLogout}
+                />
+                <Typography sx={settingsStyles.tooltip}>Çıkış Yap</Typography>
+              </Box>
+            </Box>
+            <Box sx={settingsStyles.changePassword}>
+              <Typography>Şifre Değiştir</Typography>
+              <Box sx={settingsStyles.iconWrapper}>
+                <EditIcon
+                  sx={settingsStyles.editIcon}
+                  onClick={togglePasswordModal}
+                />
+                <Typography sx={settingsStyles.tooltip}>
+                  Şifre Değiştir
+                </Typography>
+              </Box>
+            </Box>
+            <Box
+              sx={{
+                display: "flex",
+                gap: 2,
+                mt: 2,
+                alignItems: "center",
+              }}
+            >
+              <Button onClick={goToAdminPanel} variant="outlined">
+                Admin Panel
+              </Button>
+              <Tooltip
+                title="Varolan şubelerdeki link'lerden koordinatını çıkartmak için basın işlem uzun sürebilir"
+                arrow
+              >
+                <Button
+                  variant="contained"
+                  color="warning"
+                  onClick={handleExtractCoords}
+                  disabled={coordLoading}
+                >
+                  {coordLoading ? (
+                    <CircularProgress size={20} />
+                  ) : (
+                    "Koordinat Çıkar"
+                  )}
+                </Button>
+              </Tooltip>
+            </Box>
+          </Box>
+        )}
+
+        {/* --- Tema & Koordinat Paneli --- */}
+        {tabIndex === 1 && (
+          <Box sx={{ maxWidth: 600, mx: "auto", textAlign: "center" }}>
             <Button
               variant="contained"
-              color="warning"
-              onClick={handleExtractCoords}
-              disabled={coordLoading}
+              onClick={() => setOpen(!open)}
+              sx={{
+                width: "100%",
+                py: 1.5,
+                background:
+                  "linear-gradient(90deg, red, orange, yellow, green, blue, indigo, violet)",
+                backgroundSize: "400% 400%",
+                animation: "rainbowEffect 5s linear infinite",
+                color: "white",
+                fontWeight: "bold",
+                boxShadow: 3,
+                borderRadius: 2,
+                "&:hover": {
+                  animation: "rainbowEffect 3s linear infinite",
+                  boxShadow: 4,
+                },
+              }}
             >
-              {coordLoading ? (
-                <CircularProgress size={20} />
-              ) : (
-                "Koordinat Çıkar"
-              )}
+              Renkleri Değiştir
             </Button>
-          </Tooltip>
-        </div>
-        <Button
-          variant="contained"
-          onClick={() => setOpen(!open)}
-          sx={{
-            background:
-              "linear-gradient(90deg, red, orange, yellow, green, blue, indigo, violet)",
-            backgroundSize: "400% 400%",
-            animation: "rainbowEffect 5s linear infinite",
-            color: "white",
-            fontWeight: "bold",
-            boxShadow: "0px 4px 10px rgba(0, 0, 0.3)",
-            borderRadius: "8px",
-            "&:hover": {
-              background:
-                "linear-gradient(90deg, red, orange, yellow, green, blue, indigo, violet)",
-              animation: "rainbowEffect 3s linear infinite",
-              boxShadow: "0px 6px 14px rgba(0, 0, 0.4)",
-            },
-          }}
-        >
-          Renkleri Değiştir
-        </Button>
-        <ColorModal open={open} handleClose={() => setOpen(false)} />
-        {/* Yetkilerim */}
-        <h3 style={settingsStyles.permissionsTitle}>Yetkilerim</h3>{" "}
-        <div style={settingsStyles.permissions}>
-          {permissions.map((permission) => (
-            <div key={permission} style={settingsStyles.permissionItem}>
-              <span>{permission.toUpperCase()}</span>
-              <span style={settingsStyles.greenTick}>✔</span>
-            </div>
-          ))}
-        </div>
-      </div>
-      <Snackbar
-        open={snackbarOpen}
-        autoHideDuration={6000}
-        onClose={() => setSnackbarOpen(false)}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-      >
-        <Alert
+            <ColorModal open={open} handleClose={() => setOpen(false)} />
+            <Box sx={{ mt: 4 }}>
+              <Typography variant="body1">Koordinat güncelleme:</Typography>
+              <Button
+                variant="contained"
+                onClick={handleExtractCoords}
+                disabled={coordLoading}
+                sx={{ mt: 1 }}
+              >
+                {coordLoading ? (
+                  <CircularProgress size={20} color="inherit" />
+                ) : (
+                  "Koordinat Çıkar"
+                )}
+              </Button>
+            </Box>
+          </Box>
+        )}
+
+        {/* --- Yetkiler Paneli --- */}
+        {tabIndex === 2 && (
+          <Box sx={{ maxWidth: 600, mx: "auto" }}>
+            <Typography variant="h5" sx={settingsStyles.permissionsTitle}>
+              Yetkilerim
+            </Typography>
+            <Box sx={settingsStyles.permissionsGrid}>
+              {permissions.map((perm) => (
+                <Box key={perm} sx={settingsStyles.permissionItem}>
+                  <Typography>{perm.toUpperCase()}</Typography>
+                  <Typography sx={settingsStyles.greenTick}>✔</Typography>
+                </Box>
+              ))}
+            </Box>
+          </Box>
+        )}
+
+        {/* Şifre Değiştirme Modal & Snackbar */}
+        <Snackbar
+          open={snackbarOpen}
+          autoHideDuration={6000}
           onClose={() => setSnackbarOpen(false)}
-          severity="success"
-          variant="filled"
-          sx={{ width: "100%" }}
+          anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
         >
-          {coordResult
-            ? `${coordResult.updated}/${coordResult.total} şube koordinatı eklendi!.`
-            : "Güncelleme tamamlandı."}
-        </Alert>
-      </Snackbar>
-      {/* Şifre Değiştirme Modal */}
-      <Modal
-        open={isPasswordModalOpen}
-        onClose={togglePasswordModal}
-        sx={{ display: "flex", alignItems: "center", justifyContent: "center" }}
-      >
-        <div
-          style={{
-            ...settingsStyles.modal,
-            backgroundColor: "white",
-            padding: "20px",
-            borderRadius: "8px",
-            boxShadow: "0 3px 6px rgba(0,0,0,0.1)",
+          <Alert
+            onClose={() => setSnackbarOpen(false)}
+            severity="success"
+            variant="filled"
+            sx={{ width: "100%" }}
+          >
+            {coordResult
+              ? `${coordResult.updated}/${coordResult.total} şube koordinatı eklendi!.`
+              : "Güncelleme tamamlandı."}
+          </Alert>
+        </Snackbar>
+
+        <Modal
+          open={isPasswordModalOpen}
+          onClose={togglePasswordModal}
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
           }}
         >
-          <h2 style={{ ...settingsStyles.modalTitle, marginBottom: "20px" }}>
-            Şifre Değiştir
-          </h2>
-
-          <TextField
-            label="Mevcut Şifre"
-            type="password"
-            value={oldPassword}
-            onChange={(e) => setOldPassword(e.target.value)}
-            fullWidth
-            margin="normal"
-            sx={{ mb: 2 }}
-          />
-
-          <TextField
-            label="Yeni Şifre"
-            type="password"
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
-            fullWidth
-            margin="normal"
-            sx={{ mb: 2 }}
-          />
-
-          {passwordError && (
-            <div style={{ color: "error.main", marginBottom: "10px" }}>
-              {passwordError}
-            </div>
-          )}
-
-          {passwordSuccess && (
-            <div style={{ color: "success.main", marginBottom: "10px" }}>
-              {passwordSuccess}
-            </div>
-          )}
-
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleChangePassword}
-            fullWidth
-            sx={{ mt: 2 }}
+          <Box
+            sx={{
+              ...settingsStyles.modal,
+              bgcolor: "background.paper",
+              p: 4,
+              borderRadius: 2,
+              boxShadow: 3,
+            }}
           >
-            Şifreyi Güncelle
-          </Button>
-        </div>
-      </Modal>
-    </div>
+            <Typography
+              variant="h6"
+              sx={{ ...settingsStyles.modalTitle, mb: 2 }}
+            >
+              Şifre Değiştir
+            </Typography>
+            <TextField
+              label="Mevcut Şifre"
+              type="password"
+              value={oldPassword}
+              onChange={(e) => setOldPassword(e.target.value)}
+              fullWidth
+              margin="normal"
+            />
+            <TextField
+              label="Yeni Şifre"
+              type="password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              fullWidth
+              margin="normal"
+            />
+            {passwordError && (
+              <Typography color="error.main" mb={1}>
+                {passwordError}
+              </Typography>
+            )}
+            {passwordSuccess && (
+              <Typography color="success.main" mb={1}>
+                {passwordSuccess}
+              </Typography>
+            )}
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleChangePassword}
+              fullWidth
+              sx={{ mt: 2 }}
+            >
+              Şifreyi Güncelle
+            </Button>
+          </Box>
+        </Modal>
+      </Box>
+    </Box>
   );
 };
 

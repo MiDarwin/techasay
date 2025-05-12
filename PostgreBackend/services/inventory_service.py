@@ -10,6 +10,7 @@ from models.branch import Branch
 from schemas.inventory import InventoryOut, InventoryCreateBody
 from sqlalchemy import or_, cast, String
 from sqlalchemy import func
+from datetime import datetime
 
 
 async def get_inventories(
@@ -184,57 +185,64 @@ async def import_inventory_from_excel(
     db: AsyncSession,
     file
 ) -> Dict[str, Any]:
-
-    # 1) Excel’i oku
-    df = pd.read_excel(file.file)
+    # 1) Excel’i oku ve NaN→None
+    df = pd.read_excel(file.file, dtype=str)
     df = df.where(pd.notnull(df), None)
 
-    if "branch_name" not in df.columns:
-        raise ValueError("Excel dosyasında 'branch_name' sütunu yok.")
+    # Zorunlu sütun kontrolü
+    for required in ("company_name", "branch_name"):
+        if required not in df.columns:
+            raise ValueError(f"Excel dosyasında '{required}' sütunu yok.")
 
-    # 2) Dynamic detay sütunları
-    detail_cols = [c for c in df.columns if c != "branch_name"]
+    # 2) Detay sütunları: company_name ve branch_name hariç
+    detail_cols = [
+        c for c in df.columns
+        if c not in ("company_name", "branch_name")
+    ]
 
     added = updated = skipped = 0
     skipped_branches: List[str] = []
 
-    # 3) Satır satır işle
     for _, row in df.iterrows():
-        bname = row["branch_name"]
-        # Şubeyi bul
-        q = select(Branch).where(Branch.branch_name == bname)
+        # Şubeyi company_name + branch_name ile eşle
+        q = (
+            select(Branch)
+            .join(Company)
+            .where(
+                Company.name == row["company_name"],
+                Branch.branch_name == row["branch_name"]
+            )
+        )
         res = await db.execute(q)
         branch = res.scalars().first()
         if not branch:
             skipped += 1
-            skipped_branches.append(bname)
+            skipped_branches.append(f"{row['company_name']} / {row['branch_name']}")
             continue
 
-        # Envanter var mı?
+        # Var olan envanter
         q2 = select(Inventory).where(Inventory.branch_id == branch.id)
-        res2 = await db.execute(q2)
-        inv = res2.scalars().first()
+        inv = (await db.execute(q2)).scalars().first()
 
-        # Yeni detay dict’i
-        new_details = {
-            col: row[col]
-            for col in detail_cols
-            if row[col] is not None
-        }
+        # 3) Sadece gerçek değer içeren detaylar
+        new_details = {}
+        for col in detail_cols:
+            val = row.get(col)
+            if val is None or (isinstance(val, str) and not val.strip()):
+                continue
+            new_details[col] = val
 
         if inv:
-            # Merge: var olansa korunur, yeni/güncelleme gelen override eder
             merged = {**inv.details, **new_details}
             if merged != inv.details:
                 inv.details = merged
+                inv.updated_date = datetime.now()
                 updated += 1
         else:
-            # Yeni envanter
             to_create = Inventory(branch_id=branch.id, details=new_details)
             db.add(to_create)
             added += 1
 
-    # 4) Commit
     if added + updated > 0:
         await db.commit()
 
