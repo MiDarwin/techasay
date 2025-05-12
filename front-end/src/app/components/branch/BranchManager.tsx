@@ -381,7 +381,7 @@ const BranchManager = () => {
           flexDirection="column"
           justifyContent="center"
           alignItems="flex-end"
-          sx={{ ml: "auto", mr: 2 }}
+          sx={{ ml: "auto", mr: 2, ml: 1 }}
         >
           {countLoading ? (
             <CircularProgress size={20} />

@@ -15,7 +15,9 @@ import AddIcon from "@mui/icons-material/Add"; // Ekleme ikonu
 import Button from "@mui/material/Button"; // MUI Button bileşeni
 import DomainAddIcon from "@mui/icons-material/DomainAdd";
 import tableStyles from "@/app/styles/tableStyles";
-
+import { Box, ToggleButton, ToggleButtonGroup } from "@mui/material";
+import ViewModuleIcon from "@mui/icons-material/ViewModule";
+import TableRowsIcon from "@mui/icons-material/TableRows";
 const CompanyManager = () => {
   const [companies, setCompanies] = useState([]);
   const [companyError, setCompanyError] = useState("");
@@ -24,6 +26,7 @@ const CompanyManager = () => {
   const [isFormVisible, setIsFormVisible] = useState(false); // Modal görünürlüğü için durum
   const [searchTerm, setSearchTerm] = useState(""); // Arama terimi durumu
   const [permissions, setPermissions] = useState([]); // Kullanıcı izinleri
+  const [view, setView] = useState<"card" | "list">("card");
 
   const fetchCompanies = async () => {
     try {
@@ -110,10 +113,8 @@ const CompanyManager = () => {
   return (
     <div className="flex flex-col">
       <div
-        className="flex items-center justify-between mb-4 p-4 rounded-lg shadow-lg border border-gray-300"
-        style={{
-          backgroundColor: "#E7F6F2",
-        }}
+        className="flex items-center mb-4 p-4 rounded-lg shadow-lg border border-gray-300"
+        style={{ backgroundColor: "#E7F6F2" }}
       >
         <input
           type="text"
@@ -123,22 +124,36 @@ const CompanyManager = () => {
           className="mr-4"
           style={tableStyles.textInput}
         />
-
-        {/* Şirket Ekle Butonu en sağda */}
-        {permissions.includes("companyAdd") && (
-          <Button
-            variant="contained"
-            color="success"
-            onClick={() => {
-              setIsEditMode(false); // Yeni ekleme için mod değiştir
-              setIsFormVisible(true); // Modalı aç
-            }}
-            className="flex items-center"
+        {/* Sağdaki grup: toggle + buton */}
+        <div className="ml-auto flex items-center space-x-2">
+          <ToggleButtonGroup
+            value={view}
+            exclusive
+            onChange={(_, v) => v && setView(v)}
           >
-            <DomainAddIcon className="mr-2" /> {/* İkonu ekle */}
-            Şirket Ekle
-          </Button>
-        )}
+            <ToggleButton value="card">
+              <ViewModuleIcon /> Kart
+            </ToggleButton>
+            <ToggleButton value="list">
+              <TableRowsIcon /> Liste
+            </ToggleButton>
+          </ToggleButtonGroup>
+
+          {permissions.includes("companyAdd") && (
+            <Button
+              variant="contained"
+              color="success"
+              onClick={() => {
+                setIsEditMode(false); // Yeni ekleme için mod değiştir
+                setIsFormVisible(true); // Modalı aç
+              }}
+              className="flex items-center"
+            >
+              <DomainAddIcon className="mr-2" />
+              Şirket Ekle
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Modal */}
@@ -163,6 +178,7 @@ const CompanyManager = () => {
         companies={filteredCompanies} // Filtrelenmiş şirketleri göster
         onEdit={openEditModal}
         onDelete={handleDeleteCompany}
+        view={view}
       />
     </div>
   );
