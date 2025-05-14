@@ -8,7 +8,7 @@ from database import get_db
 from schemas.inventory import InventoryOut, InventoryCreateBody, InventoryImportResponse
 from services.inventory_service import create_inventory, update_inventory, \
     generate_inventory_excel, import_inventory_from_excel, get_inventories, \
-    get_inventory_fields_by_company, count_inventories
+    get_inventory_fields_by_company, count_inventories, import_inventory_for_company
 
 router = APIRouter(prefix="", tags=["inventory"])
 @router.get(
@@ -125,5 +125,22 @@ async def read_inventory_fields(
     """
     try:
         return await get_inventory_fields_by_company(db, company_id)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+@router.post(
+    "/import/company/{company_id}",
+    response_model=InventoryImportResponse,
+    summary="Şirkete özel Excel ile envanter yükle (alt-şube bazlı)"
+)
+async def import_by_company(
+    company_id: int,
+    file: UploadFile = File(...),
+    db: AsyncSession = Depends(get_db)
+):
+    try:
+        result = await import_inventory_for_company(db, file, company_id)
+        return InventoryImportResponse(**result)
+    except ValueError as ve:
+        raise HTTPException(status_code=400, detail=str(ve))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

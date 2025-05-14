@@ -1,3 +1,4 @@
+import re
 from tempfile import NamedTemporaryFile
 from typing import List, Dict, Any, Optional
 from models.company import Company
@@ -12,7 +13,8 @@ from sqlalchemy import or_, cast, String
 from sqlalchemy import func
 from datetime import datetime
 
-
+DEV_RE = re.compile(r"^[0-9A-F]{14,16}$", re.I)     # DevEUI mi, ölçüm mü?
+SENSORS = {"TH1", "TH2", "CO2", "EC", "Outdoor TH"} # satır filtrelemede kullan
 async def get_inventories(
     db: AsyncSession,
     branch_id: Optional[int] = None,
@@ -31,7 +33,13 @@ async def get_inventories(
     )
 
     if branch_id is not None:
-        stmt = stmt.where(Inventory.branch_id == branch_id)
+          # hem seçilen şubeyi hem de onun alt şubelerini al
+            stmt = stmt.where(
+                    or_(
+                            Inventory.branch_id == branch_id,
+                            Branch.parent_branch_id == branch_id
+            )
+        )
     elif company_id is not None:
         stmt = stmt.where(Branch.company_id == company_id)
     else:
@@ -235,7 +243,8 @@ async def import_inventory_from_excel(
         if inv:
             merged = {**inv.details, **new_details}
             if merged != inv.details:
-                inv.details = merged
+                inv.details = {k: (v.get("reading") if isinstance(v, dict) and "reading" in v else v)
+                               for k, v in merged.items()}
                 inv.updated_date = datetime.now()
                 updated += 1
         else:
@@ -273,3 +282,116 @@ async def get_inventory_fields_by_company(
             fields.update(details.keys())
 
     return sorted(fields)
+async def import_inventory_for_company(
+    db: AsyncSession,
+    file,                     # FastAPI UploadFile   (file.file -> BytesIO)
+    company_id: int
+) -> Dict[str, Any]:
+    """
+    Excel’deki blok yapısını (3 sütun = 1 kümes çifti) otomatik ayırır,
+    alt-şubeleri (kümes) ve envanterlerini ekler/günceller.
+    """
+
+    # ---------- 1) Excel’i oku
+    df = pd.read_excel(file.file, header=None, engine="openpyxl")
+    df = df.where(pd.notnull(df), None)                             # NaN -> None
+    df = df.replace(r"(?i)^\s*nan\s*$", None, regex=True)           # "nan" string
+
+    # ---------- 2) Excel’i uzun formata çevir
+    records: List[dict] = []
+    header_row = None
+
+    for _, row in df.iterrows():
+        # a) Yeni blok başlıyor mu? (B sütunu “Sensor” ise)
+        if str(row[1]).strip().lower() == "sensor":
+            header_row = row
+            continue
+        if header_row is None:
+            continue                                               # henüz başlık yok
+
+        sensor = str(row[1]).strip()
+        if sensor not in SENSORS:                                  # boş/geçersiz satır
+            continue
+
+        # b) Aynı blokta 3 kümese kadar dön (C-D, E-F, G-H …)
+        for col in range(2, len(header_row), 2):
+            coop_name = header_row[col]
+            val       = row[col + 1]
+
+            if not coop_name or val is None:                       # boş hücre
+                continue
+
+            records.append(
+                {
+                    "main_branch_name": row[0] or "",              # A sütunu
+                    "coop_name"      : str(coop_name).strip(),     # Kümes X
+                    "sensor"         : sensor,
+                    "value"          : str(val).strip()
+                }
+            )
+
+    # ---------- 3) DB’ye işle
+    added = updated = skipped = 0
+    skipped_branches: List[str] = []
+
+    for rec in records:
+        # 3a) Ana şube (branch) – parent_branch_id NULL
+        q_main = select(Branch).where(
+            Branch.company_id  == company_id,
+            Branch.branch_name == rec["main_branch_name"],
+            Branch.parent_branch_id.is_(None)
+        )
+        main_branch = (await db.execute(q_main)).scalars().first()
+        if not main_branch:
+            skipped += 1
+            skipped_branches.append(rec["main_branch_name"])
+            continue
+
+        # 3b) Alt-şube (kümes)
+        q_sub = select(Branch).where(
+            Branch.parent_branch_id == main_branch.id,
+            Branch.branch_name      == rec["coop_name"]
+        )
+        sub_branch = (await db.execute(q_sub)).scalars().first()
+        if not sub_branch:
+            sub_branch = Branch(
+                company_id       = main_branch.company_id,         # ★ NULL hata düzeltildi
+                parent_branch_id = main_branch.id,
+                branch_name      = rec["coop_name"]
+            )
+            db.add(sub_branch)
+            await db.flush()
+
+        # 3c) Envanter
+        q_inv = select(Inventory).where(Inventory.branch_id == sub_branch.id)
+        inv   = (await db.execute(q_inv)).scalars().first()
+
+        # DevEUI mi yoksa ölçüm mü?
+        value_field = (
+            {"dev_eui": rec["value"]}
+            if DEV_RE.fullmatch(rec["value"])
+            else {"reading": rec["value"]}
+        )
+        new_details = {rec["sensor"]: rec["value"]}
+
+        if inv:
+            merged = {**inv.details, **new_details}
+            if merged != inv.details:
+                inv.details = {k: (v.get("reading") if isinstance(v, dict) and "reading" in v else v)
+                               for k, v in merged.items()}
+                inv.updated_date = datetime.utcnow()
+                updated += 1
+        else:
+            inv = Inventory(branch_id=sub_branch.id, details=new_details)
+            db.add(inv)
+            added += 1
+
+    if added or updated:
+        await db.commit()
+
+    return {
+        "added"            : added,
+        "updated"          : updated,
+        "skipped"          : skipped,
+        "skipped_branches" : list(set(skipped_branches))
+    }

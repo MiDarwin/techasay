@@ -145,9 +145,7 @@ const SettingsPage = () => {
   }
 
   return (
-    <Box
-      sx={{ display: "flex", height: "100%", bgcolor: "background.default" }}
-    >
+    <Box sx={{ display: "flex", height: "100vh", bgcolor: "background.paper" }}>
       {/* ---------- Solda Dikey Sekmeler ---------- */}
       <Box
         sx={{
@@ -195,7 +193,7 @@ const SettingsPage = () => {
           <Box sx={{ maxWidth: 600, mx: "auto" }}>
             <Box sx={settingsStyles.userInfo}>
               <PersonIcon sx={settingsStyles.icon} />
-              <Typography variant="h6">
+              <Typography color="black" variant="h6">
                 {user.name} {user.surname}
               </Typography>
               <Box sx={settingsStyles.iconWrapper}>
@@ -203,11 +201,13 @@ const SettingsPage = () => {
                   sx={settingsStyles.logoutIcon}
                   onClick={handleLogout}
                 />
-                <Typography sx={settingsStyles.tooltip}>Çıkış Yap</Typography>
+                <Typography color="black" sx={settingsStyles.tooltip}>
+                  Çıkış Yap
+                </Typography>
               </Box>
             </Box>
             <Box sx={settingsStyles.changePassword}>
-              <Typography>Şifre Değiştir</Typography>
+              <Typography color="black">Şifre Değiştir</Typography>
               <Box sx={settingsStyles.iconWrapper}>
                 <EditIcon
                   sx={settingsStyles.editIcon}
@@ -277,7 +277,9 @@ const SettingsPage = () => {
             </Button>
             <ColorModal open={open} handleClose={() => setOpen(false)} />
             <Box sx={{ mt: 4 }}>
-              <Typography variant="body1">Koordinat güncelleme:</Typography>
+              <Typography color="black" variant="body1">
+                Koordinat güncelleme:
+              </Typography>
               <Button
                 variant="contained"
                 onClick={handleExtractCoords}
@@ -300,7 +302,14 @@ const SettingsPage = () => {
             <Typography variant="h5" sx={settingsStyles.permissionsTitle}>
               Yetkilerim
             </Typography>
-            <Box sx={settingsStyles.permissionsGrid}>
+            <Box
+              sx={{
+                display: "grid",
+                gridTemplateColumns: "repeat(3, 1fr)",
+                gap: 2,
+                mt: 2,
+              }}
+            >
               {permissions.map((perm) => (
                 <Box key={perm} sx={settingsStyles.permissionItem}>
                   <Typography>{perm.toUpperCase()}</Typography>
