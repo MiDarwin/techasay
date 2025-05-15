@@ -361,7 +361,25 @@ export const importInventory = async (file: File) => {
     skipped_branches: string[];
   };
 };
-
+export const importInventoryByCompany = async (
+  company_id: number,
+  file: File
+): Promise<InventoryImportResponse> => {
+  const token = localStorage.getItem("access_token");
+  const form = new FormData();
+  form.append("file", file);
+  const res = await fetch(
+    `${BASE_URL}/api/inventory/import/company/${company_id}`,
+    {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+      body: form,
+    }
+  );
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.detail || "Excel import hatası");
+  return data as InventoryImportResponse;
+};
 // Excel export
 export const downloadInventoryExcel = async (
   company_id?: number,

@@ -368,6 +368,10 @@ const InventoryManager = () => {
       <InventoryImportModal
         open={importModalOpen}
         onClose={() => setImportModalOpen(false)}
+        onUploadSuccess={() => {
+          setImportModalOpen(false);
+          fetchInventories();
+        }}
       />
     </Container>
   );
