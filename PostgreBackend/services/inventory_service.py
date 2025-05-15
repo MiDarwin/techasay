@@ -291,7 +291,7 @@ async def import_inventory_for_company(
     Şirkete özel Excel ile envanter yükle:
       1) "Data" sayfasından ana şubeleri (Çiftlik Adı) ve envanter detaylarını
          company_id altında oluşturur/günceller.
-      2) "Database" sayfasından her ana şubenin alt-şubelerini (küme) ve
+      2) "Database" sayfasından her ana şubenin alt-şubelerini (kümes) ve
          bunların envanter detaylarını parent_branch_id altında oluşturur/günceller.
     Alt-şubeler company_id’yi null bırakır; sadece parent_branch_id kullanır.
     """
@@ -355,14 +355,14 @@ async def import_inventory_for_company(
     df_sub = pd.read_excel(file.file, sheet_name="Database", dtype=str, engine="openpyxl")
     df_sub = df_sub.where(pd.notnull(df_sub), None)
     df_sub.columns = [c.strip() for c in df_sub.columns]
-    for required in ("Çiftlik Adı", "Küme"):
+    for required in ("Çiftlik Adı", "Kümes"):
         if required not in df_sub.columns:
             raise ValueError(f"Database sayfasında '{required}' sütunu yok.")
-    detail_cols_sub = [c for c in df_sub.columns if c not in ("Çiftlik Adı", "Küme")]
+    detail_cols_sub = [c for c in df_sub.columns if c not in ("Çiftlik Adı", "Kümes")]
 
     for _, row in df_sub.iterrows():
         main_name = row["Çiftlik Adı"]
-        cage      = row["Küme"]
+        cage      = row["Kümes"]
         if not main_name or not cage:
             continue
 

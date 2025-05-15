@@ -2,6 +2,7 @@
 from http.client import HTTPException
 from typing import Optional,Tuple
 from datetime import datetime
+from dateutil import parser
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from models.branch import Branch
@@ -354,9 +355,17 @@ async def create_excel_file(branches):
     temp_file.close()
     return temp_file.name
 async def process_excel_file(file, db: AsyncSession, user_id: int):
+    """
+    Excel'den şube verilerini içe aktarır.
+    Unik kontrol artık sadece (branch_name, company_id) ikilisiyle yapılır.
+    branch_name, city, district alanları normalize edilerek (İlk harf büyük, diğerleri küçük) kaydedilir.
+    Gelen satırda veri olmayan sütunlar mevcut kaydı güncellemez.
+    """
+    # Excel oku
     try:
         df = pd.read_excel(file.file, dtype=str)
-        df = df.replace({pd.NA: None, "nan": None})
+        df.columns = df.columns.str.strip()                    # boşluk temizle
+        df = df.where(df.notna(), None).replace({"nan": None})  # NaN -> None
     except Exception:
         raise ValueError("Excel dosyası okunamadı, lütfen dosyayı kontrol edin.")
 
@@ -370,23 +379,33 @@ async def process_excel_file(file, db: AsyncSession, user_id: int):
             raise ValueError(f"Excel dosyasında '{col}' sütunu eksik.")
 
     # Opsiyonel sütunlar
-    has_lat  = "latitude" in df.columns
-    has_lon  = "longitude" in df.columns
+    has_lat = "latitude" in df.columns
+    has_lon = "longitude" in df.columns
     has_date = "created_date" in df.columns
+    has_phone2 = "phone_number_2" in df.columns
+    has_note = "branch_note" in df.columns
+    has_link = "location_link" in df.columns
+
+    # Normalizasyon fonksiyonu
+    norm = lambda x: x.strip().title() if isinstance(x, str) else x
+    df["branch_name"] = df["branch_name"].apply(norm)
+    df["city"] = df["city"].apply(norm)
+    df["district"] = df["district"].apply(norm)
 
     added_count = updated_count = skipped_count = 0
 
     for _, row in df.iterrows():
-        # Şirket ID parse
+        # company_id parse
         try:
-            company_id = int(row["company_id"])
+            company_id = int(float(row["company_id"]))
         except (ValueError, TypeError):
             skipped_count += 1
             continue
 
         # Şirket kontrolü
-        res = await db.execute(select(Company).filter(Company.id == company_id))
-        company = res.scalars().first()
+        company = (
+            await db.execute(select(Company).where(Company.id == company_id))
+        ).scalars().first()
         if not company:
             skipped_count += 1
             continue
@@ -408,37 +427,41 @@ async def process_excel_file(file, db: AsyncSession, user_id: int):
         created_date = None
         if has_date and row.get("created_date"):
             try:
-                created_date = datetime.strptime(row["created_date"], "%d/%m/%Y")
-            except Exception:
+                created_date = parser.parse(row["created_date"], dayfirst=True).date()
+            except (parser.ParserError, TypeError):
                 pass
 
-        # Mevcut şube bak
-        res = await db.execute(
-            select(Branch).filter(
-                Branch.branch_name == row["branch_name"],
-                Branch.city        == row["city"],
-                Branch.district    == row["district"],
-                Branch.company_id  == company_id
+        # Mevcut şubeyi (branch_name + company_id) ile bul
+        existing = (
+            await db.execute(
+                select(Branch).where(
+                    Branch.branch_name == row["branch_name"],
+                    Branch.company_id == company_id,
+                )
             )
-        )
-        existing = res.scalars().first()
+        ).scalars().first()
 
         if existing:
             updated = False
-            # Alan güncellemeleri
-            if existing.address != row["address"]:
+
+            # Sadece gelen verisi dolu alanları güncelle
+            if row["address"] and existing.address != row["address"]:
                 existing.address = row["address"]; updated = True
-            if existing.phone_number != row["phone_number"]:
+            if row["city"] and existing.city != row["city"]:
+                existing.city = row["city"]; updated = True
+            if row["district"] and existing.district != row["district"]:
+                existing.district = row["district"]; updated = True
+            if row["phone_number"] and existing.phone_number != row["phone_number"]:
                 existing.phone_number = row["phone_number"]; updated = True
-            if existing.phone_number_2 != row.get("phone_number_2"):
-                existing.phone_number_2 = row.get("phone_number_2"); updated = True
-            if existing.branch_note != row.get("branch_note"):
-                existing.branch_note = row.get("branch_note"); updated = True
-            if existing.location_link != row.get("location_link"):
-                existing.location_link = row.get("location_link"); updated = True
-            if has_lat and existing.latitude  != lat:
-                existing.latitude  = lat; updated = True
-            if has_lon and existing.longitude != lon:
+            if has_phone2 and row.get("phone_number_2") and existing.phone_number_2 != row["phone_number_2"]:
+                existing.phone_number_2 = row["phone_number_2"]; updated = True
+            if has_note and row.get("branch_note") and existing.branch_note != row["branch_note"]:
+                existing.branch_note = row["branch_note"]; updated = True
+            if has_link and row.get("location_link") and existing.location_link != row["location_link"]:
+                existing.location_link = row["location_link"]; updated = True
+            if has_lat and lat is not None and existing.latitude != lat:
+                existing.latitude = lat; updated = True
+            if has_lon and lon is not None and existing.longitude != lon:
                 existing.longitude = lon; updated = True
             if has_date and created_date and existing.created_date != created_date:
                 existing.created_date = created_date; updated = True
@@ -450,18 +473,18 @@ async def process_excel_file(file, db: AsyncSession, user_id: int):
         else:
             # Yeni şube oluştur
             new_branch = Branch(
-                branch_name   = row["branch_name"],
-                address       = row["address"],
-                city          = row["city"],
-                district      = row["district"],
-                phone_number  = row["phone_number"],
-                phone_number_2= row.get("phone_number_2"),
-                branch_note   = row.get("branch_note"),
-                location_link = row.get("location_link"),
-                company_id    = company_id,
-                latitude      = lat,
-                longitude     = lon,
-                created_date  = created_date
+                branch_name=row["branch_name"],
+                address=row["address"],
+                city=row["city"],
+                district=row["district"],
+                phone_number=row["phone_number"],
+                phone_number_2=row.get("phone_number_2") if has_phone2 else None,
+                branch_note=row.get("branch_note") if has_note else None,
+                location_link=row.get("location_link") if has_link else None,
+                company_id=company_id,
+                latitude=lat,
+                longitude=lon,
+                created_date=created_date,
             )
             db.add(new_branch)
             added_count += 1
@@ -472,7 +495,7 @@ async def process_excel_file(file, db: AsyncSession, user_id: int):
     return {
         "added_count": added_count,
         "updated_count": updated_count,
-        "skipped_count": skipped_count
+        "skipped_count": skipped_count,
     }
 async def _parse_coords_from_url(url: str) -> Optional[Tuple[float, float]]:
     # 1) !3dlat!4dlng
