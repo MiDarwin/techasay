@@ -499,14 +499,18 @@ const BranchTable = ({
               {infoBranch.phone_number_2 && (
                 <>
                   <Box display="flex" alignItems="center" mb={1}>
-                    <Typography sx={{ flexGrow: 1 }}>Yedek GSM No:</Typography>
+                    <Typography color="black" sx={{ flexGrow: 1 }}>
+                      Yedek GSM No:
+                    </Typography>
                     <Tooltip title="Kopyala" arrow>
                       <IconButton
                         onClick={() => handleCopy(infoBranch.phone_number_2)}
                       ></IconButton>
                     </Tooltip>
                   </Box>
-                  <Typography>{infoBranch.phone_number_2}</Typography>
+                  <Typography color="black">
+                    {infoBranch.phone_number_2}
+                  </Typography>
                 </>
               )}
             </>

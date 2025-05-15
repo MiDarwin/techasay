@@ -284,113 +284,143 @@ async def get_inventory_fields_by_company(
     return sorted(fields)
 async def import_inventory_for_company(
     db: AsyncSession,
-    file,                     # FastAPI UploadFile   (file.file -> BytesIO)
+    file,
     company_id: int
 ) -> Dict[str, Any]:
     """
-    Excel’deki blok yapısını (3 sütun = 1 kümes çifti) otomatik ayırır,
-    alt-şubeleri (kümes) ve envanterlerini ekler/günceller.
+    Şirkete özel Excel ile envanter yükle:
+      1) "Data" sayfasından ana şubeleri (Çiftlik Adı) ve envanter detaylarını
+         company_id altında oluşturur/günceller.
+      2) "Database" sayfasından her ana şubenin alt-şubelerini (küme) ve
+         bunların envanter detaylarını parent_branch_id altında oluşturur/günceller.
+    Alt-şubeler company_id’yi null bırakır; sadece parent_branch_id kullanır.
     """
 
-    # ---------- 1) Excel’i oku
-    df = pd.read_excel(file.file, header=None, engine="openpyxl")
-    df = df.where(pd.notnull(df), None)                             # NaN -> None
-    df = df.replace(r"(?i)^\s*nan\s*$", None, regex=True)           # "nan" string
-
-    # ---------- 2) Excel’i uzun formata çevir
-    records: List[dict] = []
-    header_row = None
-
-    for _, row in df.iterrows():
-        # a) Yeni blok başlıyor mu? (B sütunu “Sensor” ise)
-        if str(row[1]).strip().lower() == "sensor":
-            header_row = row
-            continue
-        if header_row is None:
-            continue                                               # henüz başlık yok
-
-        sensor = str(row[1]).strip()
-        if sensor not in SENSORS:                                  # boş/geçersiz satır
-            continue
-
-        # b) Aynı blokta 3 kümese kadar dön (C-D, E-F, G-H …)
-        for col in range(2, len(header_row), 2):
-            coop_name = header_row[col]
-            val       = row[col + 1]
-
-            if not coop_name or val is None:                       # boş hücre
-                continue
-
-            records.append(
-                {
-                    "main_branch_name": row[0] or "",              # A sütunu
-                    "coop_name"      : str(coop_name).strip(),     # Kümes X
-                    "sensor"         : sensor,
-                    "value"          : str(val).strip()
-                }
-            )
-
-    # ---------- 3) DB’ye işle
+    # ortak dönüş sayacı
     added = updated = skipped = 0
     skipped_branches: List[str] = []
 
-    for rec in records:
-        # 3a) Ana şube (branch) – parent_branch_id NULL
+    # 1) Data sayfası: ana şubeler
+    df_main = pd.read_excel(file.file, sheet_name="Data", dtype=str, engine="openpyxl")
+    df_main = df_main.where(pd.notnull(df_main), None)
+    df_main.columns = [c.strip() for c in df_main.columns]
+    if "Çiftlik Adı" not in df_main.columns:
+        raise ValueError("Data sayfasında 'Çiftlik Adı' sütunu yok.")
+    detail_cols_main = [c for c in df_main.columns if c != "Çiftlik Adı"]
+
+    for _, row in df_main.iterrows():
+        bname = row["Çiftlik Adı"]
+        if not bname:
+            continue
+
+        # ana şubeyi al veya oluştur
+        q = select(Branch).where(
+            Branch.company_id  == company_id,
+            Branch.branch_name == bname,
+            Branch.parent_branch_id.is_(None)
+        )
+        res = await db.execute(q)
+        branch = res.scalars().first()
+        if not branch:
+            branch = Branch(
+                company_id      = company_id,
+                parent_branch_id= None,
+                branch_name     = bname
+            )
+            db.add(branch)
+            await db.flush()
+
+        # detayları topla
+        new_details = {}
+        for col in detail_cols_main:
+            val = row.get(col)
+            if val is None or (isinstance(val, str) and not val.strip()):
+                continue
+            new_details[col] = val
+
+        # envanter kaydını al/güncelle
+        q2 = select(Inventory).where(Inventory.branch_id == branch.id)
+        inv = (await db.execute(q2)).scalars().first()
+        if inv:
+            merged = {**inv.details, **new_details}
+            if merged != inv.details:
+                inv.details      = merged
+                inv.updated_date = datetime.now()
+                updated += 1
+        else:
+            db.add(Inventory(branch_id=branch.id, details=new_details))
+            added += 1
+
+    # 2) Database sayfası: alt-şubeler
+    df_sub = pd.read_excel(file.file, sheet_name="Database", dtype=str, engine="openpyxl")
+    df_sub = df_sub.where(pd.notnull(df_sub), None)
+    df_sub.columns = [c.strip() for c in df_sub.columns]
+    for required in ("Çiftlik Adı", "Küme"):
+        if required not in df_sub.columns:
+            raise ValueError(f"Database sayfasında '{required}' sütunu yok.")
+    detail_cols_sub = [c for c in df_sub.columns if c not in ("Çiftlik Adı", "Küme")]
+
+    for _, row in df_sub.iterrows():
+        main_name = row["Çiftlik Adı"]
+        cage      = row["Küme"]
+        if not main_name or not cage:
+            continue
+
+        # önce ana şubeyi bul
         q_main = select(Branch).where(
             Branch.company_id  == company_id,
-            Branch.branch_name == rec["main_branch_name"],
+            Branch.branch_name == main_name,
             Branch.parent_branch_id.is_(None)
         )
         main_branch = (await db.execute(q_main)).scalars().first()
         if not main_branch:
             skipped += 1
-            skipped_branches.append(rec["main_branch_name"])
+            skipped_branches.append(f"{main_name} / {cage}")
             continue
 
-        # 3b) Alt-şube (kümes)
-        q_sub = select(Branch).where(
+        # alt-şubeyi al veya oluştur (company_id=None)
+        q_subb = select(Branch).where(
             Branch.parent_branch_id == main_branch.id,
-            Branch.branch_name      == rec["coop_name"]
+            Branch.branch_name      == cage
         )
-        sub_branch = (await db.execute(q_sub)).scalars().first()
-        if not sub_branch:
-            sub_branch = Branch(
+        sub = (await db.execute(q_subb)).scalars().first()
+        if not sub:
+            sub = Branch(
+                company_id       = None,
                 parent_branch_id = main_branch.id,
-                branch_name      = rec["coop_name"]
+                branch_name      = cage
             )
-            db.add(sub_branch)
+            db.add(sub)
             await db.flush()
 
-        # 3c) Envanter
-        q_inv = select(Inventory).where(Inventory.branch_id == sub_branch.id)
-        inv   = (await db.execute(q_inv)).scalars().first()
+        # alt-şubenin detaylarını topla
+        new_details = {}
+        for col in detail_cols_sub:
+            val = row.get(col)
+            if val is None or (isinstance(val, str) and not val.strip()):
+                continue
+            new_details[col] = val
 
-        # DevEUI mi yoksa ölçüm mü?
-        value_field = (
-            {"dev_eui": rec["value"]}
-            if DEV_RE.fullmatch(rec["value"])
-            else {"reading": rec["value"]}
-        )
-        new_details = {rec["sensor"]: rec["value"]}
-
-        if inv:
-            merged = {**inv.details, **new_details}
-            if merged != inv.details:
-                inv.details = {k: (v.get("reading") if isinstance(v, dict) and "reading" in v else v)
-                               for k, v in merged.items()}
-                inv.updated_date = datetime.utcnow()
+        # envanter kaydını al/güncelle
+        q3 = select(Inventory).where(Inventory.branch_id == sub.id)
+        inv2 = (await db.execute(q3)).scalars().first()
+        if inv2:
+            merged2 = {**inv2.details, **new_details}
+            if merged2 != inv2.details:
+                inv2.details      = merged2
+                inv2.updated_date = datetime.now()
                 updated += 1
         else:
-            inv = Inventory(branch_id=sub_branch.id, details=new_details)
-            db.add(inv)
+            db.add(Inventory(branch_id=sub.id, details=new_details))
             added += 1
 
-    if added or updated:
+    # 3) commit
+    if added + updated > 0:
         await db.commit()
 
     return {
-        "added"            : added,
-        "updated"          : updated,
-        "skipped"          : skipped,
-        "skipped_branches" : list(set(skipped_branches))
+        "added": added,
+        "updated": updated,
+        "skipped": skipped,
+        "skipped_branches": skipped_branches
     }
