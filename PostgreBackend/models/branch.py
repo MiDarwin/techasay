@@ -4,6 +4,7 @@ from models.favorite_branches import favorite_branches
 from sqlalchemy import Column, Integer, String, ForeignKey, DateTime,Float , Boolean
 from sqlalchemy.orm import relationship
 from database import Base
+from sqlalchemy import UniqueConstraint
 
 class Branch(Base):
     __tablename__ = "branches"
@@ -39,7 +40,10 @@ class Branch(Base):
         back_populates="favorite_branches"
     )
     visits = relationship("Visit", back_populates="branch", cascade="all, delete-orphan")
-
+    __table_args__ = (
+        UniqueConstraint("company_id", "branch_name",
+                         name="uq_company_branchname"),   # ← koruma burada
+    )
 # Import en sona eklendi
 from .inventory import Inventory
 from .visit import Visit
