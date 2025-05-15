@@ -355,7 +355,6 @@ async def import_inventory_for_company(
         sub_branch = (await db.execute(q_sub)).scalars().first()
         if not sub_branch:
             sub_branch = Branch(
-                company_id       = main_branch.company_id,         # ★ NULL hata düzeltildi
                 parent_branch_id = main_branch.id,
                 branch_name      = rec["coop_name"]
             )
