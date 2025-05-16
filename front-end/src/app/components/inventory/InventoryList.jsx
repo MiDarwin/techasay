@@ -10,6 +10,9 @@ import {
   Button,
   Divider,
   Modal,
+  useTheme,
+  Chip,
+  Stack,
 } from "@mui/material";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
@@ -20,6 +23,8 @@ import IconButton from "@mui/material/IconButton";
 import EditIcon from "@mui/icons-material/Edit";
 import CloseIcon from "@mui/icons-material/Close";
 import FarmDetailsModal from "./FarmDetailsModal";
+import DevicesOtherIcon from "@mui/icons-material/DevicesOther";
+import { alpha } from "@mui/material/styles";
 /**
  * InventoryList: Envanter kayıtlarını eşit yükseklikte kartlar halinde gösterir.
  * Grid container alignItems="stretch" ile tüm kartlar aynı yüksekliğe uzanır.
@@ -29,7 +34,15 @@ const InventoryList = ({ inventories = [], onEdit }) => {
   const [detailInv, setDetailInv] = useState(null);
   const [open, setOpen] = useState(false);
   const [farmInv, setFarmInv] = useState(null); // yeni farm modal
+  const theme = useTheme();
 
+  const accents = [
+    theme.palette.primary.main,
+    theme.palette.success.main,
+    theme.palette.warning.main,
+    theme.palette.info.main,
+    theme.palette.error.main,
+  ];
   const formatDate = (iso) => {
     const d = new Date(iso);
     return d.toLocaleDateString(undefined, {
@@ -124,18 +137,70 @@ const InventoryList = ({ inventories = [], onEdit }) => {
 
                   <Divider sx={{ my: 1 }} />
 
-                  {preview.map(([key, value]) => (
-                    <Box key={key} display="flex" alignItems="center" mb={0.5}>
-                      <InfoIcon
-                        fontSize="small"
-                        sx={{ mr: 1, color: "primary.main" }}
-                      />
-                      <Typography variant="body2">
-                        <strong>{key}:</strong> {value}
-                      </Typography>
-                    </Box>
-                  ))}
+                  {isFarm ? (
+                    <Box
+                      sx={{
+                        display: "grid",
+                        gridTemplateColumns: "repeat(3, 1fr)", // 3 eşit sütun
+                        gridTemplateRows: "repeat(3, 64px)", // 3 satır, her biri 64 px
+                        gap: 1, // 8 px aralık
+                        mt: 1,
+                        minHeight: 64 * 3 + 8 * 2, // kart kaymasın
+                      }}
+                    >
+                      {Array.from({ length: 9 }).map((_, slot) => {
+                        const entry = preview[slot]; // sensör varsa doldur
+                        const accent = accents[slot % accents.length];
 
+                        /* BOŞ hücre: gözükmesin ama grid’i korusun */
+                        if (!entry) return <Box key={slot} />;
+
+                        const [key, value] = entry;
+                        const sensor = key.split("_")[0]; // EC, TH1…
+
+                        return (
+                          <Box
+                            key={key}
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              gap: 1,
+                              width: "100%",
+                              height: "100%",
+                              borderRadius: 3, // yuvarlak köşe
+                              bgcolor: alpha(accent, 0.1),
+                              border: `1px solid ${alpha(accent, 0.4)}`,
+                              boxShadow: `0 0 4px ${alpha(accent, 0.25)}`,
+                            }}
+                          >
+                            <DevicesOtherIcon sx={{ color: accent }} />
+                            <Typography variant="subtitle2" fontWeight={600}>
+                              {sensor} ID: {value}
+                            </Typography>
+                          </Box>
+                        );
+                      })}
+                    </Box>
+                  ) : (
+                    /* --- DİĞER ŞUBELER: eski liste --- */
+                    preview.map(([key, value]) => (
+                      <Box
+                        key={key}
+                        display="flex"
+                        alignItems="center"
+                        mb={0.5}
+                      >
+                        <InfoIcon
+                          fontSize="small"
+                          sx={{ mr: 1, color: "primary.main" }}
+                        />
+                        <Typography variant="body2">
+                          <strong>{key}:</strong> {value}
+                        </Typography>
+                      </Box>
+                    ))
+                  )}
                   {moreHidden > 0 && (
                     <Typography variant="caption" color="text.secondary">
                       +{moreHidden} envanter daha…

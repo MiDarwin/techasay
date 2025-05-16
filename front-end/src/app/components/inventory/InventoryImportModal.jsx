@@ -72,16 +72,6 @@ const InventoryImportModal = ({ open, onClose, onUploadSuccess }) => {
           </Typography>
 
           {/* ← Buraya ekledik */}
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={useCompany}
-                onChange={(e) => setUseCompany(e.target.checked)}
-              />
-            }
-            label="Şenpiliç"
-            sx={{ mb: 2, color: "black" }}
-          />
 
           <Typography color="black" variant="body2">
             Excel dosyasında bulunması gereken sütunlar:
@@ -108,6 +98,16 @@ const InventoryImportModal = ({ open, onClose, onUploadSuccess }) => {
               onChange={handleFileChange}
             />
           </Button>
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={useCompany}
+                onChange={(e) => setUseCompany(e.target.checked)}
+              />
+            }
+            label="Şenpiliç"
+            sx={{ color: "black" }}
+          />
           {file && (
             <Typography color="black" variant="body2" mt={1}>
               Seçilen dosya: {file.name}
