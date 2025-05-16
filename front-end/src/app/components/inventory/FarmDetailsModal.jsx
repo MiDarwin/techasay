@@ -107,12 +107,7 @@ export default function FarmDetailsModal({ open, onClose, inv }) {
                 bgcolor: alpha(accent, 0.04), // hafif tint
               }}
             >
-              <Accordion
-                defaultExpanded={idx === 0}
-                disableGutters
-                square
-                elevation={0}
-              >
+              <Accordion disableGutters square elevation={0}>
                 <AccordionSummary
                   expandIcon={<ExpandMoreIcon />}
                   sx={{
