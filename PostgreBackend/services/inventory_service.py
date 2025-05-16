@@ -4,6 +4,7 @@ from typing import List, Dict, Any, Optional
 
 import unicodedata
 from dateutil import parser
+from sqlalchemy.orm import aliased
 
 from models.company import Company
 import pandas as pd
@@ -21,6 +22,8 @@ _TR_LOWER = str.maketrans("Iİ", "ıi")      # I→ı, İ→i
 _TR_UPPER = {"i": "İ", "ı": "I"}           # i→İ, ı→I
 DEV_RE = re.compile(r"^[0-9A-F]{14,16}$", re.I)     # DevEUI mi, ölçüm mü?
 SENSORS = {"TH1", "TH2", "CO2", "EC", "Outdoor TH"} # satır filtrelemede kullan
+Parent = aliased(Branch)                    # ⬅ ana şube alias’ı
+
 async def get_inventories(
     db: AsyncSession,
     branch_id: Optional[int] = None,
@@ -156,14 +159,27 @@ async def generate_inventory_excel(
         select(
             Inventory,
             Branch.branch_name.label("branch_name"),
-            Company.name.label("company_name")
+            Company.name.label("company_name"),
         )
         .join(Branch, Inventory.branch_id == Branch.id)
-        .join(Company, Branch.company_id == Company.company_id)
+        .outerjoin(Parent, Branch.parent_branch_id == Parent.id)  # ⬅ yeni
+        .outerjoin(  # ⬅ inner → outer
+            Company,
+            or_(Branch.company_id == Company.company_id,  # ana şube company
+                Parent.company_id == Company.company_id)  # alt şube company
+        )
     )
     # Şube bazlı filtre
     if branch_ids:
-        stmt = stmt.where(Inventory.branch_id.in_(branch_ids))
+        # 1) Seçilen şubelerin doğrudan alt-şubelerini getir
+        child_stmt = select(Branch.id).where(Branch.parent_branch_id.in_(branch_ids))
+        child_ids = (await db.execute(child_stmt)).scalars().all()
+
+        # 2) Ana + alt şubeleri tek listede topla
+        all_ids = list(set(branch_ids) | set(child_ids))
+
+        # 3) Yalnız bu id’lerin envanterini al
+        stmt = stmt.where(Inventory.branch_id.in_(all_ids))
     # Company bazlı filtre (branch_ids yoksa)
     elif company_id:
         stmt = stmt.where(Branch.company_id == company_id)
