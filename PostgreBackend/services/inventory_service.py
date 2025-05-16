@@ -461,6 +461,7 @@ async def import_inventory_for_company(
     for _, row in df_sub.iterrows():
         main_name = row["Çiftlik Adı"]
         cage_name = row["Kümes"]
+
         if not main_name or not cage_name:
             continue
 
@@ -496,11 +497,19 @@ async def import_inventory_for_company(
             except (parser.ParserError, ValueError, TypeError):
                 production_date = None
 
-        new_details = {
-            col: val
-            for col, val in row.items()
-            if col in detail_cols_sub and val not in (None, "", " ")
-        }
+        tip = (row.get("Tip") or f"row_{_}").strip().replace(" ", "_")  # OutdoorTH
+
+        new_details = {}
+        for col in detail_cols_sub:
+            val = row.get(col)
+            if val in (None, "", " "):
+                continue
+
+            if col == "Tip":  # Tip alanını ayrı kaydetme
+                continue  # (istersen kaldırma)
+
+            # Anahtar:  OutdoorTH_AppEUI, OutdoorTH_DevEUI ...
+            new_details[f"{tip}_{col}"] = val
 
         q_inv2 = select(Inventory).where(Inventory.branch_id == sub.id)
         inv2 = (await db.execute(q_inv2)).scalars().first()
