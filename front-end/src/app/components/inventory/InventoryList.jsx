@@ -19,7 +19,7 @@ import InventoryUpdateModal from "./InvetoryUpdate";
 import IconButton from "@mui/material/IconButton";
 import EditIcon from "@mui/icons-material/Edit";
 import CloseIcon from "@mui/icons-material/Close";
-
+import FarmDetailsModal from "./FarmDetailsModal";
 /**
  * InventoryList: Envanter kayıtlarını eşit yükseklikte kartlar halinde gösterir.
  * Grid container alignItems="stretch" ile tüm kartlar aynı yüksekliğe uzanır.
@@ -27,6 +27,9 @@ import CloseIcon from "@mui/icons-material/Close";
 const InventoryList = ({ inventories = [], onEdit }) => {
   const [modalOpen, setModalOpen] = useState(false);
   const [detailInv, setDetailInv] = useState(null);
+  const [open, setOpen] = useState(false);
+  const [farmInv, setFarmInv] = useState(null); // yeni farm modal
+
   const formatDate = (iso) => {
     const d = new Date(iso);
     return d.toLocaleDateString(undefined, {
@@ -40,9 +43,23 @@ const InventoryList = ({ inventories = [], onEdit }) => {
     <>
       <Grid container spacing={2} alignItems="stretch">
         {inventories.map((inv) => {
-          const entries = Object.entries(inv.details || {});
+          const FARM_KEYS = [
+            "OutdoorTH_Sensor ID",
+            "CO2_Sensor ID",
+            "TH1_Sensor ID",
+            "TH2_Sensor ID",
+            "EC_Sensor ID",
+          ];
+
+          const isFarm = inv.branch_name?.startsWith("Kümes");
+          const allEntries = Object.entries(inv.details || {}); // hepsi
+          const entries = isFarm
+            ? allEntries.filter(([k]) => FARM_KEYS.includes(k)) // sadece 5’i
+            : allEntries;
+
           const preview = entries.slice(0, 5);
-          const moreCount = entries.length - preview.length;
+          const moreHidden = allEntries.length - preview.length; // 🔹 fark burada
+          /* ----------------------------------------------------------- */
 
           return (
             <Grid
@@ -119,9 +136,9 @@ const InventoryList = ({ inventories = [], onEdit }) => {
                     </Box>
                   ))}
 
-                  {moreCount > 0 && (
+                  {moreHidden > 0 && (
                     <Typography variant="caption" color="text.secondary">
-                      +{moreCount} envanter daha…
+                      +{moreHidden} envanter daha…
                     </Typography>
                   )}
                 </CardContent>
@@ -131,11 +148,15 @@ const InventoryList = ({ inventories = [], onEdit }) => {
                 >
                   {/* Sol slot: Detay Göster (sadece detay fazlaysa) */}
                   <Box>
-                    {moreCount > 0 && (
-                      <Button size="small" onClick={() => setDetailInv(inv)}>
-                        Detay Göster
-                      </Button>
-                    )}
+                    <Button
+                      size="small"
+                      onClick={() =>
+                        isFarm ? setFarmInv(inv) : setDetailInv(inv)
+                      }
+                      disabled={!isFarm && moreHidden === 0} // farm → her zaman aktif
+                    >
+                      Detay Göster
+                    </Button>
                   </Box>
 
                   {/* Sağ slot: Düzenle her zaman burada */}
@@ -191,7 +212,7 @@ const InventoryList = ({ inventories = [], onEdit }) => {
               justifyContent: "space-between",
             }}
           >
-            <Typography color="black"variant="h6">
+            <Typography color="black" variant="h6">
               {detailInv?.branch_name} — Envanter detayları
             </Typography>
             <IconButton onClick={() => setDetailInv(null)}>
@@ -208,7 +229,7 @@ const InventoryList = ({ inventories = [], onEdit }) => {
                     fontSize="small"
                     sx={{ mr: 1, color: "primary.main" }}
                   />
-                  <Typography color="black"variant="body2">
+                  <Typography color="black" variant="body2">
                     <strong>{key}:</strong> {value}
                   </Typography>
                 </Box>
@@ -216,6 +237,14 @@ const InventoryList = ({ inventories = [], onEdit }) => {
           </Box>
         </Box>
       </Modal>
+      {/* Çiftlik şubeleri için yeni modal */}
+      {farmInv && (
+        <FarmDetailsModal
+          open={Boolean(farmInv)}
+          onClose={() => setFarmInv(null)}
+          inv={farmInv}
+        />
+      )}
     </>
   );
 };
