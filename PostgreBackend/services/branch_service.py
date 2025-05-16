@@ -2,6 +2,8 @@
 from http.client import HTTPException
 from typing import Optional,Tuple
 from datetime import datetime
+
+import unicodedata
 from dateutil import parser
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
@@ -19,7 +21,9 @@ from openpyxl import Workbook
 import pandas as pd
 import re
 import httpx
-
+# Türkçe'ye özel büyük/küçük harf tabloları
+_TR_LOWER = str.maketrans("Iİ", "ıi")   # I → ı, İ → i
+_TR_UPPER = {"i": "İ", "ı": "I"}
 async def create_branch(db: AsyncSession, branch: BranchCreate, company_id: int):
     db_branch = Branch(
         branch_name=branch.branch_name,
@@ -354,6 +358,18 @@ async def create_excel_file(branches):
     workbook.save(temp_file.name)
     temp_file.close()
     return temp_file.name
+def tr_title(text: str):
+    if not isinstance(text, str):
+        return text
+    text = unicodedata.normalize("NFKC", text)
+    words = text.strip().split()
+    out = []
+    for w in words:
+        w = w.translate(_TR_LOWER).lower()   # önce doğru “küçük” yap
+        if w:
+            first = _TR_UPPER.get(w[0], w[0].upper())
+            out.append(first + w[1:])
+    return " ".join(out)
 async def process_excel_file(file, db: AsyncSession, user_id: int):
     """
     Excel'den şube verilerini içe aktarır.
@@ -387,7 +403,7 @@ async def process_excel_file(file, db: AsyncSession, user_id: int):
     has_link = "location_link" in df.columns
 
     # Normalizasyon fonksiyonu
-    norm = lambda x: x.strip().title() if isinstance(x, str) else x
+    norm = lambda x: tr_title(x)
     df["branch_name"] = df["branch_name"].apply(norm)
     df["city"] = df["city"].apply(norm)
     df["district"] = df["district"].apply(norm)

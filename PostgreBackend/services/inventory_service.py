@@ -2,6 +2,7 @@ import re
 from tempfile import NamedTemporaryFile
 from typing import List, Dict, Any, Optional
 
+import unicodedata
 from dateutil import parser
 
 from models.company import Company
@@ -15,7 +16,9 @@ from schemas.inventory import InventoryOut, InventoryCreateBody
 from sqlalchemy import or_, cast, String
 from sqlalchemy import func
 from datetime import datetime
-
+# Türkçe harf tabloları
+_TR_LOWER = str.maketrans("Iİ", "ıi")      # I→ı, İ→i
+_TR_UPPER = {"i": "İ", "ı": "I"}           # i→İ, ı→I
 DEV_RE = re.compile(r"^[0-9A-F]{14,16}$", re.I)     # DevEUI mi, ölçüm mü?
 SENSORS = {"TH1", "TH2", "CO2", "EC", "Outdoor TH"} # satır filtrelemede kullan
 async def get_inventories(
@@ -285,6 +288,22 @@ async def get_inventory_fields_by_company(
             fields.update(details.keys())
 
     return sorted(fields)
+def tr_title(text: str):
+    if not isinstance(text, str):
+        return text
+
+    # 1) Unicode birleşik/kombine normalize et
+    text = unicodedata.normalize("NFKC", text)
+
+    # 2) Kelimeleri tek tek dönüştür
+    words, out = text.strip().split(), []
+    for w in words:
+        w = w.translate(_TR_LOWER).lower()     # önce doğru “küçült”
+        if not w:
+            continue
+        first = _TR_UPPER.get(w[0], w[0].upper())
+        out.append(first + w[1:])
+    return " ".join(out)
 async def import_inventory_for_company(
     db: AsyncSession,
     file,
@@ -305,7 +324,7 @@ async def import_inventory_for_company(
     # -----------------------------------------------------------
     # Yardımcı – normalizasyon
     # -----------------------------------------------------------
-    norm = lambda x: x.strip().title() if isinstance(x, str) else x
+    norm = lambda x: tr_title(x)
 
     # -----------------------------------------------------------
     # 1)  Data sayfası  (Sadece ana şube günceller + created_date işle)
