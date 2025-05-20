@@ -25,11 +25,9 @@ import CloseIcon from "@mui/icons-material/Close";
 import FarmDetailsModal from "./FarmDetailsModal";
 import DevicesOtherIcon from "@mui/icons-material/DevicesOther";
 import { alpha } from "@mui/material/styles";
-/**
- * InventoryList: Envanter kayıtlarını eşit yükseklikte kartlar halinde gösterir.
- * Grid container alignItems="stretch" ile tüm kartlar aynı yüksekliğe uzanır.
- */
-const InventoryList = ({ inventories = [], onEdit }) => {
+import FilterListIcon from "@mui/icons-material/FilterList";
+
+const InventoryList = ({ inventories = [], onEdit, onFilter = () => {} }) => {
   const [modalOpen, setModalOpen] = useState(false);
   const [detailInv, setDetailInv] = useState(null);
   const [open, setOpen] = useState(false);
@@ -203,9 +201,7 @@ const InventoryList = ({ inventories = [], onEdit }) => {
                   )}
                 </CardContent>
                 <Divider sx={{ my: 1 }} />
-                <CardActions
-                  sx={{ display: "flex", justifyContent: "space-between" }}
-                >
+                <CardActions sx={{ justifyContent: "flex-end", gap: 0.5 }}>
                   {/* Sol slot: Detay Göster (sadece detay fazlaysa) */}
                   <Box>
                     <Button
@@ -222,17 +218,42 @@ const InventoryList = ({ inventories = [], onEdit }) => {
                         opacity: !isFarm && moreHidden === 0 ? 0.5 : 1,
                         pointerEvents:
                           !isFarm && moreHidden === 0 ? "none" : "auto",
+                        mr: 1,
                       }}
                     >
                       Detay Göster
                     </Button>
                     {moreHidden > 0 && (
-                      <Typography variant="caption" color="text.secondary">
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        sx={{ mr: 9 }}
+                      >
                         +{moreHidden} detay daha…
                       </Typography>
                     )}
                   </Box>
-
+                  {!inv.branch_name?.startsWith(
+                    "Kümes"
+                  ) /* 🆕 sadece ana şube */ && (
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      color="secondary"
+                      startIcon={<FilterListIcon />}
+                      onClick={() => onFilter(inv)} /* 🆕 callback */
+                      sx={{
+                        // 🔹 butonu daralt
+                        minWidth: 110, // isteğe göre 100-120 px arası
+                        px: 1.5, // yatay iç boşluğu kıs
+                        py: 0.25, // dikey iç boşluğu kıs
+                        fontSize: "0.75rem",
+                        mr: 0, // yazıyı ufalt
+                      }}
+                    >
+                      Filtre Olarak Seç
+                    </Button>
+                  )}
                   {/* Sağ slot: Düzenle her zaman burada */}
                   <Box>
                     <Button

@@ -355,6 +355,7 @@ const InventoryManager = () => {
           setSelectedInv(inv);
           setModalOpen(true);
         }}
+        onFilter={(inv) => setSelectedBranch(inv.branch_name)}
       />
 
       {/* Modaller */}
