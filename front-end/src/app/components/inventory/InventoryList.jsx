@@ -114,7 +114,7 @@ const InventoryList = ({ inventories = [], onEdit }) => {
                 />
 
                 <CardContent
-                  sx={{ pt: 1, pb: 1, flexGrow: 1, overflowY: "auto" }}
+                  sx={{ pt: 1, pb: 1, flexGrow: 1, overflowY: "hidden" }}
                 >
                   <Box
                     display="flex"
@@ -201,11 +201,6 @@ const InventoryList = ({ inventories = [], onEdit }) => {
                       </Box>
                     ))
                   )}
-                  {moreHidden > 0 && (
-                    <Typography variant="caption" color="text.secondary">
-                      +{moreHidden} envanter daha…
-                    </Typography>
-                  )}
                 </CardContent>
                 <Divider sx={{ my: 1 }} />
                 <CardActions
@@ -216,12 +211,26 @@ const InventoryList = ({ inventories = [], onEdit }) => {
                     <Button
                       size="small"
                       onClick={() =>
-                        isFarm ? setFarmInv(inv) : setDetailInv(inv)
+                        moreHidden > 0 || isFarm
+                          ? isFarm
+                            ? setFarmInv(inv)
+                            : setDetailInv(inv)
+                          : null
                       }
-                      disabled={!isFarm && moreHidden === 0} // farm → her zaman aktif
+                      disabled={false} // her zaman görünür
+                      sx={{
+                        opacity: !isFarm && moreHidden === 0 ? 0.5 : 1,
+                        pointerEvents:
+                          !isFarm && moreHidden === 0 ? "none" : "auto",
+                      }}
                     >
                       Detay Göster
                     </Button>
+                    {moreHidden > 0 && (
+                      <Typography variant="caption" color="text.secondary">
+                        +{moreHidden} detay daha…
+                      </Typography>
+                    )}
                   </Box>
 
                   {/* Sağ slot: Düzenle her zaman burada */}
