@@ -287,18 +287,28 @@ async def get_inventory_fields_by_company(
     db: AsyncSession,
     company_id: int
 ) -> List[str]:
+    """
+    Şirketin ana şubeleri ve onlara bağlı alt-şubelerin
+    envanter (details) alan isimlerini döndürür.
+    """
+    Parent = aliased(Branch)  # ebeveyn şube için alias
 
-    # Inventory.details ve Branch join
+    # Inventory ➜ Branch (child)  ➜ Parent (ana)
     stmt = (
         select(Inventory.details)
         .join(Branch, Inventory.branch_id == Branch.id)
-        .where(Branch.company_id == company_id)
+        .outerjoin(Parent, Branch.parent_branch_id == Parent.id)
+        .where(
+            or_(
+                Branch.company_id == company_id,   # ana şubeler
+                Parent.company_id == company_id    # o ana şubeye bağlı alt-şubeler
+            )
+        )
     )
 
-    result = await db.execute(stmt)
-    records = result.scalars().all()  # her biri bir dict ya da None
+    records = (await db.execute(stmt)).scalars().all()  # her biri dict ya da None
 
-    fields = set()
+    fields: set[str] = set()
     for details in records:
         if isinstance(details, dict):
             fields.update(details.keys())
