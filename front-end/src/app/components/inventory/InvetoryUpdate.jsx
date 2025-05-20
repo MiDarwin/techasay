@@ -18,7 +18,7 @@ import AddCircleIcon from "@mui/icons-material/AddCircle";
 import RemoveCircleIcon from "@mui/icons-material/RemoveCircle";
 import { updateInventory, getInventoryFieldsByCompany } from "@/app/utils/api";
 import { useTheme, alpha } from "@mui/material/styles"; // alpha gerekiyorsa
-
+import CloseIcon from "@mui/icons-material/Close";
 const modalStyle = {
   position: "fixed",
   top: "50%",
@@ -99,26 +99,43 @@ export default function InventoryUpdateModal({
   const grouped = useMemo(() => {
     const g = {};
     fields.forEach((f) => {
-      const [sensor] = (f.key || "_").split("_", 1); // EC_AppEUI -> EC
+      if (!f.key) return; // 🔹 anahtarsızları atla
+      const [sensor] = f.key.split("_", 1);
       if (!g[sensor]) g[sensor] = [];
       g[sensor].push(f);
     });
     return g;
   }, [fields]);
 
+  const ungrouped = fields.filter((f) => !f.key); // 🔹 anahtarsız satırlar
+
   return (
     <Modal open={open} onClose={onClose} disablePortal>
       <Box sx={modalStyle}>
-        {/* Scrollable content */}
-        <Box sx={{ maxHeight: "calc(80vh - 64px)", overflowY: "auto" }}>
-          <Box sx={{ p: 2 }}>
-            <Typography color="black" variant="h6" mb={2}>
-              Envanter #{inventory?.id} Düzenle
-            </Typography>
+        {/* ---------- Başlık ---------- */}
+        <Box
+          sx={{
+            p: 2,
+            borderBottom: (th) => `1px solid ${th.palette.divider}`,
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <Typography color="black" variant="h6">
+            Envanter #{inventory?.id} Düzenle
+          </Typography>
+          <IconButton onClick={onClose}>
+            <CloseIcon />
+          </IconButton>
+        </Box>
 
-            {/* ============ KÜMES ============== */}
-            {isFarm ? (
-              Object.entries(grouped).map(([sensor, list], idx) => (
+        {/* --------- İçerik (scrollable) --------- */}
+        <Box sx={{ maxHeight: "calc(80vh - 120px)", overflowY: "auto", p: 2 }}>
+          {isFarm ? (
+            <>
+              {/* sensör akordeonları */}
+              {Object.entries(grouped).map(([sensor, list], idx) => (
                 <Accordion
                   key={sensor}
                   disableGutters
@@ -133,17 +150,13 @@ export default function InventoryUpdateModal({
                   <AccordionSummary
                     expandIcon={<ExpandMoreIcon />}
                     sx={{
-                      bgcolor: "grey.50", // açık zemin
-                      "& .MuiAccordionSummary-content": {
-                        alignItems: "center",
-                      },
-                      pl: 2,
+                      bgcolor: "grey.50",
+                      pl: 3,
                       position: "relative",
                       "&::before": {
-                        // sol renk şeridi
                         content: '""',
-                        position: "absolute", // 🔹 konumlandır
-                        left: 8, // 8 px içeriden
+                        position: "absolute",
+                        left: 8,
                         top: 6,
                         bottom: 6,
                         width: 4,
@@ -158,27 +171,30 @@ export default function InventoryUpdateModal({
                   <AccordionDetails>
                     <Grid container spacing={2}>
                       {list.map((fld) => {
-                        const globalIdx = fields.findIndex((f) => f === fld);
+                        const gi = fields.findIndex((f) => f === fld);
                         const used = fields.map((f) => f.key);
-                        const options = suggestions.filter(
-                          (opt) => opt && !used.includes(opt)
+                        const opts = suggestions.filter(
+                          (o) => o && !used.includes(o)
                         );
                         return (
-                          <React.Fragment key={globalIdx}>
+                          <React.Fragment key={gi}>
                             <Grid item xs={5}>
                               <Autocomplete
                                 freeSolo
-                                options={options}
+                                options={opts}
                                 value={fld.key}
-                                onInputChange={(e, v) =>
-                                  handleFieldChange(globalIdx, "key", v)
+                                filterOptions={(o, st) =>
+                                  o.filter((v) =>
+                                    v
+                                      .toLowerCase()
+                                      .includes(st.inputValue.toLowerCase())
+                                  )
                                 }
-                                renderInput={(params) => (
-                                  <TextField
-                                    {...params}
-                                    label="Anahtar"
-                                    fullWidth
-                                  />
+                                onInputChange={(e, v) =>
+                                  handleFieldChange(gi, "key", v)
+                                }
+                                renderInput={(p) => (
+                                  <TextField {...p} label="Anahtar" fullWidth />
                                 )}
                               />
                             </Grid>
@@ -187,11 +203,7 @@ export default function InventoryUpdateModal({
                                 label="Değer"
                                 value={fld.value}
                                 onChange={(e) =>
-                                  handleFieldChange(
-                                    globalIdx,
-                                    "value",
-                                    e.target.value
-                                  )
+                                  handleFieldChange(gi, "value", e.target.value)
                                 }
                                 fullWidth
                               />
@@ -203,7 +215,7 @@ export default function InventoryUpdateModal({
                               alignItems="center"
                             >
                               <IconButton
-                                onClick={() => removeField(globalIdx)}
+                                onClick={() => removeField(gi)}
                                 color="error"
                               >
                                 <RemoveCircleIcon />
@@ -212,77 +224,120 @@ export default function InventoryUpdateModal({
                           </React.Fragment>
                         );
                       })}
-                      <Grid item xs={12}>
-                        <Button
-                          startIcon={<AddCircleIcon />}
-                          onClick={addField}
-                          variant="text"
-                        >
-                          Alan Ekle
-                        </Button>
-                      </Grid>
                     </Grid>
                   </AccordionDetails>
                 </Accordion>
-              ))
-            ) : (
-              /* ============ NORMAL ŞUBE ============== */
-              <Grid container spacing={2}>
-                {fields.map((fld, idx) => {
-                  const used = fields.map((f) => f.key);
-                  const options = suggestions.filter(
-                    (opt) => opt && !used.includes(opt)
-                  );
-                  return (
-                    <React.Fragment key={idx}>
-                      <Grid item xs={5}>
-                        <Autocomplete
-                          freeSolo
-                          options={options}
-                          value={fld.key}
-                          onInputChange={(e, val) =>
-                            handleFieldChange(idx, "key", val)
-                          }
-                          renderInput={(params) => (
-                            <TextField {...params} label="Anahtar" fullWidth />
-                          )}
-                        />
-                      </Grid>
-                      <Grid item xs={5}>
-                        <TextField
-                          label="Değer"
-                          value={fld.value}
-                          onChange={(e) =>
-                            handleFieldChange(idx, "value", e.target.value)
-                          }
-                          fullWidth
-                        />
-                      </Grid>
-                      <Grid item xs={2} display="flex" alignItems="center">
-                        <IconButton
-                          onClick={() => removeField(idx)}
-                          color="error"
-                        >
-                          <RemoveCircleIcon />
-                        </IconButton>
-                      </Grid>
-                    </React.Fragment>
-                  );
-                })}
-                <Grid item xs={12}>
-                  <Button
-                    startIcon={<AddCircleIcon />}
-                    onClick={addField}
-                    variant="text"
-                  >
-                    Alan Ekle
-                  </Button>
+              ))}
+
+              {/* anahtarsız (yeni) satırlar */}
+              {ungrouped.length > 0 && (
+                <Grid container spacing={2} sx={{ mt: 1 }}>
+                  {ungrouped.map((fld, idx) => {
+                    const gi = fields.findIndex((f) => f === fld);
+                    const used = fields.map((f) => f.key);
+                    const opts = suggestions.filter(
+                      (o) => o && !used.includes(o)
+                    );
+                    return (
+                      <React.Fragment key={`empty-${idx}`}>
+                        <Grid item xs={5}>
+                          <Autocomplete
+                            freeSolo
+                            options={opts}
+                            value={fld.key}
+                            filterOptions={(o, st) =>
+                              o.filter((v) =>
+                                v
+                                  .toLowerCase()
+                                  .includes(st.inputValue.toLowerCase())
+                              )
+                            }
+                            onInputChange={(e, v) =>
+                              handleFieldChange(gi, "key", v)
+                            }
+                            renderInput={(p) => (
+                              <TextField {...p} label="Anahtar" fullWidth />
+                            )}
+                          />
+                        </Grid>
+                        <Grid item xs={5}>
+                          <TextField
+                            label="Değer"
+                            value={fld.value}
+                            onChange={(e) =>
+                              handleFieldChange(gi, "value", e.target.value)
+                            }
+                            fullWidth
+                          />
+                        </Grid>
+                        <Grid item xs={2} display="flex" alignItems="center">
+                          <IconButton
+                            onClick={() => removeField(gi)}
+                            color="error"
+                          >
+                            <RemoveCircleIcon />
+                          </IconButton>
+                        </Grid>
+                      </React.Fragment>
+                    );
+                  })}
                 </Grid>
-              </Grid>
-            )}
-          </Box>
+              )}
+            </>
+          ) : (
+            /* ----------- NORMAL ŞUBE ----------- */
+            <Grid container spacing={2}>
+              {fields.map((fld, idx) => {
+                const used = fields.map((f) => f.key);
+                const opts = suggestions.filter((o) => o && !used.includes(o));
+                return (
+                  <React.Fragment key={idx}>
+                    <Grid item xs={5}>
+                      <Autocomplete
+                        freeSolo
+                        options={opts}
+                        value={fld.key}
+                        filterOptions={(o, st) =>
+                          o.filter((v) =>
+                            v
+                              .toLowerCase()
+                              .includes(st.inputValue.toLowerCase())
+                          )
+                        }
+                        onInputChange={(e, v) =>
+                          handleFieldChange(idx, "key", v)
+                        }
+                        renderInput={(p) => (
+                          <TextField {...p} label="Anahtar" fullWidth />
+                        )}
+                      />
+                    </Grid>
+                    <Grid item xs={5}>
+                      <TextField
+                        label="Değer"
+                        value={fld.value}
+                        onChange={(e) =>
+                          handleFieldChange(idx, "value", e.target.value)
+                        }
+                        fullWidth
+                      />
+                    </Grid>
+                    <Grid item xs={2} display="flex" alignItems="center">
+                      <IconButton
+                        onClick={() => removeField(idx)}
+                        color="error"
+                      >
+                        <RemoveCircleIcon />
+                      </IconButton>
+                    </Grid>
+                  </React.Fragment>
+                );
+              })}
+            </Grid>
+          )}
         </Box>
-        {/* Footer */}
+
+        {/* --------- Footer --------- */}
         <Box
           sx={{
             p: 2,
@@ -293,6 +348,16 @@ export default function InventoryUpdateModal({
           }}
         >
           <Button onClick={onClose}>İptal</Button>
+
+          <Button
+            variant="outlined"
+            startIcon={<AddCircleIcon />}
+            onClick={addField}
+            sx={{ mr: 1 }}
+          >
+            Yeni Envanter &nbsp;Ekle
+          </Button>
+
           <Button variant="contained" onClick={handleSubmit}>
             Güncelle
           </Button>
