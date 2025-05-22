@@ -110,11 +110,15 @@ const CompanyManager = () => {
 
     fetchPermissions();
   }, []);
+  const sectionStyle =
+    view === "card"
+      ? { backgroundColor: "#EDF2F7" } // card modunda grey.50
+      : { backgroundColor: "#E7F6F2" };
   return (
     <div className="flex flex-col">
       <div
         className="flex items-center mb-4 p-4 rounded-lg shadow-lg border border-gray-300"
-        style={{ backgroundColor: "#E7F6F2" }}
+        style={sectionStyle}
       >
         <input
           type="text"

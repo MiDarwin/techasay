@@ -30,6 +30,8 @@ import ToggleButton from "@mui/material/ToggleButton";
 import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 import ViewModuleIcon from "@mui/icons-material/ViewModule";
 import TableRowsIcon from "@mui/icons-material/TableRows";
+import { grey } from "@mui/material/colors";
+
 const BranchManager = () => {
   const router = useRouter();
   const [branches, setBranches] = useState([]);
@@ -253,11 +255,15 @@ const BranchManager = () => {
   };
   const openModal = () => setIsUploadModalOpen(true);
   const closeModal = () => setIsUploadModalOpen(false);
+  const headerStyle =
+    view === "card"
+      ? { backgroundColor: "#EDF2F7" }
+      : tableStyles.tableHeaderBackground;
   return (
     <div className="flex flex-col">
       <div
         className="flex items-center mb-4 p-4 rounded-lg shadow-lg border border-gray-300"
-        style={tableStyles.tableHeaderBackground}
+        style={headerStyle}
       >
         <form
           className="flex-grow"
