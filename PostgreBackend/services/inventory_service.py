@@ -283,7 +283,7 @@ async def import_inventory_from_excel(
         "skipped": skipped,
         "skipped_branches": skipped_branches
     }
-async def get_inventory_fields_by_company(
+async def get_inventory_fields_by_company_parrent(
     db: AsyncSession,
     company_id: int
 ) -> List[str]:
@@ -304,6 +304,29 @@ async def get_inventory_fields_by_company(
                 Parent.company_id == company_id    # o ana şubeye bağlı alt-şubeler
             )
         )
+    )
+
+    records = (await db.execute(stmt)).scalars().all()  # her biri dict ya da None
+
+    fields: set[str] = set()
+    for details in records:
+        if isinstance(details, dict):
+            fields.update(details.keys())
+
+    return sorted(fields)
+async def get_inventory_fields_by_company(
+    db: AsyncSession,
+    company_id: int
+) -> List[str]:
+    """
+    Sadece şirketin doğrudan ana şubelerinde kullanılmış
+    envanter alan isimlerini döndürür.
+    """
+    # Inventory ➜ Branch (child veya ana farketmez) ama sadece Branch.company_id filtreli
+    stmt = (
+        select(Inventory.details)
+        .join(Branch, Inventory.branch_id == Branch.id)
+        .where(Branch.company_id == company_id)
     )
 
     records = (await db.execute(stmt)).scalars().all()  # her biri dict ya da None

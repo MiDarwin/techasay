@@ -314,6 +314,20 @@ export const getInventoryFieldsByCompany = async (
   if (!res.ok) throw new Error(data.detail || "Alan önerileri alınamadı");
   return data as string[];
 };
+export const getInventoryFieldsByCompanyJust = async (
+  company_id: number
+): Promise<string[]> => {
+  const token = localStorage.getItem("access_token");
+  const res = await fetch(
+    `${BASE_URL}/api/inventory/fields/company?company_id=${company_id}`,
+    {
+      headers: { Authorization: `Bearer ${token}` },
+    }
+  );
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.detail || "Alan önerileri alınamadı");
+  return data as string[];
+};
 export const deleteInventory = (inventoryId) =>
   apiRequest(`${BASE_URL}/api/inventory/inventories/${inventoryId}`, "DELETE");
 

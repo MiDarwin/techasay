@@ -26,13 +26,58 @@ import FarmDetailsModal from "./FarmDetailsModal";
 import DevicesOtherIcon from "@mui/icons-material/DevicesOther";
 import { alpha } from "@mui/material/styles";
 import FilterListIcon from "@mui/icons-material/FilterList";
+import ThermostatIcon from "@mui/icons-material/Thermostat";
+import OpacityIcon from "@mui/icons-material/Opacity";
+import WavesIcon from "@mui/icons-material/Waves";
+import GrainIcon from "@mui/icons-material/Grain";
+import MemoryIcon from "@mui/icons-material/Memory";
+import KeyIcon from "@mui/icons-material/VpnKey";
+import FingerprintIcon from "@mui/icons-material/Fingerprint";
+import BarcodeIcon from "@mui/icons-material/QrCode2";
 
-const InventoryList = ({ inventories = [], onEdit, onFilter = () => {} }) => {
+const STORAGE_KEY_PREFIX = "inventoryFilterSettings_";
+const ICON_COMPONENTS = {
+  Thermostat: ThermostatIcon,
+  Opacity: OpacityIcon,
+  Waves: WavesIcon,
+  Grain: GrainIcon,
+  Memory: MemoryIcon,
+  VpnKey: KeyIcon,
+  Fingerprint: FingerprintIcon,
+  QrCode2: BarcodeIcon,
+  DevicesOther: DevicesOtherIcon,
+};
+const InventoryList = ({
+  inventories = [],
+  onEdit,
+  onFilter = () => {},
+  companyId,
+}) => {
   const [modalOpen, setModalOpen] = useState(false);
   const [detailInv, setDetailInv] = useState(null);
   const [open, setOpen] = useState(false);
   const [farmInv, setFarmInv] = useState(null); // yeni farm modal
+  const [settings, setSettings] = useState({
+    fields: [],
+    icons: {},
+    colors: {},
+  });
+
   const theme = useTheme();
+
+  useEffect(() => {
+    // load filter settings for this company
+    if (companyId) {
+      const saved = localStorage.getItem(STORAGE_KEY_PREFIX + companyId);
+      if (saved) {
+        try {
+          setSettings(JSON.parse(saved));
+        } catch {
+          localStorage.removeItem(STORAGE_KEY_PREFIX + companyId);
+        }
+      }
+    }
+  }, [companyId]);
 
   const accents = [
     theme.palette.primary.main,
@@ -49,6 +94,9 @@ const InventoryList = ({ inventories = [], onEdit, onFilter = () => {} }) => {
       year: "numeric",
     });
   };
+  const normalizedFields = new Set(
+    settings.fields.map((f) => f.trim().toLowerCase())
+  );
 
   return (
     <>
@@ -139,23 +187,19 @@ const InventoryList = ({ inventories = [], onEdit, onFilter = () => {} }) => {
                     <Box
                       sx={{
                         display: "grid",
-                        gridTemplateColumns: "repeat(3, 1fr)", // 3 eşit sütun
-                        gridTemplateRows: "repeat(3, 64px)", // 3 satır, her biri 64 px
-                        gap: 1, // 8 px aralık
+                        gridTemplateColumns: "repeat(3, 1fr)",
+                        gridTemplateRows: "repeat(3, 64px)",
+                        gap: 1,
                         mt: 1,
-                        minHeight: 64 * 3 + 8 * 2, // kart kaymasın
+                        minHeight: 64 * 3 + 8 * 2,
                       }}
                     >
                       {Array.from({ length: 9 }).map((_, slot) => {
-                        const entry = preview[slot]; // sensör varsa doldur
+                        const entry = preview[slot];
                         const accent = accents[slot % accents.length];
-
-                        /* BOŞ hücre: gözükmesin ama grid’i korusun */
                         if (!entry) return <Box key={slot} />;
-
                         const [key, value] = entry;
-                        const sensor = key.split("_")[0]; // EC, TH1…
-
+                        const sensor = key.split("_")[0];
                         return (
                           <Box
                             key={key}
@@ -166,38 +210,46 @@ const InventoryList = ({ inventories = [], onEdit, onFilter = () => {} }) => {
                               gap: 1,
                               width: "100%",
                               height: "100%",
-                              borderRadius: 3, // yuvarlak köşe
+                              borderRadius: 3,
                               bgcolor: alpha(accent, 0.1),
                               border: `1px solid ${alpha(accent, 0.4)}`,
                               boxShadow: `0 0 4px ${alpha(accent, 0.25)}`,
                             }}
                           >
                             <DevicesOtherIcon sx={{ color: accent }} />
-                            <Typography variant="subtitle2" fontWeight={600}>
-                              {sensor} ID: {value}
-                            </Typography>
+                            <Typography
+                              variant="subtitle2"
+                              fontWeight={600}
+                            >{`${sensor} ID: ${value}`}</Typography>
                           </Box>
                         );
                       })}
                     </Box>
                   ) : (
-                    /* --- DİĞER ŞUBELER: eski liste --- */
-                    preview.map(([key, value]) => (
-                      <Box
-                        key={key}
-                        display="flex"
-                        alignItems="center"
-                        mb={0.5}
-                      >
-                        <InfoIcon
-                          fontSize="small"
-                          sx={{ mr: 1, color: "primary.main" }}
-                        />
-                        <Typography variant="body2">
-                          <strong>{key}:</strong> {value}
-                        </Typography>
-                      </Box>
-                    ))
+                    preview
+                      .filter(([key]) =>
+                        normalizedFields.has(key.trim().toLowerCase())
+                      )
+                      .map(([key, value]) => {
+                        const IconComp =
+                          ICON_COMPONENTS[settings.icons[key]] ||
+                          AccessTimeIcon;
+                        const color =
+                          settings.colors[key] || theme.palette.primary.main;
+                        return (
+                          <Box
+                            key={key}
+                            display="flex"
+                            alignItems="center"
+                            mb={0.5}
+                          >
+                            <IconComp fontSize="small" sx={{ mr: 1, color }} />
+                            <Typography variant="body2">
+                              <strong>{key}:</strong> {value}
+                            </Typography>
+                          </Box>
+                        );
+                      })
                   )}
                 </CardContent>
                 <Divider sx={{ my: 1 }} />

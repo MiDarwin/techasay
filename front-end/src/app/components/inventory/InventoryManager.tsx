@@ -30,6 +30,7 @@ import tableStyles from "@/app/styles/tableStyles";
 import HistoryIcon from "@mui/icons-material/History"; // Kum saati simgesi için
 import InventoryUpdateModal from "./InvetoryUpdate";
 import InventoryImportModal from "./InventoryImportModal";
+import InventoryFilterModal from "./InventoryFilterModal";
 
 const LIMIT_OPTIONS = [15, 25, 40, 100, 200];
 
@@ -54,6 +55,7 @@ const InventoryManager = () => {
   const [limit, setLimit] = useState<number>(15);
   const [importModalOpen, setImportModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState<string>("");
+  const [filterModalOpen, setFilterModalOpen] = useState(false);
 
   // İzinleri çekme fonksiyonu
   const fetchPermissions = async () => {
@@ -225,7 +227,10 @@ const InventoryManager = () => {
     }
     // şube sıfırlandıysa, şirket geneli zaten başka efekt tetikleniyor
   }, [selectedBranch, permissionsLoaded, permissions, branches]);
-
+  const handleFilterApply = () => {
+    fetchInventories();
+    setFilterModalOpen(false);
+  };
   return (
     <Container
       disableGutters
@@ -305,6 +310,9 @@ const InventoryManager = () => {
               ))}
             </Select>
           </FormControl>
+          <Button variant="outlined" onClick={() => setFilterModalOpen(true)}>
+            Alan Filtrele
+          </Button>
         </Box>
         <Box display="flex" alignItems="center" gap={2}>
           <Button variant="outlined" onClick={() => setImportModalOpen(true)}>
@@ -356,6 +364,7 @@ const InventoryManager = () => {
           setModalOpen(true);
         }}
         onFilter={(inv) => setSelectedBranch(inv.branch_name)}
+        companyId={selectedCompanyId}
       />
 
       {/* Modaller */}
@@ -365,6 +374,12 @@ const InventoryManager = () => {
         onClose={() => setModalOpen(false)}
         onUpdated={() => fetchInventories()}
         companyId={selectedCompanyId}
+      />
+      <InventoryFilterModal
+        open={filterModalOpen}
+        onClose={() => setFilterModalOpen(false)}
+        companyId={selectedCompanyId}
+        onApply={handleFilterApply}
       />
       <InventoryImportModal
         open={importModalOpen}

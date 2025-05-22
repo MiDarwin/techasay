@@ -8,7 +8,8 @@ from database import get_db
 from schemas.inventory import InventoryOut, InventoryCreateBody, InventoryImportResponse
 from services.inventory_service import create_inventory, update_inventory, \
     generate_inventory_excel, import_inventory_from_excel, get_inventories, \
-    get_inventory_fields_by_company, count_inventories, import_inventory_for_company
+    count_inventories, import_inventory_for_company, \
+    get_inventory_fields_by_company_parrent, get_inventory_fields_by_company
 
 router = APIRouter(prefix="", tags=["inventory"])
 @router.get(
@@ -121,6 +122,24 @@ async def read_inventory_fields(
     """
     GET /api/inventory/fields?company_id=2
     Bu şirkete ait tüm şubelerde geçmişte kullanılmış
+    envanter alan adlarının listesini döner.
+    """
+    try:
+        return await get_inventory_fields_by_company_parrent(db, company_id)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+@router.get(
+    "/fields/company",
+    response_model=List[str],
+    summary="Sadece ana şubelere göre envanter alan adlarını döner"
+)
+async def read_inventory_fields_by_company(
+    company_id: int = Query(..., description="Alanları alınacak şirket ID"),
+    db:         AsyncSession = Depends(get_db),
+):
+    """
+    GET /api/inventory/fields/company?company_id=2
+    Bu şirkete ait sadece ana şubelerde geçmişte kullanılmış
     envanter alan adlarının listesini döner.
     """
     try:
