@@ -68,6 +68,8 @@ const InventoryFilterModal: React.FC<InventoryFilterModalProps> = ({
   useEffect(() => {
     if (open && companyId) {
       const key = STORAGE_KEY_PREFIX + companyId;
+      const raw = localStorage.getItem(key);
+      console.log("[DEBUG] localStorage raw:", raw);
       const saved = localStorage.getItem(key);
       if (saved) {
         try {
