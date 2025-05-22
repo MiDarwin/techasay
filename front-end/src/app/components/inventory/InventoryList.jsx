@@ -116,9 +116,18 @@ const InventoryList = ({
             ? allEntries.filter(([k]) => FARM_KEYS.includes(k)) // sadece 5’i
             : allEntries;
 
-          const preview = entries.slice(0, 5);
-          const moreHidden = allEntries.length - preview.length; // 🔹 fark burada
-          /* ----------------------------------------------------------- */
+          const selected = entries.filter(([k]) =>
+            normalizedFields.has(k.trim().toLowerCase())
+          );
+          const others = entries.filter(
+            ([k]) => !normalizedFields.has(k.trim().toLowerCase())
+          );
+          const preview = [...selected, ...others].slice(0, 5);
+
+          // hidden count’ı da total’den düş:
+          const moreHidden =
+            allEntries.length -
+            preview.length; /* ----------------------------------------------------------- */
 
           return (
             <Grid
