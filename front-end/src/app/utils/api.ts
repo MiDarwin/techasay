@@ -731,3 +731,22 @@ export const updateBranchCoords = async (): Promise<{
     updated: data.updated
   };
 };
+// • Parça geçmişi (seri bazlı)
+export async function getPartHistory(serialNo) {
+  return apiRequest(`/parts/${serialNo}/history`);
+}
+
+// • Şube bazlı parça geçmişi
+export async function getBranchPartHistory(branchId) {
+  return apiRequest(`/parts/branch/${branchId}/history`);
+}
+
+// • Toplu parça depoya kaldırma (dismount)
+export async function dismountParts(serialNos = [], note = "") {
+  return apiRequest(`/parts/dismount`, "POST", { serial_nos: serialNos, note });
+}
+
+// • Toplu parça ekleme
+export async function bulkAddParts(parts = []) {
+  return apiRequest(`/parts/bulk`, "POST", parts);
+}

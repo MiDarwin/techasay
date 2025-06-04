@@ -1,3 +1,4 @@
 /backend/uploaded_excels
 /PostgreBackend/visit_images
 /PostgreBackend/config.py
+git rm --cached PostgreBackend/config.py
