@@ -1,5 +1,7 @@
 # services/bpet_service.py
 from datetime import datetime
+from typing import List
+
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException
@@ -80,3 +82,56 @@ async def bpet_history(db: AsyncSession, bpet_id: int):
          .where(BpetHistory.bpet_id == bpet_id)
          .order_by(BpetHistory.started_at.desc()))
     return (await db.scalars(q)).all()
+async def bulk_dismount_bpets(
+    db: AsyncSession,
+    bpet_ids: List[int],
+    note: str | None = None,
+):
+    """
+    Gelen id listesindeki tüm Bpet kayıtlarını depoya taşır.
+    - branch_id -> NULL
+    - açık history satırı kapanır, depo (warehouse) satırı açılır
+    """
+    if not bpet_ids:
+        raise HTTPException(400, "Boş ID listesi")
+
+    # İlgili kayıtları topla
+    bpets = (
+        await db.scalars(select(Bpet).where(Bpet.id.in_(bpet_ids)))
+    ).all()
+    if not bpets:
+        raise HTTPException(404, "Hiçbiri bulunamadı")
+
+    now = datetime.utcnow()
+
+    for b in bpets:
+        if b.branch_id is None:  # zaten depoda
+            continue
+
+        # 1) açık history'yi kapat
+        await db.execute(
+            update(BpetHistory)
+            .where(BpetHistory.bpet_id == b.id,
+                   BpetHistory.ended_at.is_(None))
+            .values(ended_at=now)
+        )
+
+        # 2) depo history satırı
+        db.add(
+            BpetHistory(
+                bpet_id=b.id,
+                branch_id=None,
+                state="warehouse",
+                started_at=now,
+                ended_at=None,
+            )
+        )
+
+        # 3) ana kaydı NULL yap
+        b.branch_id = None
+
+    await db.commit()
+    result = (
+        await db.scalars(select(Bpet).where(Bpet.id.in_(bpet_ids)))
+    ).all()
+    return result 

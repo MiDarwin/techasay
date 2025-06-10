@@ -4,12 +4,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from database import get_db
 from schemas.bpet import (
-    BpetCreate, BpetUpdate, BpetOut, BpetHistoryOut
+    BpetCreate, BpetUpdate, BpetOut, BpetHistoryOut, BulkDismountIn
 )
 from services.bpet_service import (
     create_bpet, update_bpet,
     list_bpets_by_branch, list_bpets_in_warehouse,
-    bpet_history
+    bpet_history, bulk_dismount_bpets
 )
 
 router = APIRouter()
@@ -34,3 +34,8 @@ async def list_warehouse(db=Depends(get_db)):
 @router.get("/{bpet_id}/history", response_model=list[BpetHistoryOut])
 async def get_history(bpet_id: int, db=Depends(get_db)):
     return await bpet_history(db, bpet_id)
+@router.post("/bulk-dismount", response_model=list[BpetOut])
+async def bulk_dismount(body: BulkDismountIn, db: AsyncSession = Depends(get_db)):
+    bpets = await bulk_dismount_bpets(db, body.bpet_ids, body.note)
+    # Session hâlâ açık → Pydantic güvenli
+    return bpets

@@ -1,6 +1,6 @@
 # schemas/bpet.py
 from datetime import datetime
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 from pydantic import BaseModel
 
 
@@ -16,7 +16,9 @@ class BpetCreate(BpetBase):
 class BpetUpdate(BaseModel):
     branch_id: Optional[int] = None
     attributes: Optional[Dict[str, Any]] = None   # “= None” eklenerek artık opsiyonel
-
+class BulkDismountIn(BaseModel):
+    bpet_ids: List[int]
+    note: str | None = None
 
 class BpetOut(BpetBase):
     id: int
