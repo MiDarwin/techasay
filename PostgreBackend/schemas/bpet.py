@@ -15,7 +15,7 @@ class BpetCreate(BpetBase):
 
 class BpetUpdate(BaseModel):
     branch_id: Optional[int] = None
-    attributes: Optional[Dict[str, Any]]
+    attributes: Optional[Dict[str, Any]] = None   # “= None” eklenerek artık opsiyonel
 
 
 class BpetOut(BpetBase):
