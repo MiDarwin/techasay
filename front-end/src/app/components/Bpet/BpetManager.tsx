@@ -34,6 +34,8 @@ export default function BpetManager() {
   const [openForm, setOpenForm] = useState(false);
   const [snackbar, setSnackbar] = useState(null);
   const [branchId, setBranchId] = useState(null);
+  const DEPOT_OPTION = { id: null, name: "Depo" };
+  const allOptions = [DEPOT_OPTION, ...branches];
 
   useEffect(() => {
     (async () => {
@@ -62,13 +64,16 @@ export default function BpetManager() {
         {/* üst kontrol barı */}
         <Box display="flex" gap={2} alignItems="center">
           <Autocomplete
-            sx={{ minWidth: 280 }}
-            options={branches}
-            loading={branchLoading}
-            getOptionLabel={(b) => b.name || ""}
+            options={allOptions}
+            getOptionLabel={(opt) => opt.name}
             value={selectedBranch}
-            onChange={(_, v) => setSelectedBranch(v)}
-            renderInput={(params) => <TextField {...params} label="Şube Seç" />}
+            onChange={(_, v) => {
+              setSelectedBranch(v);
+              setBranchId(v?.id ?? null);
+            }}
+            renderInput={(params) => (
+              <TextField {...params} label="Şube veya Depo" />
+            )}
           />
           <Button
             variant="contained"
