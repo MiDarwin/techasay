@@ -22,6 +22,7 @@ import AddIcon from "@mui/icons-material/Add";
 import { motion } from "framer-motion";
 import {
   getBranchesByCompanyId,
+  bulkDismountBpets,
   getBpetsByBranch,
   createBpet,
 } from "../../utils/api";
@@ -34,6 +35,8 @@ export default function BpetManager() {
   const [openForm, setOpenForm] = useState(false);
   const [snackbar, setSnackbar] = useState(null);
   const [branchId, setBranchId] = useState(null);
+  const [selectedIds, setSelectedIds] = useState<number[]>([]);
+  const [refreshKey, setRefreshKey] = useState(0);
   const DEPOT_OPTION = { id: null, name: "Depo" };
   const allOptions = [DEPOT_OPTION, ...branches];
 
@@ -50,42 +53,87 @@ export default function BpetManager() {
     setSelectedBranch((prev) => ({ ...prev }));
     setSnackbar({ severity: "success", msg: "Envanter güncellendi" });
   };
-  useEffect(() => {
-    console.log("Seçili şube:", branchId);
-    if (!branchId) return;
-    // …
-  }, [branchId]);
+
+  const handleBulk = async () => {
+    if (!selectedIds.length) return;
+    try {
+      await bulkDismountBpets(selectedIds, "");
+      setSnackbar({
+        open: true,
+        message: "BPET’ler depoya taşındı.",
+        severity: "success",
+      });
+      setRefreshKey((r) => r + 1);
+      setSelectedIds([]);
+    } catch {
+      setSnackbar({
+        open: true,
+        message: "Taşıma başarısız.",
+        severity: "error",
+      });
+    }
+  };
+
   return (
     <Card as={motion.div} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
       <CardContent sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
         {/* üst kontrol barı */}
-        <Box display="flex" gap={2} alignItems="center">
-          <Autocomplete
-            options={allOptions}
-            getOptionLabel={(opt) => opt.name}
-            value={selectedBranch}
-            onChange={(_, v) => {
-              setSelectedBranch(v);
-              setBranchId(v?.id ?? null);
-            }}
-            renderInput={(params) => (
-              <TextField {...params} label="Şube veya Depo" />
-            )}
-          />
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            disabled={!selectedBranch}
-            onClick={() => setOpenForm(true)}
-          >
-            Yeni Bpet
-          </Button>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            mb: 2,
+            gap: 2,
+          }}
+        >
+          {/* Sol: Şube/Depo seçici */}
+          <Box sx={{ flex: 0.15 }}>
+            <Autocomplete
+              options={allOptions}
+              getOptionLabel={(opt) => opt.name}
+              value={selectedBranch}
+              onChange={(_, v) => {
+                setSelectedBranch(v);
+                setBranchId(v?.id ?? null);
+              }}
+              renderInput={(params) => (
+                <TextField {...params} label="Şube veya Depo" fullWidth />
+              )}
+            />
+          </Box>
+
+          {/* Sağ: Butonlar */}
+          <Box sx={{ display: "flex", gap: 1 }}>
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              disabled={!selectedBranch}
+              onClick={() => setOpenForm(true)}
+            >
+              Yeni BPET
+            </Button>
+
+            <Button
+              variant="contained"
+              color="warning"
+              disabled={selectedIds.length === 0}
+              onClick={handleBulk}
+            >
+              Toplu Depoya Kaldır ({selectedIds.length})
+            </Button>
+          </Box>
         </Box>
 
         <Divider />
 
         {selectedBranch ? (
-          <BpetList branchId={selectedBranch.id} key={selectedBranch.id} />
+          <BpetList
+            branchId={selectedBranch.id}
+            key={selectedBranch.id}
+            onSelectionChange={setSelectedIds}
+            refreshKey={refreshKey}
+          />
         ) : (
           <Typography>Şube seçiniz.</Typography>
         )}
