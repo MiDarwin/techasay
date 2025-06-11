@@ -57,9 +57,6 @@ export default function BpetManager() {
   }, [branchId]);
   return (
     <Card as={motion.div} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-      <CardHeader
-        title={<Typography variant="h6">Bpet Envanteri</Typography>}
-      />
       <CardContent sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
         {/* üst kontrol barı */}
         <Box display="flex" gap={2} alignItems="center">
