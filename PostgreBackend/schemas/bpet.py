@@ -23,6 +23,7 @@ class BulkDismountIn(BaseModel):
 class BpetOut(BpetBase):
     id: int
     branch_id: Optional[int]
+    branch_name: Optional[str] = None
     created_at: datetime
     class Config: orm_mode = True
 

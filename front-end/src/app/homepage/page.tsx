@@ -17,6 +17,7 @@ import { useRouter } from "next/navigation";
 import CompanyManager from "../components/company/CompanyManager";
 import BranchManager from "../components/branch/BranchManager";
 import InventoryManager from "../components/inventory/InventoryManager";
+import BpetManager from "../components/Bpet/BpetManager";
 import { alpha } from "@mui/material";
 
 const HomePage = () => {
@@ -64,6 +65,11 @@ const HomePage = () => {
       label: "Envanter",
       icon: <BackpackIcon fontSize="large" />,
       key: "inventory",
+    },
+    {
+      label: "Bpet",
+      icon: <StoreIcon fontSize="large" />,
+      key: "Bpet Yönetimi",
     },
   ];
 
@@ -155,6 +161,7 @@ const HomePage = () => {
           {activeTab === "company" && <CompanyManager />}
           {activeTab === "branch" && <BranchManager />}
           {activeTab === "inventory" && <InventoryManager />}
+          {activeTab === "Bpet Yönetimi" && <BpetManager />}
         </Container>
       </Box>
     </Box>

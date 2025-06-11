@@ -731,22 +731,40 @@ export const updateBranchCoords = async (): Promise<{
     updated: data.updated
   };
 };
-// • Parça geçmişi (seri bazlı)
-export async function getPartHistory(serialNo) {
-  return apiRequest(`/parts/${serialNo}/history`);
-}
+/* ----------- 1) Şube bazında BPET listesi ------------- */
+export const getBpetsByBranch = async (branchId) => {
+  return apiRequest(`/api/bpet-routes/branch/${branchId}`,"GET");
+};
 
-// • Şube bazlı parça geçmişi
-export async function getBranchPartHistory(branchId) {
-  return apiRequest(`/parts/branch/${branchId}/history`);
-}
+/* ----------- 2) Depodaki BPET’ler ---------------------- */
+export const getBpetsInWarehouse = async () => {
+  return apiRequest(`/api/bpet-routes/warehouse`);
+};
 
-// • Toplu parça depoya kaldırma (dismount)
-export async function dismountParts(serialNos = [], note = "") {
-  return apiRequest(`/parts/dismount`, "POST", { serial_nos: serialNos, note });
-}
+/* ----------- 3) BPET geçmişi --------------------------- */
+export const getBpetHistory = async (bpetId) => {
+  return apiRequest(`/api/bpet-routes/${bpetId}/history`);
+};
 
-// • Toplu parça ekleme
-export async function bulkAddParts(parts = []) {
-  return apiRequest(`/parts/bulk`, "POST", parts);
-}
+/* ----------- 4) Yeni BPET oluştur ---------------------- */
+export const createBpet = async ({
+  product_name,
+  attributes,
+  branch_id = null,
+}) => {
+  return apiRequest("/api/bpet-routes", "POST", { product_name, attributes, branch_id });
+};
+
+/* ----------- 5) BPET güncelle (tek) -------------------- */
+export const updateBpet = async (bpetId, payload) => {
+  // payload = { branch_id: ..., attributes: {...} }
+  return apiRequest(`/api/bpet-routes/${bpetId}`, "PATCH", payload);
+};
+
+/* ----------- 6) Toplu depoya kaldır -------------------- */
+export const bulkDismountBpets = async (bpetIds = [], note = "") => {
+  return apiRequest("/api/bpet-routes/bulk-dismount", "POST", {
+    bpet_ids: bpetIds,
+    note,
+  });
+};

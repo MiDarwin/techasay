@@ -5,6 +5,7 @@ from typing import List
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException
+from sqlalchemy.orm import joinedload
 
 from models.bpet import Bpet, BpetHistory
 from models.branch import Branch
@@ -68,15 +69,45 @@ async def update_bpet(db: AsyncSession, bpet_id: int,
     return bpet
 
 async def list_bpets_by_branch(db: AsyncSession, branch_id: int):
-    q = select(Bpet).where(Bpet.branch_id == branch_id)
-    return (await db.scalars(q)).all()
+    """
+    Şubedeki BPET’leri branch_name ile birlikte döndür.
+    """
+    q = (
+        select(Bpet)
+        .options(joinedload(Bpet.branch))
+        .where(Bpet.branch_id == branch_id)
+    )
+    orm_rows = (await db.scalars(q)).all()
+
+    # ---> ORM nesnelerini dict'e çeviriyoruz
+    result = [
+        {
+            "id": b.id,
+            "product_name": b.product_name,
+            "attributes": b.attributes,
+            "branch_id": b.branch_id,
+            "branch_name": b.branch.branch_name if b.branch else None,
+            "created_at": b.created_at,
+        }
+        for b in orm_rows
+    ]
+    return result
 
 
 async def list_bpets_in_warehouse(db: AsyncSession):
-    q = select(Bpet).where(Bpet.branch_id.is_(None))
-    return (await db.scalars(q)).all()
-
-
+    q = select(Bpet).options(joinedload(Bpet.branch)).where(Bpet.branch_id.is_(None))
+    orm_rows = (await db.scalars(q)).all()
+    return [
+        {
+            "id": b.id,
+            "product_name": b.product_name,
+            "attributes": b.attributes,
+            "branch_id": None,
+            "branch_name": None,
+            "created_at": b.created_at,
+        }
+        for b in orm_rows
+    ]
 async def bpet_history(db: AsyncSession, bpet_id: int):
     q = (select(BpetHistory)
          .where(BpetHistory.bpet_id == bpet_id)
@@ -134,4 +165,4 @@ async def bulk_dismount_bpets(
     result = (
         await db.scalars(select(Bpet).where(Bpet.id.in_(bpet_ids)))
     ).all()
-    return result 
+    return result
