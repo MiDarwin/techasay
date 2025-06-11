@@ -6,15 +6,21 @@ import {
   Tooltip,
   Typography,
   CircularProgress,
+  Snackbar,
+  Alert,
 } from "@mui/material";
-import { DataGrid } from "@mui/x-data-grid";
+import { DataGrid, GridRowSelectionModel } from "@mui/x-data-grid";
 import HistoryIcon from "@mui/icons-material/History";
 import RouterIcon from "@mui/icons-material/Router";
 import SimIcon from "@mui/icons-material/SimCard";
 import NetworkWifiIcon from "@mui/icons-material/NetworkWifi";
 import AntennaIcon from "@mui/icons-material/SettingsInputAntenna";
 
-import { getBpetsByBranch, getBpetsInWarehouse } from "../../utils/api";
+import {
+  getBpetsByBranch,
+  getBpetsInWarehouse,
+  bulkDismountBpets,
+} from "../../utils/api";
 import BpetHistoryModal from "./BpetHistoryModal";
 
 /* İkon haritası */
@@ -34,20 +40,37 @@ export default function BpetList({ branchId }: Props) {
   const [rows, setRows] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [historyId, setHistoryId] = useState<number | null>(null);
+  const [rowSelectionModel, setRowSelectionModel] =
+    useState<GridRowSelectionModel>({
+      type: "include",
+      ids: new Set<number>(),
+    });
+  const [snackbar, setSnackbar] = useState<{
+    open: boolean;
+    message: string;
+    severity: "success" | "error";
+  }>({
+    open: false,
+    message: "",
+    severity: "success",
+  });
+  const selectedCount = rowSelectionModel.ids.size;
 
   /* fetch */
-  useEffect(() => {
-    const fetch =
-      branchId === null
-        ? getBpetsInWarehouse
-        : () => getBpetsByBranch(branchId);
+  const fetchRows = async () => {
     setLoading(true);
-    fetch()
-      .then(setRows)
-      .catch((err) => {
-        /* burada Snackbar/fallback ekle */
-      })
-      .finally(() => setLoading(false));
+    try {
+      const data =
+        branchId === null
+          ? await getBpetsInWarehouse()
+          : await getBpetsByBranch(branchId);
+      setRows(data);
+    } finally {
+      setLoading(false);
+    }
+  };
+  useEffect(() => {
+    fetchRows();
   }, [branchId]);
 
   const columns = [
@@ -92,7 +115,25 @@ export default function BpetList({ branchId }: Props) {
       ),
     },
   ];
+  const handleBulkDismount = async () => {
+    const idsArray = Array.from(rowSelectionModel.ids);
+    try {
+      await bulkDismountBpets(idsArray, "");
+      // başarı mesajı
+      setRowSelectionModel({ type: "include", ids: new Set() }); // seçimleri temizle
+      fetchRows();
+    } catch {
+      setSnackbar({
+        open: true,
+        message: "Depoya taşıma başarısız oldu.",
+        severity: "error",
+      });
+    }
+  };
 
+  useEffect(() => {
+    fetchRows();
+  }, [branchId]);
   if (loading) {
     return (
       <Box textAlign="center">
@@ -107,13 +148,30 @@ export default function BpetList({ branchId }: Props) {
 
   return (
     <>
+      <Box sx={{ mb: 2, display: "flex", gap: 1 }}>
+        <Button
+          variant="contained"
+          color="warning"
+          disabled={selectedCount === 0}
+          onClick={handleBulkDismount}
+        >
+          Toplu Depoya Kaldır ({selectedCount})
+        </Button>
+      </Box>
       <Box sx={{ height: 500 }}>
         <DataGrid
           rows={rows}
           columns={columns}
-          loading={loading}
           pageSize={10}
-          disableSelectionOnClick
+          checkboxSelection
+          disableRowSelectionOnClick
+          rowSelectionModel={rowSelectionModel}
+          onRowSelectionModelChange={(newModel) => {
+            console.log("Yeni seçilenler:", newModel);
+            setRowSelectionModel(newModel);
+          }}
+          loading={loading}
+          showToolbar
         />
       </Box>
       {historyId && (
@@ -123,6 +181,18 @@ export default function BpetList({ branchId }: Props) {
           onClose={() => setHistoryId(null)}
         />
       )}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={3000}
+        onClose={() => setSnackbar((s) => ({ ...s, open: false }))}
+      >
+        <Alert
+          severity={snackbar.severity}
+          onClose={() => setSnackbar((s) => ({ ...s, open: false }))}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </>
   );
 }
