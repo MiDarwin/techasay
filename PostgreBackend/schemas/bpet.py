@@ -32,6 +32,7 @@ class BpetHistoryOut(BaseModel):
     id: int
     branch_id: Optional[int]
     state: str
+    branch_name:Optional[str] = None
     started_at: datetime
     ended_at: Optional[datetime]
     class Config: orm_mode = True

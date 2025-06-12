@@ -240,7 +240,6 @@ const BpetList: React.FC<BpetListProps> = ({
         </Alert>
       </Snackbar>
 
-      {/* Loading / Empty / Table */}
       {loading ? (
         <Box textAlign="center">
           <CircularProgress />
@@ -248,7 +247,16 @@ const BpetList: React.FC<BpetListProps> = ({
       ) : rows.length === 0 ? (
         <Typography>Bu listede BPET bulunamadı.</Typography>
       ) : (
-        <Box sx={{ height: 500 }}>
+        <Box
+          sx={{
+            height: 500,
+            "& .even-row": { backgroundColor: "rgba(235, 235, 235, 0.6)" },
+            "& .odd-row": { backgroundColor: "#ffffff" },
+            "& .MuiDataGrid-row:hover": {
+              backgroundColor: "rgba(200,200,200,0.4)",
+            },
+          }}
+        >
           <DataGrid
             rows={rows}
             columns={columns}
@@ -260,11 +268,16 @@ const BpetList: React.FC<BpetListProps> = ({
               setRowSelectionModel(model);
               onSelectionChange?.(Array.from(model.ids));
             }}
+            getRowClassName={(params) =>
+              params.indexRelativeToCurrentPage % 2 === 0
+                ? "even-row"
+                : "odd-row"
+            }
+            sx={{ border: "none", fontSize: "0.9rem" }}
           />
         </Box>
       )}
 
-      {/* History Modal */}
       {historyId && (
         <BpetHistoryModal
           open={Boolean(historyId)}
@@ -272,8 +285,6 @@ const BpetList: React.FC<BpetListProps> = ({
           onClose={() => setHistoryId(null)}
         />
       )}
-
-      {/* Edit/Create Form */}
       {formOpen && (
         <BpetForm
           open={formOpen}
@@ -284,7 +295,6 @@ const BpetList: React.FC<BpetListProps> = ({
         />
       )}
 
-      {/* Send to Branch Modal */}
       <Dialog
         open={sendModalOpen}
         onClose={() => setSendModalOpen(false)}
