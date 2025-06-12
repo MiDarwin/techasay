@@ -39,6 +39,7 @@ export default function BpetManager() {
   const [refreshKey, setRefreshKey] = useState(0);
   const DEPOT_OPTION = { id: null, name: "Depo" };
   const allOptions = [DEPOT_OPTION, ...branches];
+  const bumpRefresh = () => setRefreshKey((k) => k + 1);
 
   useEffect(() => {
     (async () => {
@@ -133,6 +134,7 @@ export default function BpetManager() {
             key={selectedBranch.id}
             onSelectionChange={setSelectedIds}
             refreshKey={refreshKey}
+            bumpRefresh={bumpRefresh}
           />
         ) : (
           <Typography>Şube seçiniz.</Typography>
@@ -145,7 +147,10 @@ export default function BpetManager() {
           open={openForm}
           branchId={selectedBranch?.id}
           onClose={() => setOpenForm(false)}
-          onSuccess={reload}
+          onSuccess={() => {
+            // ekranı hemen yenile
+            bumpRefresh?.(); // ana listeyi de garantiye al
+          }}
         />
       )}
 

@@ -39,6 +39,7 @@ interface BpetListProps {
   companyId: number; // şirket ID
   onSelectionChange?: (selectedIds: number[]) => void;
   refreshKey?: number;
+  bumpRefresh?: () => void;
 }
 
 const BpetList: React.FC<BpetListProps> = ({
