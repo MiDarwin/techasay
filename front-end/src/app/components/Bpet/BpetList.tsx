@@ -13,7 +13,7 @@ import {
   DialogActions,
   TextField,
 } from "@mui/material";
-import { DataGrid, GridRowSelectionModel } from "@mui/x-data-grid";
+import { DataGrid, GridRowSelectionModel, GridToolbar } from "@mui/x-data-grid";
 import HistoryIcon from "@mui/icons-material/History";
 import EditIcon from "@mui/icons-material/Edit";
 import SendIcon from "@mui/icons-material/Send";
@@ -261,20 +261,37 @@ const BpetList: React.FC<BpetListProps> = ({
           <DataGrid
             rows={rows}
             columns={columns}
-            pageSize={10}
+            pagination
+            initialState={{
+              pagination: { paginationModel: { pageSize: 10, page: 0 } },
+            }}
+            pageSizeOptions={[10, 25, 50]}
             checkboxSelection
             disableRowSelectionOnClick
-            rowSelectionModel={rowSelectionModel}
-            onRowSelectionModelChange={(model) => {
-              setRowSelectionModel(model);
-              onSelectionChange?.(Array.from(model.ids));
+            slots={{ toolbar: GridToolbar }}
+            slotProps={{
+              toolbar: {
+                showQuickFilter: true,
+                csvOptions: { fileName: "bpet-listesi" },
+              },
             }}
-            getRowClassName={(params) =>
-              params.indexRelativeToCurrentPage % 2 === 0
-                ? "even-row"
-                : "odd-row"
+            rowSelectionModel={rowSelectionModel}
+            onRowSelectionModelChange={(m) => {
+              setRowSelectionModel(m);
+              onSelectionChange?.(Array.from(m.ids));
+            }}
+            getRowClassName={(p) =>
+              p.indexRelativeToCurrentPage % 2 === 0 ? "even-row" : "odd-row"
             }
-            sx={{ border: "none", fontSize: "0.9rem" }}
+            sx={{
+              border: "none",
+              fontSize: "0.9rem",
+              "& .even-row": { backgroundColor: "rgba(235,235,235,0.6)" },
+              "& .odd-row": { backgroundColor: "#fff" },
+              "& .MuiDataGrid-row:hover": {
+                backgroundColor: "rgba(200,200,200,0.4)",
+              },
+            }}
           />
         </Box>
       )}
