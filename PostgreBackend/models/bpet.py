@@ -24,6 +24,12 @@ class Bpet(Base):
                                 back_populates="bpet",
                                 cascade="all, delete-orphan")
     branch = relationship("Branch")
+    errors = relationship(
+        "BpetError",
+        back_populates="bpet",
+        cascade="all, delete-orphan",
+        order_by="desc(BpetError.occurred_at)",
+    )
 
 class BpetHistory(Base):
     __tablename__ = "bpet_history"
@@ -36,3 +42,17 @@ class BpetHistory(Base):
     ended_at   = Column(DateTime)
 
     bpet = relationship("Bpet", back_populates="history")
+
+class BpetError(Base):
+    __tablename__ = "bpet_errors"
+
+    id          = Column(Integer, primary_key=True, index=True)
+    bpet_id     = Column(Integer, ForeignKey("bpets.id", ondelete="CASCADE"), index=True, nullable=False)
+    occurred_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    description = Column(String, nullable=False)
+    severity    = Column(String, default="info")         # info | warning | critical
+    resolved_at = Column(DateTime, nullable=True)
+    notes       = Column(String, nullable=True)
+
+    # back-ref
+    bpet = relationship("Bpet", back_populates="errors")
