@@ -768,3 +768,26 @@ export const bulkDismountBpets = async (bpetIds = [], note = "") => {
     note,
   });
 };
+
+
+// 🔄 Güncel imza: id + limit (opsiyonel) ⇒ DİZİ garanti
+export async function getErrorsByBpet(
+  bpetId: number,
+  limit = 5
+): Promise<ErrorSummary[]> {
+  const data = await apiRequest(`/api/bpet-error/${bpetId}`, "GET");
+
+  // Postman’dan kesin dizi geliyor ama yine de güvenlik
+  return Array.isArray(data) ? data.filter(Boolean) : data ? [data] : [];
+}
+
+/* Tip – alan adlarını opsiyonel/toleranslı yap */
+export interface ErrorSummary {
+  id: number;
+  description?: string;
+  occurred_at?: string; // snake
+  occurredAt?: string;  // camel (olursa)
+  severity?: "info" | "warning" | "critical";
+  notes?: string;
+  bpet_id?: number;
+}

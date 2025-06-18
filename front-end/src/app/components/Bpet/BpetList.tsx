@@ -23,10 +23,12 @@ import {
   bulkDismountBpets,
   updateBpet,
   getBranchesByCompanyId,
+  getErrorsByBpet,
 } from "../../utils/api";
 import BpetHistoryModal from "./BpetHistoryModal";
 import BpetForm from "./BpetForm";
-
+import Tooltip from "@mui/material/Tooltip";
+import InfoIcon from "@mui/icons-material/InfoOutlined";
 interface BpetRow {
   id: number;
   product_name: string;
@@ -56,6 +58,10 @@ const BpetList: React.FC<BpetListProps> = ({
       ids: new Set<number>(),
     });
   const selectedCount = rowSelectionModel.ids.size;
+  type ErrorCacheEntry = ErrorSummary[] | null; // dizi veya null
+  const [errorPreview, setErrorPreview] = useState<
+    Record<number, ErrorCacheEntry>
+  >({});
 
   const [formOpen, setFormOpen] = useState(false);
   const [editBpet, setEditBpet] = useState<BpetRow | null>(null);
@@ -95,7 +101,16 @@ const BpetList: React.FC<BpetListProps> = ({
       setLoading(false);
     }
   };
-
+  const loadErrors = async (id: number) => {
+    if (errorPreview[id] !== undefined) return; // cache var
+    try {
+      const list = await getErrorsByBpet(id, 5); // imza uyumlu
+      setErrorPreview((p) => ({ ...p, [id]: list.length ? list : null }));
+    } catch (err) {
+      console.error(err);
+      setErrorPreview((p) => ({ ...p, [id]: null }));
+    }
+  };
   useEffect(() => {
     fetchRows();
     // Şube listesi fetch
@@ -190,6 +205,56 @@ const BpetList: React.FC<BpetListProps> = ({
       width: 130,
       renderCell: (params: any) =>
         new Date(params.value).toLocaleDateString("tr-TR"),
+    },
+    {
+      field: "info",
+      headerName: "",
+      width: 60,
+      sortable: false,
+      renderCell: (params: any) => {
+        const id = params.row.id;
+        const list = errorPreview[id];
+        const hasErrors = Array.isArray(list) && list.length > 0;
+
+        return (
+          <Tooltip
+            arrow
+            title={
+              list === undefined ? (
+                "Yükleniyor..."
+              ) : !hasErrors ? (
+                "Bu BPET için kayıtlı hata yok"
+              ) : (
+                <Box>
+                  {list
+                    .filter(Boolean) // null/undefined öğe at
+                    .slice(0, 5)
+                    .map((e) => {
+                      const dateStr = e.occurred_at ?? e.occurredAt;
+                      const prettyDate = dateStr
+                        ? new Date(dateStr).toLocaleDateString("tr-TR")
+                        : "—";
+                      return (
+                        <Typography key={e.id} variant="body2">
+                          {prettyDate} {" — "} {e.description ?? "—"}
+                        </Typography>
+                      );
+                    })}
+                </Box>
+              )
+            }
+          >
+            <IconButton
+              size="small"
+              /* ⇣ Hover, tıkla veya klavye odağı aldığında yükle */
+              onMouseEnter={() => loadErrors(id)}
+              onFocus={() => loadErrors(id)}
+            >
+              <InfoIcon color={hasErrors ? "error" : "disabled"} />
+            </IconButton>
+          </Tooltip>
+        );
+      },
     },
     {
       field: "actions",
