@@ -26,6 +26,9 @@ import {
   getErrorsByBpet,
 } from "../../utils/api";
 import BpetHistoryModal from "./BpetHistoryModal";
+import AddAlertIcon from "@mui/icons-material/AddAlert"; // ikon serbest
+import BpetErrorModal from "./BpetErrorModal"; // yolu kendine göre
+import ReportProblemIcon from "@mui/icons-material/ReportProblem";
 import BpetForm from "./BpetForm";
 import Tooltip from "@mui/material/Tooltip";
 import InfoIcon from "@mui/icons-material/InfoOutlined";
@@ -57,6 +60,7 @@ const BpetList: React.FC<BpetListProps> = ({
       type: "include",
       ids: new Set<number>(),
     });
+  const [errorModalBpetId, setErrorModalBpetId] = useState<number | null>(null);
   const selectedCount = rowSelectionModel.ids.size;
   type ErrorCacheEntry = ErrorSummary[] | null; // dizi veya null
   const [errorPreview, setErrorPreview] = useState<
@@ -207,9 +211,9 @@ const BpetList: React.FC<BpetListProps> = ({
         new Date(params.value).toLocaleDateString("tr-TR"),
     },
     {
-      field: "info",
-      headerName: "",
-      width: 60,
+      field: "errorInfo",
+      headerName: "Hata Bilgileri",
+      width: 180,
       sortable: false,
       renderCell: (params: any) => {
         const id = params.row.id;
@@ -217,77 +221,97 @@ const BpetList: React.FC<BpetListProps> = ({
         const hasErrors = Array.isArray(list) && list.length > 0;
 
         return (
-          <Tooltip
-            arrow
-            title={
-              list === undefined ? (
-                "Yükleniyor..."
-              ) : !hasErrors ? (
-                "Bu BPET için kayıtlı hata yok"
-              ) : (
-                <Box>
-                  {list
-                    .filter(Boolean) // null/undefined öğe at
-                    .slice(0, 5)
-                    .map((e) => {
-                      const dateStr = e.occurred_at ?? e.occurredAt;
-                      const prettyDate = dateStr
-                        ? new Date(dateStr).toLocaleDateString("tr-TR")
-                        : "—";
-                      return (
-                        <Typography key={e.id} variant="body2">
-                          {prettyDate} {" — "} {e.description ?? "—"}
-                        </Typography>
-                      );
-                    })}
-                </Box>
-              )
-            }
-          >
-            <IconButton
-              size="small"
-              /* ⇣ Hover, tıkla veya klavye odağı aldığında yükle */
-              onMouseEnter={() => loadErrors(id)}
-              onFocus={() => loadErrors(id)}
+          <Box>
+            {/* Tooltip + InfoIcon */}
+            <Tooltip
+              arrow
+              title={
+                list === undefined ? (
+                  "Yükleniyor…"
+                ) : !hasErrors ? (
+                  "Bu BPET için kayıtlı hata yok"
+                ) : (
+                  <Box>
+                    {list
+                      .filter(Boolean)
+                      .slice(0, 5)
+                      .map((e) => {
+                        const d = e.occurred_at ?? e.occurredAt;
+                        const date = d
+                          ? new Date(d).toLocaleDateString("tr-TR")
+                          : "—";
+                        return (
+                          <Typography key={e.id} variant="body2">
+                            {date} {" — "} {e.description ?? "—"}
+                          </Typography>
+                        );
+                      })}
+                  </Box>
+                )
+              }
             >
-              <InfoIcon color={hasErrors ? "error" : "disabled"} />
-            </IconButton>
-          </Tooltip>
+              <IconButton
+                size="small"
+                onMouseEnter={() => loadErrors(id)}
+                onFocus={() => loadErrors(id)}
+              >
+                <InfoIcon color={hasErrors ? "error" : "disabled"} />
+              </IconButton>
+            </Tooltip>
+
+            <Tooltip arrow title="Hata Ekle">
+              <IconButton
+                size="small"
+                onClick={() => setErrorModalBpetId(id)}
+                color="success"
+                sx={{ ml: 0.5 }}
+              >
+                <ReportProblemIcon />
+              </IconButton>
+            </Tooltip>
+          </Box>
         );
       },
     },
     {
       field: "actions",
       headerName: "İşlemler",
-      width: 160,
+      width: 200, // ikon sayısı arttıysa biraz genişlettim
       sortable: false,
-      renderCell: (params: any) => (
-        <Box>
-          <IconButton size="small" onClick={() => setHistoryId(params.row.id)}>
-            <HistoryIcon />
-          </IconButton>
-          <IconButton
-            size="small"
-            onClick={() => {
-              setEditBpet(params.row);
-              setFormOpen(true);
-            }}
-          >
-            <EditIcon />
-          </IconButton>
-          {branchId === null && (
+      renderCell: (params: any) => {
+        const id = params.row.id;
+        const list = errorPreview[id];
+        const hasErrors = Array.isArray(list) && list.length > 0;
+
+        return (
+          <Box>
+            {/* DİĞER ESKİ BUTONLAR */}
+            <IconButton size="small" onClick={() => setHistoryId(id)}>
+              <HistoryIcon />
+            </IconButton>
             <IconButton
               size="small"
               onClick={() => {
-                setSendId(params.row.id);
-                setSendModalOpen(true);
+                setEditBpet(params.row);
+                setFormOpen(true);
               }}
             >
-              <SendIcon />
+              <EditIcon />
             </IconButton>
-          )}
-        </Box>
-      ),
+            {branchId === null && (
+              <IconButton
+                size="small"
+                onClick={() => {
+                  setSendId(id);
+                  setSendModalOpen(true);
+                }}
+              >
+                <SendIcon />
+              </IconButton>
+            )}
+          </Box>
+        );
+      },
     },
   ];
 
@@ -377,6 +401,16 @@ const BpetList: React.FC<BpetListProps> = ({
           onSuccess={handleSuccess}
         />
       )}
+      <BpetErrorModal
+        bpetId={errorModalBpetId}
+        onClose={(created) => {
+          setErrorModalBpetId(null);
+          if (created) {
+            // isteğe bağlı: mevcut satır tooltip cache’ini temizle
+            setErrorPreview((p) => ({ ...p, [errorModalBpetId!]: undefined }));
+          }
+        }}
+      />
 
       <Dialog
         open={sendModalOpen}

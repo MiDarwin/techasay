@@ -142,7 +142,7 @@ export const getBranchById = (branch_id) =>
 
 export const getBranchesByCompanyId = async (
   companyId,
-  limit = 50,
+  limit = 250,
   city = "",
   districtFilter = "",
   search = ""
@@ -790,4 +790,15 @@ export interface ErrorSummary {
   severity?: "info" | "warning" | "critical";
   notes?: string;
   bpet_id?: number;
+}
+export async function addErrorToBpet(bpetId: number, payload: ErrorCreate) {
+  return await apiRequest(`/api/bpet-error/${bpetId}`, "POST", payload);
+}
+
+/* ---------------- TYPES --------------- */
+export interface ErrorCreate {
+  description: string;
+  severity: "info" | "warning" | "critical";
+  occurred_at?: string;   // ISO (opsiyonel)
+  notes?: string;         // opsiyonel
 }
