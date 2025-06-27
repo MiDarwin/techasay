@@ -14,8 +14,10 @@ import {
   DialogActions,
   Snackbar,
   Alert,
+  Stack,
   Divider,
   Typography,
+  alpha,
 } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import AddIcon from "@mui/icons-material/Add";
@@ -28,6 +30,8 @@ import {
 } from "../../utils/api";
 import BpetForm from "./BpetForm";
 import BpetList from "./BpetList";
+import WarehouseIcon from "@mui/icons-material/Warehouse";
+import UploadIcon from "@mui/icons-material/Upload";
 export default function BpetManager() {
   const [branches, setBranches] = useState([]);
   const [branchLoading, setBranchLoading] = useState(true);
@@ -40,7 +44,7 @@ export default function BpetManager() {
   const DEPOT_OPTION = { id: null, name: "Depo" };
   const allOptions = [DEPOT_OPTION, ...branches];
   const bumpRefresh = () => setRefreshKey((k) => k + 1);
-
+  const depoOption = allOptions.find((o) => o.name === "Depo");
   useEffect(() => {
     (async () => {
       const data = await getBranchesByCompanyId(3);
@@ -76,36 +80,67 @@ export default function BpetManager() {
   };
 
   return (
-    <Card as={motion.div} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-      <CardContent sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-        {/* üst kontrol barı */}
+    /* 1️⃣  Yarı saydam, yumuşak gölgeli “glass” kart  */
+    <Card
+      component={motion.div}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
+      elevation={0}
+      sx={{
+        backdropFilter: "blur(8px)",
+        background: "#EDF2F7",
+        borderRadius: 4,
+        boxShadow: 3,
+        p: 2,
+      }}
+    >
+      <CardContent sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+        {/* 2️⃣  Yuvarlatılmış kontrol barı */}
         <Box
           sx={{
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            mb: 2,
+            p: 2,
+            borderRadius: 3,
+            boxShadow: 0,
+            bgcolor: "#EDF2F7",
             gap: 2,
+            flexWrap: "wrap",
           }}
         >
-          {/* Sol: Şube/Depo seçici */}
-          <Box sx={{ flex: 0.15 }}>
+          {/* Şube/Depo seçici */}
+          <Box sx={{ minWidth: 260 }}>
             <Autocomplete
               options={allOptions}
-              getOptionLabel={(opt) => opt.name}
+              getOptionLabel={(o) => o.name}
               value={selectedBranch}
               onChange={(_, v) => {
                 setSelectedBranch(v);
                 setBranchId(v?.id ?? null);
               }}
               renderInput={(params) => (
-                <TextField {...params} label="Şube veya Depo" fullWidth />
+                <TextField
+                  {...params}
+                  label="Şube veya Depo"
+                  fullWidth
+                  InputProps={{
+                    ...params.InputProps,
+                    startAdornment: (
+                      <>
+                        <WarehouseIcon sx={{ mr: 1 }} />
+                        {params.InputProps.startAdornment}
+                      </>
+                    ),
+                  }}
+                />
               )}
             />
           </Box>
 
-          {/* Sağ: Butonlar */}
-          <Box sx={{ display: "flex", gap: 1 }}>
+          {/* Aksiyon butonları */}
+          <Stack direction="row" spacing={1} flexWrap="wrap">
             <Button
               variant="contained"
               startIcon={<AddIcon />}
@@ -116,18 +151,34 @@ export default function BpetManager() {
             </Button>
 
             <Button
-              variant="contained"
+              variant="outlined"
               color="warning"
+              startIcon={<UploadIcon />}
               disabled={selectedIds.length === 0}
               onClick={handleBulk}
             >
-              Toplu Depoya Kaldır ({selectedIds.length})
+              Depoya Kaldır&nbsp;({selectedIds.length})
             </Button>
-          </Box>
+
+            {/* 🔸 Yeni Depo Görüntüle butonu */}
+            <Button
+              variant="text"
+              startIcon={<WarehouseIcon />} // aynı ikon iş görür
+              onClick={() => {
+                if (depoOption) {
+                  setSelectedBranch(depoOption);
+                  setBranchId(depoOption.id);
+                }
+              }}
+            >
+              Depo Görüntüle
+            </Button>
+          </Stack>
         </Box>
 
         <Divider />
 
+        {/* 3️⃣  Liste veya boş-ekran çağrısı */}
         {selectedBranch ? (
           <BpetList
             branchId={selectedBranch.id}
@@ -137,24 +188,30 @@ export default function BpetManager() {
             bumpRefresh={bumpRefresh}
           />
         ) : (
-          <Typography>Şube seçiniz.</Typography>
+          <Stack alignItems="center" spacing={2} sx={{ py: 6, opacity: 0.7 }}>
+            <img
+              src="/images/choose-branch.svg"
+              alt="Şube seç"
+              width={180}
+              height={180}
+            />
+            <Typography variant="h6">
+              Lütfen sol üstten bir şube seçin
+            </Typography>
+          </Stack>
         )}
       </CardContent>
 
-      {/* Form Dialog */}
+      {/* 4️⃣  Dialog & Snackbar parçaları (değişmedi) */}
       {openForm && (
         <BpetForm
           open={openForm}
           branchId={selectedBranch?.id}
           onClose={() => setOpenForm(false)}
-          onSuccess={() => {
-            // ekranı hemen yenile
-            bumpRefresh?.(); // ana listeyi de garantiye al
-          }}
+          onSuccess={() => bumpRefresh?.()}
         />
       )}
 
-      {/* Snackbar */}
       <Snackbar
         open={Boolean(snackbar)}
         autoHideDuration={3000}
@@ -165,6 +222,7 @@ export default function BpetManager() {
             severity={snackbar.severity}
             variant="filled"
             onClose={() => setSnackbar(null)}
+            sx={{ borderRadius: 2 }}
           >
             {snackbar.msg}
           </Alert>
