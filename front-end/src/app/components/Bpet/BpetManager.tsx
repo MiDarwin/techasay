@@ -28,6 +28,7 @@ import {
   getBpetsByBranch,
   createBpet,
 } from "../../utils/api";
+import Image from "next/image"; // Next.js optimizasyonu
 import BpetForm from "./BpetForm";
 import BpetList from "./BpetList";
 import WarehouseIcon from "@mui/icons-material/Warehouse";
@@ -96,7 +97,7 @@ export default function BpetManager() {
       }}
     >
       <CardContent sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
-        {/* 2️⃣  Yuvarlatılmış kontrol barı */}
+        {/* ▸ Yuvarlatılmış kontrol barı */}
         <Box
           sx={{
             display: "flex",
@@ -104,41 +105,49 @@ export default function BpetManager() {
             justifyContent: "space-between",
             p: 2,
             borderRadius: 3,
-            boxShadow: 0,
             bgcolor: "#EDF2F7",
             gap: 2,
             flexWrap: "wrap",
           }}
         >
-          {/* Şube/Depo seçici */}
-          <Box sx={{ minWidth: 260 }}>
-            <Autocomplete
-              options={allOptions}
-              getOptionLabel={(o) => o.name}
-              value={selectedBranch}
-              onChange={(_, v) => {
-                setSelectedBranch(v);
-                setBranchId(v?.id ?? null);
-              }}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  label="Şube veya Depo"
-                  fullWidth
-                  InputProps={{
-                    ...params.InputProps,
-                    startAdornment: (
-                      <>
-                        <WarehouseIcon sx={{ mr: 1 }} />
-                        {params.InputProps.startAdornment}
-                      </>
-                    ),
-                  }}
-                />
-              )}
+          {/* Sol taraf: Logo + Şube/Depo seçici */}
+          <Box sx={{ display: "flex", alignItems: "center", gap: 3 }}>
+            <Image
+              src="/images/bpetlogo.svg"
+              alt="BPET"
+              width={120}
+              height={120}
+              priority
             />
-          </Box>
 
+            <Box sx={{ minWidth: 260 }}>
+              <Autocomplete
+                options={allOptions}
+                getOptionLabel={(o) => o.name}
+                value={selectedBranch}
+                onChange={(_, v) => {
+                  setSelectedBranch(v);
+                  setBranchId(v?.id ?? null);
+                }}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Şube veya Depo"
+                    fullWidth
+                    InputProps={{
+                      ...params.InputProps,
+                      startAdornment: (
+                        <>
+                          <WarehouseIcon sx={{ mr: 1 }} />
+                          {params.InputProps.startAdornment}
+                        </>
+                      ),
+                    }}
+                  />
+                )}
+              />
+            </Box>
+          </Box>
           {/* Aksiyon butonları */}
           <Stack direction="row" spacing={1} flexWrap="wrap">
             <Button
