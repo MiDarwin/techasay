@@ -111,26 +111,22 @@ async def list_bpets_in_warehouse(db: AsyncSession):
 async def bpet_history(db: AsyncSession, bpet_id: int):
     q = (
         select(BpetHistory)
-        .options(
-            joinedload(BpetHistory.bpet)
-            .joinedload(Bpet.branch)
-        )
+        .options(joinedload(BpetHistory.branch))   # branch tek seferde çekilir
         .where(BpetHistory.bpet_id == bpet_id)
         .order_by(BpetHistory.started_at.desc())
     )
-    orm_rows = (await db.scalars(q)).all()
+    rows = (await db.scalars(q)).all()
+
     return [
         {
             "id": h.id,
             "state": h.state,
-            # History kaydındaki branch_id
             "branch_id": h.branch_id,
-            # Sadece history.branch_id doluysa, o ID'ye bağlı branch adı
-            "branch_name": (h.bpet.branch.branch_name if h.branch_id is not None and h.bpet.branch else None),
+            "branch_name": h.branch.branch_name if h.branch else None,
             "started_at": h.started_at,
             "ended_at": h.ended_at,
         }
-        for h in orm_rows
+        for h in rows
     ]
 async def bulk_dismount_bpets(
     db: AsyncSession,

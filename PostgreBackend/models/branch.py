@@ -5,7 +5,7 @@ from sqlalchemy import Column, Integer, String, ForeignKey, DateTime,Float , Boo
 from sqlalchemy.orm import relationship
 from database import Base
 from sqlalchemy import UniqueConstraint
-
+from models.bpet import BpetHistory
 class Branch(Base):
     __tablename__ = "branches"
 
@@ -30,7 +30,11 @@ class Branch(Base):
     company = relationship("Company", back_populates="branches")
 
     inventories = relationship("Inventory", back_populates="branch", cascade="all, delete-orphan")
-
+    bpet_histories = relationship(
+        "BpetHistory",
+        back_populates="branch",
+        cascade="all, delete-orphan"
+    )
     parent_branch_id = Column(Integer, ForeignKey("branches.id"), nullable=True)
     parent_branch = relationship("Branch", remote_side=[id], backref="sub_branches")
     # Favori Kullanıcılar İlişkisi

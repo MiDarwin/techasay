@@ -34,15 +34,16 @@ class Bpet(Base):
 class BpetHistory(Base):
     __tablename__ = "bpet_history"
 
-    id        = Column(Integer, primary_key=True)
-    bpet_id   = Column(Integer, ForeignKey("bpets.id"))
-    branch_id = Column(Integer, nullable=True)          # NULL = depoda
-    state     = Column(String, nullable=False)          # 'in_use' | 'warehouse'
+    id         = Column(Integer, primary_key=True)
+    bpet_id    = Column(Integer, ForeignKey("bpets.id"), nullable=False)
+    branch_id  = Column(Integer, ForeignKey("branches.id"), nullable=True)  # 🆕 FK eklendi
+    state      = Column(String, nullable=False)         # 'in_use' | 'warehouse'
     started_at = Column(DateTime, default=datetime.utcnow)
     ended_at   = Column(DateTime)
 
-    bpet = relationship("Bpet", back_populates="history")
-
+    # İlişkiler
+    bpet   = relationship("Bpet", back_populates="history")
+    branch = relationship("Branch", back_populates="bpet_histories", lazy="joined")
 class BpetError(Base):
     __tablename__ = "bpet_errors"
 
