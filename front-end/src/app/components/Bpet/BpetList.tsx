@@ -12,6 +12,7 @@ import {
   DialogContent,
   DialogActions,
   TextField,
+  Stack,
 } from "@mui/material";
 import { DataGrid, GridRowSelectionModel, GridToolbar } from "@mui/x-data-grid";
 import HistoryIcon from "@mui/icons-material/History";
@@ -32,6 +33,19 @@ import ReportProblemIcon from "@mui/icons-material/ReportProblem";
 import BpetForm from "./BpetForm";
 import Tooltip from "@mui/material/Tooltip";
 import InfoIcon from "@mui/icons-material/InfoOutlined";
+import RouterIcon from "@mui/icons-material/Router"; // modem
+import SensorsIcon from "@mui/icons-material/Sensors"; // sensör
+import SimCardIcon from "@mui/icons-material/SimCard"; // sim
+import DeviceUnknownIcon from "@mui/icons-material/Devices"; // varsayılan
+const getProductIcon = (name: string) => {
+  const n = name.toLowerCase();
+  if (n.includes("modem")) return <RouterIcon color="primary" />;
+  if (n.includes("sensor") || n.includes("sensör"))
+    return <SensorsIcon color="info" />;
+  if (n.includes("sim")) return <SimCardIcon color="warning" />;
+  return <DeviceUnknownIcon color="disabled" />;
+};
+
 interface BpetRow {
   id: number;
   product_name: string;
@@ -188,7 +202,17 @@ const BpetList: React.FC<BpetListProps> = ({
     return <Typography>Depoda BPET bulunamadı.</Typography>;
   }
   const columns = [
-    { field: "product_name", headerName: "Ürün", flex: 1 },
+    {
+      field: "product_name",
+      headerName: "Ürün",
+      flex: 1,
+      renderCell: ({ value }) => (
+        <Box display="flex" alignItems="center" gap={1}>
+          {getProductIcon(value)}
+          <Typography fontWeight={600}>{value}</Typography>
+        </Box>
+      ),
+    },
     {
       field: "attributes",
       headerName: "Özellikler",
