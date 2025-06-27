@@ -13,6 +13,11 @@ import {
   DialogActions,
   TextField,
   Stack,
+  Chip,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from "@mui/material";
 import { DataGrid, GridRowSelectionModel, GridToolbar } from "@mui/x-data-grid";
 import HistoryIcon from "@mui/icons-material/History";
@@ -37,6 +42,7 @@ import RouterIcon from "@mui/icons-material/Router"; // modem
 import SensorsIcon from "@mui/icons-material/Sensors"; // sensör
 import SimCardIcon from "@mui/icons-material/SimCard"; // sim
 import DeviceUnknownIcon from "@mui/icons-material/Devices"; // varsayılan
+import BpetErrorHistoryModal from "./BpetErrorHistoryModal"; // yolu kendine göre düzelt
 const getProductIcon = (name: string) => {
   const n = name.toLowerCase();
   if (n.includes("modem")) return <RouterIcon color="primary" />;
@@ -80,6 +86,7 @@ const BpetList: React.FC<BpetListProps> = ({
   const [errorPreview, setErrorPreview] = useState<
     Record<number, ErrorCacheEntry>
   >({});
+  const [historyModalId, setHistoryModalId] = useState<number | null>(null);
 
   const [formOpen, setFormOpen] = useState(false);
   const [editBpet, setEditBpet] = useState<BpetRow | null>(null);
@@ -199,7 +206,7 @@ const BpetList: React.FC<BpetListProps> = ({
   }
 
   if (!loading && rows.length === 0) {
-    return <Typography>Depoda BPET bulunamadı.</Typography>;
+    return <Typography color="black">Depoda BPET bulunamadı.</Typography>;
   }
   const columns = [
     {
@@ -217,15 +224,39 @@ const BpetList: React.FC<BpetListProps> = ({
       field: "attributes",
       headerName: "Özellikler",
       flex: 2,
-      renderCell: (params: any) => (
-        <Box>
-          {Object.entries(params.value).map(([k, v]) => (
-            <Typography variant="body2" key={k}>
-              <strong>{k}:</strong> {v}
-            </Typography>
-          ))}
-        </Box>
-      ),
+      renderCell: ({ value }) => {
+        /* value ⇒ { adet:1, ip:"10.0.0.1", seri:"ABC123", ... } */
+        const entries = Object.entries(value);
+        const shown = entries.slice(0, 3); // ilk 3 özellik
+        const hidden = entries.slice(3); // fazlası
+
+        return (
+          <Stack direction="row" spacing={0.5} flexWrap="wrap">
+            {shown.map(([k, v]) => (
+              <Chip
+                key={k}
+                size="small"
+                label={`${k}: ${v}`}
+                color="info"
+                variant="filled"
+              />
+            ))}
+
+            {hidden.length > 0 && (
+              <Tooltip
+                arrow
+                title={hidden.map(([k, v]) => `${k}: ${v}`).join(" • ")}
+              >
+                <Chip
+                  size="small"
+                  label={`+${hidden.length}`}
+                  variant="outlined"
+                />
+              </Tooltip>
+            )}
+          </Stack>
+        );
+      },
     },
     {
       field: "created_at",
@@ -276,6 +307,10 @@ const BpetList: React.FC<BpetListProps> = ({
             >
               <IconButton
                 size="small"
+                onClick={(e) => {
+                  e.stopPropagation(); // 🛑 satır tıklamasını durdur
+                  setHistoryModalId(id); // modalı aç
+                }}
                 onMouseEnter={() => loadErrors(id)}
                 onFocus={() => loadErrors(id)}
               >
@@ -404,6 +439,10 @@ const BpetList: React.FC<BpetListProps> = ({
               "& .MuiDataGrid-row:hover": {
                 backgroundColor: "rgba(200,200,200,0.4)",
               },
+              "& .MuiDataGrid-cell": {
+                display: "flex",
+                alignItems: "center",
+              },
             }}
           />
         </Box>
@@ -438,7 +477,10 @@ const BpetList: React.FC<BpetListProps> = ({
           }
         }}
       />
-
+      <BpetErrorHistoryModal
+        bpetId={historyModalId}
+        onClose={() => setHistoryModalId(null)}
+      />
       <Dialog
         open={sendModalOpen}
         onClose={() => setSendModalOpen(false)}
@@ -446,23 +488,32 @@ const BpetList: React.FC<BpetListProps> = ({
         maxWidth="xs"
       >
         <DialogTitle>Depodan Şubeye Gönder</DialogTitle>
+
         <DialogContent>
-          <TextField
-            select
-            label="Hedef Şube"
-            value={selectedSendBranch ?? ""}
-            onChange={(e) => setSelectedSendBranch(Number(e.target.value))}
-            SelectProps={{ native: true }}
-            fullWidth
-          >
-            <option value="">Şube seçin</option>
-            {branchesOptions.map((b) => (
-              <option key={b.id} value={b.id}>
-                {b.name}
-              </option>
-            ))}
-          </TextField>
+          <FormControl fullWidth sx={{ mt: 1 }}>
+            {/* Etiket */}
+            <InputLabel id="send-branch-label">Hedef Şube</InputLabel>
+
+            {/* Select */}
+            <Select
+              labelId="send-branch-label"
+              label="Hedef Şube"
+              value={selectedSendBranch ?? ""}
+              onChange={(e) => setSelectedSendBranch(Number(e.target.value))}
+            >
+              <MenuItem value="">
+                <em>Şube seçin</em>
+              </MenuItem>
+
+              {branchesOptions.map((b) => (
+                <MenuItem key={b.id} value={b.id}>
+                  {b.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
         </DialogContent>
+
         <DialogActions>
           <Button onClick={() => setSendModalOpen(false)}>İptal</Button>
           <Button
