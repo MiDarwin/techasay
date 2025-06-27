@@ -403,6 +403,9 @@ const BpetList: React.FC<BpetListProps> = ({
       )}
       <BpetErrorModal
         bpetId={errorModalBpetId}
+        bpetname={
+          rows.find((r) => r.id === errorModalBpetId)?.product_name ?? ""
+        }
         onClose={(created) => {
           setErrorModalBpetId(null);
           if (created) {

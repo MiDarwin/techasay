@@ -8,15 +8,17 @@ import {
   Button,
   MenuItem,
   Stack,
+  Typography,
 } from "@mui/material";
 import { ErrorCreate, addErrorToBpet } from "../../utils/api";
 
 interface Props {
   bpetId: number | null; // null ⇒ kapalı
+  bpetname: string; // hata mesajında gösterilecek
   onClose: (created?: boolean) => void;
 }
 
-export default function BpetErrorModal({ bpetId, onClose }: Props) {
+export default function BpetErrorModal({ bpetId, bpetname, onClose }: Props) {
   const [form, setForm] = useState<ErrorCreate>({
     description: "",
     severity: "info",
@@ -52,6 +54,9 @@ export default function BpetErrorModal({ bpetId, onClose }: Props) {
 
       <DialogContent>
         <Stack spacing={2} sx={{ mt: 1, width: 400 }}>
+          <Typography>
+            <strong>{bpetname}</strong> için yeni bir hata kaydı ekliyorsun.
+          </Typography>
           <TextField
             label="Açıklama"
             value={form.description}
